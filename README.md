@@ -106,3 +106,7 @@ Danach kehrt der Hintergrund automatisch in seinen ursprünglichen Zustand zurü
 - **Casino Cinematic:** Mehrstufige Inszenierung aus Verdunkelung, Scheinwerfer, animiertem Außenring, Lichtwellen und Ergebnisplakette.
 
 Alle Bewegungen sind endlich, hinterlassen einen eindeutigen Ruhezustand und werden bei der Betriebssystemoption für reduzierte Bewegung deaktiviert. Die Vorschau hält das Konfigurationsmenü offen und nimmt nur für vier Sekunden den Blur vom Rad. Änderungen an den Gewinnerstilen verändern nicht die Gewinnauswahl.
+
+## Design der Bedienelemente
+
+Der Bereich **Gewinnerinszenierung** nutzt abgestimmte Casino-Noir-Selects und einheitliche Vorschau-Buttons mit festem Icon-Bereich, klaren Fokuszuständen, ausreichend großen Touch-Zielen und responsiver Anordnung. Die fehlenden Editor-Styles der vorigen Version wurden wiederhergestellt.
