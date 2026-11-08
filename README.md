@@ -110,3 +110,7 @@ Alle Bewegungen sind endlich, hinterlassen einen eindeutigen Ruhezustand und wer
 ## Design der Bedienelemente
 
 Der Bereich **Gewinnerinszenierung** nutzt abgestimmte Casino-Noir-Selects und einheitliche Vorschau-Buttons mit festem Icon-Bereich, klaren Fokuszuständen, ausreichend großen Touch-Zielen und responsiver Anordnung. Die fehlenden Editor-Styles der vorigen Version wurden wiederhergestellt.
+
+## Reihenfolge per Drag-and-drop ändern
+
+Jede Segmentzeile besitzt links einen eigenen Ziehgriff. Damit lassen sich Segmente mit Maus, Stift oder Finger in eine andere Position ziehen. Die goldene Einfügelinie zeigt die Ablageposition. Beim Loslassen wird die Reihenfolge im SVG-Rad aktualisiert und automatisch lokal gespeichert; Text, Icon und Farbe bleiben zusammen. Bei langen Listen scrollt die Konfiguration am Rand während des Ziehens weiter. Mit fokussiertem Griff ermöglichen auch Pfeil hoch/runter sowie Pos1/Ende eine Sortierung per Tastatur. Die bisherigen Auf-/Ab-Schaltflächen bleiben erhalten. Während einer Drehung ist die Sortierung gesperrt.
