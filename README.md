@@ -72,3 +72,14 @@ Gewinner-Sounds: Keiner, Sanfter Ton, Casino-Glocke, Goldener Dreiklang, Jackpot
 ## Unverdeckte Effektvorschau
 
 Der Knopf **Effekt im Vollbild vorführen** schließt vorübergehend das Konfigurationsmenü samt abgedunkeltem und weichgezeichnetem Hintergrund. Die gewählte Gewinneranimation läuft auf dem echten, unverdeckten Rad ohne Drehung. **Zurück zur Konfiguration** sowie `Escape` öffnen den Editor erneut an seiner bisherigen Scrollposition. Die Soundvorschau bleibt im Editor. Der normale Präsentationsmodus bleibt unverändert.
+
+
+## Effektvorschau ohne Unschärfe
+
+**Effekt 4 Sekunden vorführen** blendet das seitliche Konfigurationsmenü und dessen
+abgedunkelte, weichgezeichnete Überlagerung für vier Sekunden aus. Der Effekt
+läuft direkt auf dem unverändert positionierten Glücksrad, ohne Drehung und ohne
+Vollbildwechsel. Danach wird das Menü automatisch wiederhergestellt, einschließlich
+Scrollposition und Fokus auf dem Vorschauknopf. Mit `Escape` lässt sich die Vorschau
+vorzeitig beenden. Während der Vorschau ist die Radmitte gegen unbeabsichtigte
+Drehungen gesperrt.

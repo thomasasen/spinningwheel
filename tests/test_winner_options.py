@@ -29,7 +29,7 @@ async def main():
             for mode in EFFECTS:
                 await page.locator('#winnerEffect').select_option(mode)
                 await page.locator('#previewWinnerEffect').click()
-                assert await page.locator('#presentation').is_visible(), mode
+                assert await page.locator('#presentation').is_hidden(), mode
                 assert await page.locator('#editorBackdrop').is_hidden(), mode
                 assert await page.locator('#editorPanel').is_hidden(), mode
                 assert await page.locator('#winnerHighlight.is-visible').count() == 1, mode
@@ -50,11 +50,13 @@ async def main():
                     int(await page.locator('.winner-particle').count() > 0),
                 )
                 assert values == expected, (mode, values, expected)
-                await page.locator('#closePresentation').click()
+                await page.keyboard.press('Escape')
                 assert await page.locator('#editorPanel').is_visible(), mode
             for strength in ('subtle','refined','show'):
                 await page.locator('#winnerStrength').select_option(strength)
+                await page.locator('#previewWinnerEffect').click()
                 assert await page.locator('#winnerHighlight').get_attribute('data-strength') == strength
+                await page.keyboard.press('Escape')
             for mode in SOUNDS:
                 await page.locator('#winnerSound').select_option(mode)
                 await page.locator('#previewWinnerSound').click()
