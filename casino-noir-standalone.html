@@ -133,7 +133,6 @@ body.editor-open{overflow:hidden}
  .winner-highlight.is-visible .winner-highlight-surface,.winner-highlight.is-visible .winner-stud,.winner-highlight.is-visible .winner-particle{animation:none}
  .winner-highlight .winner-particle{opacity:0}
 }
-
 </style>
   
 </head>
@@ -215,7 +214,7 @@ body.editor-open{overflow:hidden}
                 <option value="show">Show</option>
               </select>
             </div>
-            <button id="previewWinnerEffect" class="btn btn-quiet winner-preview" type="button">✦ Effekt vorführen</button>
+            <button id="previewWinnerEffect" class="btn btn-quiet winner-preview" type="button">✦ Effekt im Vollbild vorführen</button>
             <div class="winner-control">
               <label for="winnerSound">Gewinner-Sound</label>
               <select id="winnerSound">
@@ -406,7 +405,12 @@ body.editor-open{overflow:hidden}
   }
   const ICON_FALLBACKS = {
     apparel:'♧',checkroom:'♧',dry_cleaning:'✧',laundry:'◈',styler:'✧',
-    star:'★',stars:'✦',auto_awesome:'✧',diamond:'◆',workspace_premium:'✦',emoji_events:'♛',military_tech:'✪',verified:'✓',loyalty:'♥',favorite:'♥',favorite_border:'♡',celebration:'✷',redeem:'✦',card_giftcard:'♜',recommend:'★',thumb_up:'✓',theater_comedy:'◈',whatshot:'♨',flare:'✺',lightbulb:'☀',bolt:'ϟ',casino:'♠',paid:'$',savings:'$',credit_card:'▭',wallet:'▣',account_balance_wallet:'$',currency_exchange:'$',token:'◉',sell:'◇',local_offer:'◇',shopping_bag:'▣',shopping_cart:'▣',storefront:'♜',local_mall:'▣',monetization_on:'$',toll:'◎',receipt_long:'▤',card_membership:'▣',key:'⚿',lock_open:'◈',local_bar:'♧',wine_bar:'♧',sports_bar:'♧',nightlife:'♫',restaurant:'♧',coffee:'☕',cake:'♜',icecream:'♢',spa:'✿',self_improvement:'☯',beach_access:'☀',hotel:'⌂',flight:'✈',luggage:'▣',directions_car:'▰',two_wheeler:'◎',sports_esports:'✦',games:'♟',music_note:'♫',headphones:'♫',movie:'▣',camera_alt:'▣',sunny:'☀',dark_mode:'☾',nights_stay:'☾',forest:'♣',park:'♣',pets:'♟',cruelty_free:'♡',water_drop:'♦',eco:'❧',nature:'❧',flutter_dash:'✦',rocket_launch:'↟',public:'◎',travel_explore:'✧',explore:'✧',map:'♢',magic_button:'✧',filter_vintage:'✿',psychology_alt:'?',person:'♙',group:'♟',groups:'♟',face:'☻',sentiment_satisfied:'☺',mood:'☺',volunteer_activism:'♥',handshake:'⌘',diversity_1:'♡',child_care:'♡',alarm:'◷',schedule:'◷',timer:'◷',hourglass_empty:'⌛',done:'✓',check_circle:'✓',refresh:'↻',replay:'↻',shuffle:'⇄',question_mark:'?',help:'?',info:'i',flag:'⚑',sports_score:'⚑',smartphone:'▯',laptop:'▣',desktop_windows:'▣',devices:'▣',tv:'▣',watch:'◷',smart_toy:'✧',memory:'▦',science:'⚗',build:'⚒',settings:'⚙',extension:'✜',language:'◎',cloud:'☁',download:'↓',upload:'↑',print:'▣',qr_code:'▦',wifi:'≋',headset:'♫',videogame_asset:'✧'
+    star:'★',stars:'✦',auto_awesome:'✧',diamond:'◆',workspace_premium:'✦',emoji_events:'♛',military_tech:'✪',verified:'✓',loyalty:'♥',favorite:'♥',favorite_border:'♡',celebration:'✷',redeem:'✦',card_giftcard:'♜',recommend:'★',thumb_up:'✓',theater_comedy:'◈',whatshot:'♨',flare:'✺',lightbulb:'☀',bolt:'ϟ',casino:'♠',paid:'
+</html>,savings:'
+</html>,credit_card:'▭',wallet:'▣',account_balance_wallet:'
+</html>,currency_exchange:'
+</html>,token:'◉',sell:'◇',local_offer:'◇',shopping_bag:'▣',shopping_cart:'▣',storefront:'♜',local_mall:'▣',monetization_on:'
+</html>,toll:'◎',receipt_long:'▤',card_membership:'▣',key:'⚿',lock_open:'◈',local_bar:'♧',wine_bar:'♧',sports_bar:'♧',nightlife:'♫',restaurant:'♧',coffee:'☕',cake:'♜',icecream:'♢',spa:'✿',self_improvement:'☯',beach_access:'☀',hotel:'⌂',flight:'✈',luggage:'▣',directions_car:'▰',two_wheeler:'◎',sports_esports:'✦',games:'♟',music_note:'♫',headphones:'♫',movie:'▣',camera_alt:'▣',sunny:'☀',dark_mode:'☾',nights_stay:'☾',forest:'♣',park:'♣',pets:'♟',cruelty_free:'♡',water_drop:'♦',eco:'❧',nature:'❧',flutter_dash:'✦',rocket_launch:'↟',public:'◎',travel_explore:'✧',explore:'✧',map:'♢',magic_button:'✧',filter_vintage:'✿',psychology_alt:'?',person:'♙',group:'♟',groups:'♟',face:'☻',sentiment_satisfied:'☺',mood:'☺',volunteer_activism:'♥',handshake:'⌘',diversity_1:'♡',child_care:'♡',alarm:'◷',schedule:'◷',timer:'◷',hourglass_empty:'⌛',done:'✓',check_circle:'✓',refresh:'↻',replay:'↻',shuffle:'⇄',question_mark:'?',help:'?',info:'i',flag:'⚑',sports_score:'⚑',smartphone:'▯',laptop:'▣',desktop_windows:'▣',devices:'▣',tv:'▣',watch:'◷',smart_toy:'✧',memory:'▦',science:'⚗',build:'⚒',settings:'⚙',extension:'✜',language:'◎',cloud:'☁',download:'↓',upload:'↑',print:'▣',qr_code:'▦',wifi:'≋',headset:'♫',videogame_asset:'✧'
   };
   let idCounter = 0;
   function makeId() { return `seg-${Date.now().toString(36)}-${(idCounter++).toString(36)}`; }
@@ -795,7 +799,7 @@ body.editor-open{overflow:hidden}
   $('winnerEffect').addEventListener('change',ev=>{if(isSpinning)return;config.winnerEffect=ev.target.value;save();if(highlightedWinner!==null)showWinnerHighlight(highlightedWinner);});
   $('winnerStrength').addEventListener('change',ev=>{if(isSpinning)return;config.winnerStrength=ev.target.value;save();if(highlightedWinner!==null)showWinnerHighlight(highlightedWinner);});
   $('winnerSound').addEventListener('change',ev=>{if(isSpinning)return;config.winnerSound=ev.target.value;save();});
-  $('previewWinnerEffect').addEventListener('click',()=>{if(!isSpinning&&config.segments.length)showWinnerHighlight(highlightedWinner??0);});
+  $('previewWinnerEffect').addEventListener('click',()=>{if(!isSpinning&&config.segments.length)openPresentation({winnerPreview:true});});
   $('previewWinnerSound').addEventListener('click',()=>{if(!isSpinning)playWinnerSound(config.winnerSound);});
   $('paletteSelect').addEventListener('change',ev=>{
     if(isSpinning)return;
@@ -903,9 +907,44 @@ body.editor-open{overflow:hidden}
   $('customIconName').addEventListener('keydown',ev=>{if(ev.key==='Enter')setIconForCurrent(ev.target.value.trim().toLowerCase());});
   // Präsentationsmodus: nur EINE Radinstanz wird verschoben, sodass Ergebnis,
   // Bedienbarkeit und Animation in beiden Layouts immer synchron bleiben.
-  function openPresentation(){if(isSpinning)return;if(!editorPanel.hidden)setEditorOpen(false);presentation.hidden=false;$('presentationTarget').appendChild(assembly);$('presentationResult').textContent='Auf die goldene Mitte klicken, um zu drehen';$('spinHub').focus();}
-  function closePresentation(){if(isSpinning)return;presentation.hidden=true;wheelStage.appendChild(assembly);$('showOnlyWheel').focus();}
-  $('showOnlyWheel').addEventListener('click',openPresentation);
+  // Preview the actual wheel without the dimmed/blurred configuration drawer.
+  let effectPreviewActive=false;
+  function openPresentation({winnerPreview=false}={}){
+    if(isSpinning)return;
+    const returnToEditor=winnerPreview&&!editorPanel.hidden;
+    if(!editorPanel.hidden)setEditorOpen(false);
+    effectPreviewActive=returnToEditor;
+    presentation.hidden=false;
+    presentation.classList.toggle('is-effect-preview',winnerPreview);
+    $('presentationTarget').appendChild(assembly);
+    const closeButton=$('closePresentation');
+    closeButton.textContent=winnerPreview?'✕ Zurück zur Konfiguration':'✕ Schließen';
+    closeButton.setAttribute('aria-label',winnerPreview?'Zur Konfiguration zurückkehren':'Präsentationsmodus schließen');
+    if(winnerPreview){
+      const index=highlightedWinner??0;
+      $('presentationResult').textContent=`Effektvorschau · ${safeText(config.segments[index]?.label)}`;
+      showWinnerHighlight(index);
+      closeButton.focus();
+    }else{
+      $('presentationResult').textContent='Auf die goldene Mitte klicken, um zu drehen';
+      $('spinHub').focus();
+    }
+  }
+  function closePresentation(){
+    if(isSpinning)return;
+    presentation.hidden=true;
+    presentation.classList.remove('is-effect-preview');
+    wheelStage.appendChild(assembly);
+    if(effectPreviewActive){
+      effectPreviewActive=false;
+      editorToggle.focus(); // Establish a visible focus-return target before reopening the dialog.
+      setEditorOpen(true);
+      $('previewWinnerEffect').focus();
+    }else{
+      $('showOnlyWheel').focus();
+    }
+  }
+  $('showOnlyWheel').addEventListener('click',()=>openPresentation());
   $('closePresentation').addEventListener('click',closePresentation);
   function rand(){if(globalThis.crypto?.getRandomValues){const buf=new Uint32Array(1);crypto.getRandomValues(buf);return buf[0]/4294967296;}return Math.random();}
   function ensureAudioContext(){
@@ -997,7 +1036,8 @@ body.editor-open{overflow:hidden}
     isSpinning=true;if(config.winnerSound!=='off'||config.sound)ensureAudioContext();powerMeter.classList.add('is-locked');
     lockEditor(true);$('spinHub').disabled=true;$('spinHub').classList.add('is-spinning');
     const percent=Math.round(power*100);
-    $('statusText').textContent=`Drehkraft ${percent} % · Das Rad dreht sich …`;    $('presentationResult').textContent='';
+    $('statusText').textContent=`Drehkraft ${percent} % · Das Rad dreht sich …`;
+    $('presentationResult').textContent='';
     const winner=Math.floor(rand()*n),step=360/n;
     // Sektor 0 liegt zu Beginn mittig unter dem feststehenden Zeiger bei 12 Uhr.
     // Exakt auf die Sektormitte zielen: So steht die Gewinner-Beschriftung
@@ -1050,7 +1090,6 @@ body.editor-open{overflow:hidden}
     }).catch(()=>{});
   }
 })();
-
 </script>
 </body>
 </html>
