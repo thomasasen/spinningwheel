@@ -53,3 +53,12 @@ Der vertikale Kraftbalken pendelt ständig zwischen 0 und 100 Prozent (vollstän
 Die **maximale Drehdauer** ist zwischen 3 und 30 Sekunden konfigurierbar. Wie bisher skaliert die tatsächlich gewählte Dauer mit dem beim Klick abgefangenen Kraftwert (35–100 % der eingestellten Obergrenze). Zusätzlich steuert **Auslaufspannung** (0–100 %, Standard: 65 %) die Bremskurve unabhängig von der Dauer: Niedrige Werte bremsen früher stark, hohe Werte bewegen das Rad noch bis kurz vor Schluss langsam über Segmentgrenzen. Die Abbremsung ist stetig und monoton; es gibt keinen künstlichen Nachrück-Sprung und keinen manipulierten Gewinner.
 
 Nach jedem Stillstand erhält der echte Gewinnersektor eine pulsierende Goldkontur mit leichtem Highlight. Die Hervorhebung bleibt bis zur nächsten Drehung oder Segmentänderung sichtbar; bei reduzierter Animation ohne Pulsieren. Die JSON-Konfiguration enthält nun `coast`, ältere Konfigurationen verwenden den Standardwert 65.
+
+## Radgeometrie: kleiner Zeiger und außenliegende Beschriftungen
+
+Der feststehende Auswahlzeiger ist kürzer und schmaler; seine Spitze reicht im
+640×640-SVG nur bis circa Radius 240 statt bisher 210. Inhalte werden je nach
+Segmentanzahl in größere Radien gelegt: 190 bei bis zu 8 Segmenten, 198 bei
+9–12 Segmenten, 204 bei 13–20 Segmenten und 220 für Nummern bei 21–72
+Segmenten. Das lässt mehr freie Fläche um die Radnabe und verhindert, dass
+Zeiger, Schrift und Symbole bei der 12-Uhr-Position überlagern.

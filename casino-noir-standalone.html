@@ -104,7 +104,6 @@ body.editor-open{overflow:hidden}
 @keyframes winner-gold-pulse{0%,100%{opacity:.85}50%{opacity:1;filter:drop-shadow(0 0 11px #ffcf77bb)}}
 @media(prefers-reduced-motion:reduce){.winner-highlight.is-visible{animation:none}}
 @media(max-width:520px){.setting-row-coast{gap:6px}.setting-descriptor{max-width:170px}.setting-value input[type=range]{width:105px}}
-
 </style>
   
 </head>
@@ -135,10 +134,10 @@ body.editor-open{overflow:hidden}
               </defs>
               <g id="rotatingWheel" filter="url(#wheelDrop)"></g>
               <g id="fixedPointer" aria-hidden="true">
-                <path d="M293 14 Q320 7 347 14 L350 61 Q339 91 320 108 Q301 92 290 61Z" fill="#df246f" opacity=".45" filter="url(#pointerGlow)"/>
-                <path d="M292 13 Q320 9 348 13 L347 59 L320 110 L293 59Z" fill="url(#pointerGold)" stroke="#4d2313" stroke-width="2"/>
-                <path d="M304 24 H336 L335 57 L320 87 L305 57Z" fill="url(#pointerRose)" stroke="#ffdf9f" stroke-width="1.6"/>
-                <path d="M320 29 L324 43 L335 47 L324 51 L320 65 L316 51 L305 47 L316 43Z" fill="#fff3cf" opacity=".91"/>
+                <path d="M299 13 Q320 7 341 13 L340 43 Q329 67 320 80 Q311 67 300 43Z" fill="#df246f" opacity=".42" filter="url(#pointerGlow)"/>
+                <path d="M300 14 Q320 10 340 14 L338 44 L320 80 L302 44Z" fill="url(#pointerGold)" stroke="#4d2313" stroke-width="1.7"/>
+                <path d="M308 23 H332 L330 43 L320 65 L310 43Z" fill="url(#pointerRose)" stroke="#ffdf9f" stroke-width="1.4"/>
+                <path d="M320 27 L323 35 L331 38 L323 41 L320 49 L317 41 L309 38 L317 35Z" fill="#fff3cf" opacity=".91"/>
               </g>
             </svg>
             <div class="power-meter" id="powerMeter" role="meter" aria-label="Aktuelle Drehkraft" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0 Prozent Drehkraft">
@@ -338,7 +337,12 @@ body.editor-open{overflow:hidden}
   }
   const ICON_FALLBACKS = {
     apparel:'♧',checkroom:'♧',dry_cleaning:'✧',laundry:'◈',styler:'✧',
-    star:'★',stars:'✦',auto_awesome:'✧',diamond:'◆',workspace_premium:'✦',emoji_events:'♛',military_tech:'✪',verified:'✓',loyalty:'♥',favorite:'♥',favorite_border:'♡',celebration:'✷',redeem:'✦',card_giftcard:'♜',recommend:'★',thumb_up:'✓',theater_comedy:'◈',whatshot:'♨',flare:'✺',lightbulb:'☀',bolt:'ϟ',casino:'♠',paid:'$',savings:'$',credit_card:'▭',wallet:'▣',account_balance_wallet:'$',currency_exchange:'$',token:'◉',sell:'◇',local_offer:'◇',shopping_bag:'▣',shopping_cart:'▣',storefront:'♜',local_mall:'▣',monetization_on:'$',toll:'◎',receipt_long:'▤',card_membership:'▣',key:'⚿',lock_open:'◈',local_bar:'♧',wine_bar:'♧',sports_bar:'♧',nightlife:'♫',restaurant:'♧',coffee:'☕',cake:'♜',icecream:'♢',spa:'✿',self_improvement:'☯',beach_access:'☀',hotel:'⌂',flight:'✈',luggage:'▣',directions_car:'▰',two_wheeler:'◎',sports_esports:'✦',games:'♟',music_note:'♫',headphones:'♫',movie:'▣',camera_alt:'▣',sunny:'☀',dark_mode:'☾',nights_stay:'☾',forest:'♣',park:'♣',pets:'♟',cruelty_free:'♡',water_drop:'♦',eco:'❧',nature:'❧',flutter_dash:'✦',rocket_launch:'↟',public:'◎',travel_explore:'✧',explore:'✧',map:'♢',magic_button:'✧',filter_vintage:'✿',psychology_alt:'?',person:'♙',group:'♟',groups:'♟',face:'☻',sentiment_satisfied:'☺',mood:'☺',volunteer_activism:'♥',handshake:'⌘',diversity_1:'♡',child_care:'♡',alarm:'◷',schedule:'◷',timer:'◷',hourglass_empty:'⌛',done:'✓',check_circle:'✓',refresh:'↻',replay:'↻',shuffle:'⇄',question_mark:'?',help:'?',info:'i',flag:'⚑',sports_score:'⚑',smartphone:'▯',laptop:'▣',desktop_windows:'▣',devices:'▣',tv:'▣',watch:'◷',smart_toy:'✧',memory:'▦',science:'⚗',build:'⚒',settings:'⚙',extension:'✜',language:'◎',cloud:'☁',download:'↓',upload:'↑',print:'▣',qr_code:'▦',wifi:'≋',headset:'♫',videogame_asset:'✧'
+    star:'★',stars:'✦',auto_awesome:'✧',diamond:'◆',workspace_premium:'✦',emoji_events:'♛',military_tech:'✪',verified:'✓',loyalty:'♥',favorite:'♥',favorite_border:'♡',celebration:'✷',redeem:'✦',card_giftcard:'♜',recommend:'★',thumb_up:'✓',theater_comedy:'◈',whatshot:'♨',flare:'✺',lightbulb:'☀',bolt:'ϟ',casino:'♠',paid:'
+</html>,savings:'
+</html>,credit_card:'▭',wallet:'▣',account_balance_wallet:'
+</html>,currency_exchange:'
+</html>,token:'◉',sell:'◇',local_offer:'◇',shopping_bag:'▣',shopping_cart:'▣',storefront:'♜',local_mall:'▣',monetization_on:'
+</html>,toll:'◎',receipt_long:'▤',card_membership:'▣',key:'⚿',lock_open:'◈',local_bar:'♧',wine_bar:'♧',sports_bar:'♧',nightlife:'♫',restaurant:'♧',coffee:'☕',cake:'♜',icecream:'♢',spa:'✿',self_improvement:'☯',beach_access:'☀',hotel:'⌂',flight:'✈',luggage:'▣',directions_car:'▰',two_wheeler:'◎',sports_esports:'✦',games:'♟',music_note:'♫',headphones:'♫',movie:'▣',camera_alt:'▣',sunny:'☀',dark_mode:'☾',nights_stay:'☾',forest:'♣',park:'♣',pets:'♟',cruelty_free:'♡',water_drop:'♦',eco:'❧',nature:'❧',flutter_dash:'✦',rocket_launch:'↟',public:'◎',travel_explore:'✧',explore:'✧',map:'♢',magic_button:'✧',filter_vintage:'✿',psychology_alt:'?',person:'♙',group:'♟',groups:'♟',face:'☻',sentiment_satisfied:'☺',mood:'☺',volunteer_activism:'♥',handshake:'⌘',diversity_1:'♡',child_care:'♡',alarm:'◷',schedule:'◷',timer:'◷',hourglass_empty:'⌛',done:'✓',check_circle:'✓',refresh:'↻',replay:'↻',shuffle:'⇄',question_mark:'?',help:'?',info:'i',flag:'⚑',sports_score:'⚑',smartphone:'▯',laptop:'▣',desktop_windows:'▣',devices:'▣',tv:'▣',watch:'◷',smart_toy:'✧',memory:'▦',science:'⚗',build:'⚒',settings:'⚙',extension:'✜',language:'◎',cloud:'☁',download:'↓',upload:'↑',print:'▣',qr_code:'▦',wifi:'≋',headset:'♫',videogame_asset:'✧'
   };
   let idCounter = 0;
   function makeId() { return `seg-${Date.now().toString(36)}-${(idCounter++).toString(36)}`; }
@@ -507,7 +511,7 @@ body.editor-open{overflow:hidden}
         const center=-90+i*step;
         if(n>72) return;
         if(n>20){
-          const [x,y]=polar(190,center);
+          const [x,y]=polar(220,center);
           // Beschriftungen folgen der Segmentachse. Sobald das Segment unter
           // dem Zeiger bei 12 Uhr steht, erscheint die Nummer aufrecht.
           const labelGroup=e('g',{transform:`translate(${x.toFixed(3)} ${y.toFixed(3)}) rotate(${(i*step).toFixed(5)})`},wheel);
@@ -515,9 +519,11 @@ body.editor-open{overflow:hidden}
           t.textContent=String(i+1);return;
         }
         if(!s.showIcon&&!s.showLabel) return;
-        // Der Zeiger reicht bis Radius 210. Symbole und Text bleiben
-        // bewusst darunter, damit an 12 Uhr nichts überdeckt wird.
-        const r=n<=8?154:n<=12?155:170;
+        // Die kürzere Zeigerspitze endet bei Radius 240. Inhalte nutzen
+        // den äußeren Teil des Segmentes, ohne bei 12 Uhr vom Zeiger
+        // oder vom inneren Zierring (Radius 267) überlagert zu werden.
+        // Staffelung nach Segmentzahl hält auch schmale Keile lesbar.
+        const r=n<=8?190:n<=12?198:204;
         const [x,y]=polar(r,center);
         // Die lokale Segmentachse bestimmt die Orientierung, nicht die
         // aktuelle Position des Segments auf der Scheibe. Dadurch sind Text
@@ -871,7 +877,6 @@ body.editor-open{overflow:hidden}
     }).catch(()=>{});
   }
 })();
-
 </script>
 </body>
 </html>
