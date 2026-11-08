@@ -69,9 +69,10 @@ Im Konfigurationsmenü stehen sechs Hervorhebungen zur Verfügung: Golden Edge (
 
 Gewinner-Sounds: Keiner, Sanfter Ton, Casino-Glocke, Goldener Dreiklang, Jackpot und Show-Fanfare. Eine **Sound anhören**-Taste spielt den gewählten Effekt direkt ab. Alle Tonfolgen sind original synthetisiert mit der Web Audio API; es werden keine externen Sounddateien benötigt. Das mechanische Zeigerklicken kann unabhängig davon ein- oder ausgeschaltet werden. Gewinnerstil, -stärke und Sound werden lokal gespeichert und beim JSON-Export/-Import berücksichtigt.
 
+
 ## Unverdeckte Effektvorschau
 
-Der Knopf **Effekt im Vollbild vorführen** schließt vorübergehend das Konfigurationsmenü samt abgedunkeltem und weichgezeichnetem Hintergrund. Die gewählte Gewinneranimation läuft auf dem echten, unverdeckten Rad ohne Drehung. **Zurück zur Konfiguration** sowie `Escape` öffnen den Editor erneut an seiner bisherigen Scrollposition. Die Soundvorschau bleibt im Editor. Der normale Präsentationsmodus bleibt unverändert.
+Der Knopf **Effekt im Vollbild vorführen** schließt vorübergehend die Konfiguration samt abgedunkeltem und weichgezeichnetem Hintergrund. Er zeigt den Effekt am tatsächlichen Rad in einer unverdeckten Vollbildansicht, ohne eine Drehung auszulösen. **Zurück zur Konfiguration** sowie `Escape` bringen die Eingaben und die bisherige Scrollposition wieder zurück. Die Soundvorschau bleibt im Editor. Normale Präsentationsansicht und Gewinnerermittlung sind unverändert.
 
 
 ## Effektvorschau ohne Unschärfe
@@ -84,6 +85,24 @@ Scrollposition und Fokus auf dem Vorschauknopf. Mit `Escape` lässt sich die Vor
 vorzeitig beenden. Während der Vorschau ist die Radmitte gegen unbeabsichtigte
 Drehungen gesperrt.
 
+
 ## Effektvorschau bei geöffnetem Editor
 
-Beim Klick auf **Effekt 4 Sekunden vorführen** bleibt das Konfigurationsmenü geöffnet, einschließlich Scrollposition und Einstellungen. Für vier Sekunden werden **nur Abdunklung und Blur der Hintergrund-Überlagerung** ausgeschaltet. Die gewählte Gewinneranimation wird direkt am Rad gezeigt, ohne eine Drehung. Danach kehren Abdunklung und Blur automatisch zurück. `Escape` beendet die Vorschau vorzeitig. Während der Vorschau ist die Radmitte gegen unbeabsichtigte Drehungen gesperrt.
+Beim Klick auf **Effekt 4 Sekunden vorführen** bleibt das Konfigurationsmenü
+geöffnet, mitsamt Scrollposition und Einstellungen. Für vier Sekunden werden
+**nur** Abdunklung und Weichzeichnung der Hintergrund-Überlagerung ausgeschaltet.
+Die ausgewählte Hervorhebung wird auf dem echten Rad sichtbar, ohne Drehung.
+Danach kehrt der Hintergrund automatisch in seinen ursprünglichen Zustand zurück.
+`Escape` beendet die Vorschau bei geöffnetem Menü vorzeitig.
+
+
+## Sechs visuell eigenständige Gewinnerinszenierungen
+
+- **Golden Edge:** Eine Goldspur zeichnet die Sektorkontur mit Leuchtpunkten nach.
+- **Casino Spotlight:** Die übrigen Felder werden abgedunkelt, ein beweglicher Scheinwerfer beleuchtet das Gewinnerfeld.
+- **Golden Lift:** Das Segment mit Bild und Text hebt sich als 3D-Element aus der Scheibe.
+- **Jackpot Lights:** Ein pink-goldenes Lauflicht umrundet die Nieten des Rades; ausgewählte Lichter bleiben stehen.
+- **Golden Celebration:** Ein Partikel- und Sternenfeuerwerk bricht aus dem Siegerfeld hervor.
+- **Casino Cinematic:** Mehrstufige Inszenierung aus Verdunkelung, Scheinwerfer, animiertem Außenring, Lichtwellen und Ergebnisplakette.
+
+Alle Bewegungen sind endlich, hinterlassen einen eindeutigen Ruhezustand und werden bei der Betriebssystemoption für reduzierte Bewegung deaktiviert. Die Vorschau hält das Konfigurationsmenü offen und nimmt nur für vier Sekunden den Blur vom Rad. Änderungen an den Gewinnerstilen verändern nicht die Gewinnauswahl.

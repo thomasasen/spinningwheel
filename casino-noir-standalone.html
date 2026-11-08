@@ -55,7 +55,7 @@
 .btn-editor-toggle:hover{border-color:#dfb779;background:#583839}
 .editor-gear{font-size:17px;line-height:1}
 .editor-backdrop{position:fixed;inset:0;z-index:45;background:rgba(7,4,7,.68);backdrop-filter:blur(3px);transition:none!important}
-/* Show the real wheel for four seconds without dismissing the settings drawer. */
+/* Temporarily reveal the wheel during a winner preview; the editor stays visible. */
 .editor-backdrop.is-effect-preview{background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;pointer-events:none}
 .editor-panel{position:fixed;z-index:46;inset:0 0 0 auto;width:min(520px,100vw);height:100dvh;max-height:100dvh;overflow-y:auto;overscroll-behavior:contain;border-radius:0;border-block:0;border-right:0;scrollbar-color:#79515d #20151b}
 .editor-panel .segment-list{max-height:none;overflow:visible}
@@ -108,33 +108,84 @@ body.editor-open{overflow:hidden}
 @media(max-width:520px){.setting-row-coast{gap:6px}.setting-descriptor{max-width:170px}.setting-value input[type=range]{width:105px}}
 
 
-/* Casino Noir: configurable winner effects, always following real sector geometry. */
-.winner-settings{margin:15px 0 7px;padding:16px 13px;border:1px solid #755040;border-radius:11px;background:linear-gradient(140deg,#302027,#20151d)}
-.editor-settings .winner-settings h3{margin:0 0 14px;font:normal 19px Georgia,serif;color:#f6d9ac}
-.winner-control{display:flex;flex-direction:column;gap:6px;margin:10px 0}
-.winner-control label{font-size:12px;color:#e8cbbb;font-weight:650}
-.winner-control select{width:100%;max-width:100%;background:#1a1218;color:#f9e4c9;border:1px solid #785044;border-radius:7px;padding:10px 12px;font:12px system-ui,sans-serif}
-.winner-preview{width:100%;margin:3px 0 9px;border-color:#926e53;color:#f8d9a9}
-.winner-setting-note{font-size:11px;line-height:1.55;color:#c2a5a1;margin:8px 0 0}
-.winner-highlight{opacity:0;pointer-events:none;--winner-fill:.19;--winner-dim:.39;--winner-stroke:2.5px}
-.winner-highlight.is-visible{opacity:1;animation:none}
-.winner-highlight-surface{fill:#ffe1a0;fill-opacity:var(--winner-fill);stroke:#ffebaa;stroke-width:var(--winner-stroke);stroke-linejoin:round;filter:drop-shadow(0 0 5px #ffc877)}
-.winner-highlight.is-visible .winner-highlight-surface{animation:winner-edge-glow 1.25s ease-in-out 2}
-.winner-shade-sector{fill:#050306;fill-opacity:var(--winner-dim)}
-.winner-shade{pointer-events:none}
-.winner-lift{filter:drop-shadow(0 3px 5px #000d)}
-.winner-lift-face{stroke:#ffe6aa;stroke-width:2.7px;stroke-linejoin:round}
-.winner-stud{fill:#fff0b0;stroke:#ffcf66;stroke-width:2px;filter:drop-shadow(0 0 5px #ffda7f)}
-.winner-highlight.is-visible .winner-stud{animation:winner-bulb 660ms ease-in-out 3 both}
-.winner-particle{fill:#ffe7a3;filter:drop-shadow(0 0 3px #ffd177);opacity:0}
-.winner-highlight.is-visible .winner-particle{animation:winner-sparkle 1.5s ease-out 2 both}
-@keyframes winner-edge-glow{0%,100%{stroke:#ffe5a0;filter:drop-shadow(0 0 4px #e6a348)}50%{stroke:#fffce5;filter:drop-shadow(0 0 12px #ffd887)}}
-@keyframes winner-bulb{0%,100%{opacity:.7;filter:drop-shadow(0 0 3px #fcca71)}50%{opacity:1;filter:drop-shadow(0 0 11px #ffedac)}}
-@keyframes winner-sparkle{0%{opacity:0;translate:0 0;scale:.3}18%{opacity:1;scale:1}75%{opacity:1}100%{opacity:0;translate:var(--spark-x) var(--spark-y);scale:.3}}
+/* Distinct winning experiences. Each mode has its own motion language and geometry. */
+.winner-highlight{opacity:0;pointer-events:none}
+.winner-highlight.is-visible{opacity:1}
+.winner-outline-rest{fill:rgba(255,212,128,.025);stroke:#fce1aa;stroke-width:2;opacity:.55}
+.winner-outline-trace{fill:none;stroke:#fff5bc;stroke-width:5;stroke-linejoin:round;stroke-linecap:round;filter:drop-shadow(0 0 8px #ffbd52)}
+.winner-highlight.is-visible .winner-outline-trace{animation:winner-trace-draw 1.55s cubic-bezier(.28,.1,.17,1) 1 forwards}
+.winner-outline-jewel{fill:#fff4c5;filter:drop-shadow(0 0 8px #ffc36b)}
+@keyframes winner-trace-draw{from{stroke-dashoffset:var(--trace-length);opacity:.5}to{stroke-dashoffset:0;opacity:1}}
+.winner-shade-sector{fill:#050308;fill-opacity:var(--winner-dim,.62)}
+.winner-spot-core{mix-blend-mode:screen}
+.winner-spot-beam{opacity:.97}
+.winner-highlight.is-visible .winner-spot-beam{animation:winner-spot-scan 2.7s ease-in-out 1 both}
+.winner-spot-ray{stroke:#fff0c3;stroke-width:4;stroke-linecap:round;opacity:.85;filter:drop-shadow(0 0 8px #ffcc63)}
+.winner-spot-flare{fill:#ffdf87;fill-opacity:.18;stroke:#fff2cb;stroke-width:2.2;filter:drop-shadow(0 0 13px #f9c36b)}
+@keyframes winner-spot-scan{0%{translate:-65px 0;opacity:.17}42%{translate:25px 0;opacity:1}66%{translate:-9px 0;opacity:1}100%{translate:0 0;opacity:.83}}
+.winner-item-lifted{opacity:0}
+.winner-lift-groove{fill:#050307;fill-opacity:.79;stroke:#12080d;stroke-width:5;filter:drop-shadow(0 1px 6px #000)}
+.winner-lift{filter:drop-shadow(0 12px 11px #000e)}
+.winner-lift-face{stroke:#ffe1a3;stroke-width:4;stroke-linejoin:round;filter:drop-shadow(0 0 5px #ffdb90)}
+.winner-lift-shimmer{fill:none;stroke:#ffefc3;stroke-width:1.8;stroke-dasharray:10 22}
+.winner-highlight.is-visible .winner-lift-motion{animation:winner-lift-eject 1.25s cubic-bezier(.16,1.6,.35,1) 1 both}
+@keyframes winner-lift-eject{0%{translate:var(--lift-x) var(--lift-y)}65%{translate:4px -5px}100%{translate:0 0}}
+.winner-marquee-orbit{fill:none;stroke:#ff539d;stroke-width:3;stroke-dasharray:11 13;filter:drop-shadow(0 0 7px #ff3189)}
+.winner-highlight.is-visible .winner-marquee-orbit{animation:winner-orbit 1.8s linear 2}
+@keyframes winner-orbit{from{stroke-dashoffset:0}to{stroke-dashoffset:-140}}
+.winner-marquee-bulb{fill:#d22b78;stroke:#5c1733;stroke-width:1;opacity:.17}
+.winner-marquee-bulb.is-target{fill:#ffefae;stroke:#f7bd5d;opacity:1;filter:drop-shadow(0 0 10px #ffe0a1)}
+.winner-highlight.is-visible .winner-marquee-bulb{animation:winner-led-travel 760ms ease-in-out 2}
+@keyframes winner-led-travel{0%,100%{opacity:.2}25%,55%{opacity:1;fill:#ffecc1;filter:drop-shadow(0 0 12px #ff57a2)}75%{opacity:.3}}
+.winner-lights-wedge{fill:transparent;stroke:#ff59a0;stroke-width:3.5;filter:drop-shadow(0 0 9px #f42a82)}
+.winner-firework-star,.winner-firework-dot{fill:#ffe8a6;opacity:0;filter:drop-shadow(0 0 6px #ff82bb)}
+.winner-firework-dot:nth-child(3n){fill:#f93e8d}
+.winner-highlight.is-visible .winner-firework-star,.winner-highlight.is-visible .winner-firework-dot{animation:winner-particle-flight 1750ms cubic-bezier(.18,.6,.43,1) 2 both}
+@keyframes winner-particle-flight{0%{opacity:0;translate:0 0;scale:.25}15%{opacity:1;scale:1.2}65%{opacity:1}100%{translate:var(--spark-x) var(--spark-y);opacity:0;scale:.35}}
+.winner-firework-wave,.winner-burst-halo{transform-box:fill-box;transform-origin:center;fill:none;stroke:#fff1b8;stroke-width:4;opacity:0;filter:drop-shadow(0 0 9px #ffc96e)}
+.winner-highlight.is-visible .winner-firework-wave,.winner-highlight.is-visible .winner-burst-halo{animation:winner-blast-wave 1.5s ease-out 2 both}
+@keyframes winner-blast-wave{0%{opacity:.9;stroke-width:5;scale:.3}70%{opacity:.4}100%{opacity:0;scale:2;stroke-width:.3}}
+.winner-cinema-ring{transform-box:fill-box;transform-origin:center;fill:none;stroke:#fff0ba;stroke-width:3;opacity:0;filter:drop-shadow(0 0 7px #ffd77d)}
+.winner-highlight.is-visible .winner-cinema-ring{animation:winner-cinema-ring-wave 1.7s ease-out 2}
+@keyframes winner-cinema-ring-wave{0%{opacity:0;stroke-width:8;scale:.2}30%{opacity:1}100%{opacity:0;scale:1.7;stroke-width:.5}}
+.winner-cinema-gold{fill:#ffdf92;fill-opacity:.10;stroke:#fff0be;stroke-width:3;filter:drop-shadow(0 0 9px #ffc773)}
+.winner-highlight.is-visible .winner-cinema-gold{animation:winner-cinema-reveal 2.4s ease-in-out 1 both}
+@keyframes winner-cinema-reveal{0%,25%{opacity:0}45%{opacity:1}60%{opacity:.3}100%{opacity:1}}
+.winner-cinema-orbit{fill:none;stroke:#ffd38b;stroke-width:3;stroke-dasharray:38 16;opacity:.85;filter:drop-shadow(0 0 7px #ffc777)}
+.winner-highlight.is-visible .winner-cinema-orbit{animation:winner-cinema-orbit 2.5s linear 1}
+@keyframes winner-cinema-orbit{from{stroke-dashoffset:300}to{stroke-dashoffset:0}}
+/* The stage plaque is anchored to the wheel, not to the configuration drawer. */
+.winner-stage{position:absolute;z-index:4;left:50%;bottom:5%;transform:translateX(-50%);max-width:74%;min-width:135px;pointer-events:none;text-align:center;user-select:none;border:1px solid #d4a864;border-radius:5px;padding:7px 14px 8px;background:linear-gradient(120deg,#201319e8,#4c2233eb,#211418e8);box-shadow:0 7px 25px #000d,0 0 18px #e1a56055;isolation:isolate}
+.winner-stage[hidden]{display:none!important}
+.winner-stage-kicker{position:relative;display:block;color:#f3cb8b;font:800 clamp(6px,1vw,11px)/1.3 system-ui,sans-serif;letter-spacing:.19em;text-transform:uppercase}
+.winner-stage-title{position:relative;display:block;color:#fff0d2;font:600 clamp(10px,2vw,23px)/1.2 Georgia,serif;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:4px;text-shadow:0 2px 8px #000d}
+.winner-stage-glint{position:absolute;inset:0;pointer-events:none;opacity:0}
+.winner-stage[data-effect=outline]{border-radius:15px;border-color:#e1b77b;background:#1c1319ee;box-shadow:0 3px 12px #0009;min-width:0;padding:5px 15px}
+.winner-stage[data-effect=outline] .winner-stage-kicker{font-size:8px}
+.winner-stage[data-effect=outline] .winner-stage-title{font-size:clamp(11px,1.3vw,16px)}
+.winner-stage[data-effect=spotlight]{border-radius:40px;background:linear-gradient(110deg,#0e0b0def,#2c241aee,#0e0b0def);box-shadow:0 0 15px #ffe3a766,0 7px 25px #000d}
+.winner-stage[data-effect=lift]{background:linear-gradient(#7d5427,#d9ae6f 13%,#59321c 23%,#261714 75%,#b78141 100%);box-shadow:0 12px 19px #000d;transform:translateX(-50%) perspective(280px) rotateX(9deg)}
+.winner-stage[data-effect=lights]{border:2px solid #fb4d96;border-radius:8px;background:linear-gradient(135deg,#210b1e,#55133d);box-shadow:0 0 17px #ef3388bb,0 6px 20px #000b}
+.winner-stage[data-effect=lights] .winner-stage-kicker{color:#ff88c2}
+.winner-stage[data-effect=celebration]{border:2px solid #fff2b8;border-radius:25px;background:linear-gradient(110deg,#8c1e47,#c78137,#8c1e47);box-shadow:0 0 26px #ffbf6acc}
+.winner-stage[data-effect=cinematic]{bottom:3%;border:2px solid #f0d2a1;border-radius:0;padding:12px 22px;background:linear-gradient(130deg,#170b14f5,#682840fa 55%,#170b14f5);box-shadow:0 0 24px #ffce838c,0 10px 30px #000d}
+.winner-stage.is-visible[data-effect=cinematic]{animation:winner-title-entrance 3s cubic-bezier(.21,.78,.27,1) 1 both}
+@keyframes winner-title-entrance{0%,24%{opacity:0;translate:0 24px;scale:.85}40%,55%{opacity:1;translate:0 0;scale:1.07}75%,100%{opacity:1;translate:0 0;scale:1}}
+.winner-stage.is-visible[data-effect=lights]{animation:winner-neon-flicker 2.6s steps(1) 1 both}
+@keyframes winner-neon-flicker{0%,10%,20%{opacity:0}5%,15%,30%,100%{opacity:1}}
+.winner-stage.is-visible[data-effect=celebration]{animation:winner-banner-bounce 1.4s cubic-bezier(.17,1.5,.3,1) 1 both}
+@keyframes winner-banner-bounce{from{translate:0 24px;scale:.6;opacity:0}75%{scale:1.09;opacity:1}to{scale:1;translate:0 0;opacity:1}}
+.winner-stage[data-strength=subtle]{filter:saturate(.72);box-shadow:0 4px 12px #0009}
+.winner-stage[data-strength=show]{filter:saturate(1.18);box-shadow:0 5px 35px #ffc77eaa}
+@media(max-width:540px){.winner-stage{padding:4px 7px 5px;max-width:72%;min-width:90px;bottom:1.5%}.winner-stage-title{font-size:clamp(9px,3vw,15px)}.winner-stage[data-effect=cinematic]{padding:6px 10px}}
 @media(prefers-reduced-motion:reduce){
- .winner-highlight.is-visible .winner-highlight-surface,.winner-highlight.is-visible .winner-stud,.winner-highlight.is-visible .winner-particle{animation:none}
- .winner-highlight .winner-particle{opacity:0}
+ .winner-highlight.is-visible *, .winner-stage.is-visible{animation:none!important;transition:none!important}
+ .winner-fireworks,.winner-firework-wave,.winner-burst-halo,.winner-cinema-rings{display:none}
+ .winner-marquee-bulb:not(.is-target){opacity:.15}
+ .winner-outline-trace{stroke-dashoffset:0!important}
+ .winner-lift-motion{translate:0 0!important}
 }
+
 </style>
   
 </head>
@@ -171,6 +222,11 @@ body.editor-open{overflow:hidden}
                 <path d="M320 27 L323 35 L331 38 L323 41 L320 49 L317 41 L309 38 L317 35Z" fill="#fff3cf" opacity=".91"/>
               </g>
             </svg>
+            <div id="winnerStage" class="winner-stage" aria-hidden="true" hidden>
+              <div class="winner-stage-glint"></div>
+              <span class="winner-stage-kicker" id="winnerStageKicker"></span>
+              <strong class="winner-stage-title" id="winnerStageTitle"></strong>
+            </div>
             <div class="power-meter" id="powerMeter" role="meter" aria-label="Aktuelle Drehkraft" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0 Prozent Drehkraft">
               <span class="power-meter-title" aria-hidden="true">KRAFT</span>
               <div class="power-meter-track" aria-hidden="true"><div class="power-meter-fill" id="powerFill"></div><div class="power-meter-tip" id="powerTip"></div></div>
@@ -407,12 +463,7 @@ body.editor-open{overflow:hidden}
   }
   const ICON_FALLBACKS = {
     apparel:'♧',checkroom:'♧',dry_cleaning:'✧',laundry:'◈',styler:'✧',
-    star:'★',stars:'✦',auto_awesome:'✧',diamond:'◆',workspace_premium:'✦',emoji_events:'♛',military_tech:'✪',verified:'✓',loyalty:'♥',favorite:'♥',favorite_border:'♡',celebration:'✷',redeem:'✦',card_giftcard:'♜',recommend:'★',thumb_up:'✓',theater_comedy:'◈',whatshot:'♨',flare:'✺',lightbulb:'☀',bolt:'ϟ',casino:'♠',paid:'
-</html>,savings:'
-</html>,credit_card:'▭',wallet:'▣',account_balance_wallet:'
-</html>,currency_exchange:'
-</html>,token:'◉',sell:'◇',local_offer:'◇',shopping_bag:'▣',shopping_cart:'▣',storefront:'♜',local_mall:'▣',monetization_on:'
-</html>,toll:'◎',receipt_long:'▤',card_membership:'▣',key:'⚿',lock_open:'◈',local_bar:'♧',wine_bar:'♧',sports_bar:'♧',nightlife:'♫',restaurant:'♧',coffee:'☕',cake:'♜',icecream:'♢',spa:'✿',self_improvement:'☯',beach_access:'☀',hotel:'⌂',flight:'✈',luggage:'▣',directions_car:'▰',two_wheeler:'◎',sports_esports:'✦',games:'♟',music_note:'♫',headphones:'♫',movie:'▣',camera_alt:'▣',sunny:'☀',dark_mode:'☾',nights_stay:'☾',forest:'♣',park:'♣',pets:'♟',cruelty_free:'♡',water_drop:'♦',eco:'❧',nature:'❧',flutter_dash:'✦',rocket_launch:'↟',public:'◎',travel_explore:'✧',explore:'✧',map:'♢',magic_button:'✧',filter_vintage:'✿',psychology_alt:'?',person:'♙',group:'♟',groups:'♟',face:'☻',sentiment_satisfied:'☺',mood:'☺',volunteer_activism:'♥',handshake:'⌘',diversity_1:'♡',child_care:'♡',alarm:'◷',schedule:'◷',timer:'◷',hourglass_empty:'⌛',done:'✓',check_circle:'✓',refresh:'↻',replay:'↻',shuffle:'⇄',question_mark:'?',help:'?',info:'i',flag:'⚑',sports_score:'⚑',smartphone:'▯',laptop:'▣',desktop_windows:'▣',devices:'▣',tv:'▣',watch:'◷',smart_toy:'✧',memory:'▦',science:'⚗',build:'⚒',settings:'⚙',extension:'✜',language:'◎',cloud:'☁',download:'↓',upload:'↑',print:'▣',qr_code:'▦',wifi:'≋',headset:'♫',videogame_asset:'✧'
+    star:'★',stars:'✦',auto_awesome:'✧',diamond:'◆',workspace_premium:'✦',emoji_events:'♛',military_tech:'✪',verified:'✓',loyalty:'♥',favorite:'♥',favorite_border:'♡',celebration:'✷',redeem:'✦',card_giftcard:'♜',recommend:'★',thumb_up:'✓',theater_comedy:'◈',whatshot:'♨',flare:'✺',lightbulb:'☀',bolt:'ϟ',casino:'♠',paid:'$',savings:'$',credit_card:'▭',wallet:'▣',account_balance_wallet:'$',currency_exchange:'$',token:'◉',sell:'◇',local_offer:'◇',shopping_bag:'▣',shopping_cart:'▣',storefront:'♜',local_mall:'▣',monetization_on:'$',toll:'◎',receipt_long:'▤',card_membership:'▣',key:'⚿',lock_open:'◈',local_bar:'♧',wine_bar:'♧',sports_bar:'♧',nightlife:'♫',restaurant:'♧',coffee:'☕',cake:'♜',icecream:'♢',spa:'✿',self_improvement:'☯',beach_access:'☀',hotel:'⌂',flight:'✈',luggage:'▣',directions_car:'▰',two_wheeler:'◎',sports_esports:'✦',games:'♟',music_note:'♫',headphones:'♫',movie:'▣',camera_alt:'▣',sunny:'☀',dark_mode:'☾',nights_stay:'☾',forest:'♣',park:'♣',pets:'♟',cruelty_free:'♡',water_drop:'♦',eco:'❧',nature:'❧',flutter_dash:'✦',rocket_launch:'↟',public:'◎',travel_explore:'✧',explore:'✧',map:'♢',magic_button:'✧',filter_vintage:'✿',psychology_alt:'?',person:'♙',group:'♟',groups:'♟',face:'☻',sentiment_satisfied:'☺',mood:'☺',volunteer_activism:'♥',handshake:'⌘',diversity_1:'♡',child_care:'♡',alarm:'◷',schedule:'◷',timer:'◷',hourglass_empty:'⌛',done:'✓',check_circle:'✓',refresh:'↻',replay:'↻',shuffle:'⇄',question_mark:'?',help:'?',info:'i',flag:'⚑',sports_score:'⚑',smartphone:'▯',laptop:'▣',desktop_windows:'▣',devices:'▣',tv:'▣',watch:'◷',smart_toy:'✧',memory:'▦',science:'⚗',build:'⚒',settings:'⚙',extension:'✜',language:'◎',cloud:'☁',download:'↓',upload:'↑',print:'▣',qr_code:'▦',wifi:'≋',headset:'♫',videogame_asset:'✧'
   };
   let idCounter = 0;
   function makeId() { return `seg-${Date.now().toString(36)}-${(idCounter++).toString(36)}`; }
@@ -528,89 +579,157 @@ body.editor-open{overflow:hidden}
     highlightedWinner=null;
     const group=$('winnerHighlight');
     if(group){group.classList.remove('is-visible');group.replaceChildren();}
+    wheel.querySelectorAll('.winner-item-lifted').forEach(node=>node.classList.remove('winner-item-lifted'));
+    const stage=$('winnerStage');
+    if(stage){stage.hidden=true;stage.classList.remove('is-visible');}
   }
   // All winner geometry lives inside the rotating SVG group, so it remains
   // registered to the actual winning wedge at any sector count or stop angle.
+  // Each effect has a distinct visual language; the exact winning sector is
+  // the sole geometry source for every overlay. These elements are decorative.
   function showWinnerHighlight(index){
-    const group=$('winnerHighlight'),n=config.segments.length;
+    const group=$('winnerHighlight'),stage=$('winnerStage'),n=config.segments.length;
     if(!group||!Number.isInteger(index)||index<0||index>=n)return;
     highlightedWinner=index;
     group.classList.remove('is-visible');
     group.replaceChildren();
-    const step=360/n, center=-90+index*step;
-    const effect=config.winnerEffect, strength=config.winnerStrength;
-    const multiplier={subtle:.65,refined:1,show:1.35}[strength];
+    wheel.querySelectorAll('.winner-item-lifted').forEach(node=>node.classList.remove('winner-item-lifted'));
+    stage.hidden=true;
+    stage.classList.remove('is-visible');
+    const step=360/n,center=-90+index*step;
+    const effect=config.winnerEffect,strength=config.winnerStrength;
+    const mult={subtle:.72,refined:1,show:1.33}[strength]||1;
+    const dim={subtle:.40,refined:.62,show:.76}[strength]||.62;
     group.dataset.effect=effect;
     group.dataset.strength=strength;
-    group.style.setProperty('--winner-dim',String(({subtle:.22,refined:.39,show:.57})[strength]));
-    group.style.setProperty('--winner-fill',String(({subtle:.11,refined:.19,show:.3})[strength]));
-    group.style.setProperty('--winner-stroke',String(2.5*multiplier));
-    const sectorPath=(r)=>n===1?null:wedgePath(center-step/2,center+step/2,r);
-    // Other sectors are dimmed without putting a dark shape over the winning
-    // sector or hiding its label. Only the disk, not the golden rim, is shaded.
-    if(effect==='spotlight'||effect==='cinematic'){
-      const shade=e('g',{class:'winner-shade','clip-path':'url(#faceClip)'},group);
-      if(n>100){
-        // For very dense wheels, one even-odd path replaces thousands of
-        // individual shadow wedges and cuts out the selected sector exactly.
-        const disk='M585 320 A265 265 0 1 0 55 320 A265 265 0 1 0 585 320 Z';
-        e('path',{d:disk+' '+sectorPath(265),class:'winner-shade-sector','fill-rule':'evenodd'},shade);
-      }else{
-        for(let j=0;j<n;j++){
-          if(j===index)continue;
-          const mid=-90+j*step;
-          if(n===1)continue;
-          e('path',{d:wedgePath(mid-step/2,mid+step/2,265),class:'winner-shade-sector'},shade);
-        }
-      }
-    }
-    // Lift duplicates the exact wedge and its SVG label/icon within an offset
-    // group, preventing an artificial highlight border detached from the text.
-    if(effect==='lift'){
-      const offset=7*multiplier,rad=center*Math.PI/180;
-      const [dx,dy]=[Math.cos(rad)*offset,Math.sin(rad)*offset];
-      const lift=e('g',{class:'winner-lift',transform:`translate(${dx.toFixed(3)} ${dy.toFixed(3)})`},group);
-      if(n===1)e('circle',{cx:320,cy:320,r:258,fill:config.segments[index].color,class:'winner-lift-face'},lift);
-      else e('path',{d:sectorPath(258),fill:config.segments[index].color,class:'winner-lift-face'},lift);
+    group.style.setProperty('--winner-dim',String(dim));
+    group.style.setProperty('--winner-stroke',String(2.5*mult));
+    const sectorPath=r=>n===1?circlePath(320,320,r):wedgePath(center-step/2,center+step/2,r);
+    const [winnerX,winnerY]=polar(188,center);
+    // Shared subtle marker is deliberately omitted: modes must look different.
+    if(effect==='outline'){
+      const under=e('path',{d:sectorPath(263),class:'winner-outline-rest'},group);
+      const trace=e('path',{d:sectorPath(263),class:'winner-outline-trace'},group);
+      const length=Math.ceil(trace.getTotalLength());
+      trace.style.strokeDasharray=`${length} ${length}`;
+      trace.style.setProperty('--trace-length',String(length));
+      const [p1x,p1y]=polar(260,center-step/2),[p2x,p2y]=polar(260,center+step/2);
+      for(const [x,y] of [[p1x,p1y],[p2x,p2y]])e('circle',{cx:x,cy:y,r:4*mult,class:'winner-outline-jewel'},group);
+    }else if(effect==='spotlight'){
+      shadeOtherSectors(group,index,n,step,dim);
+      makeSpotBeam(group,sectorPath,center,mult);
+    }else if(effect==='lift'){
+      const offset=17*mult,rad=center*Math.PI/180;
+      const dx=Math.cos(rad)*offset,dy=Math.sin(rad)*offset;
+      e('path',{d:sectorPath(261),class:'winner-lift-groove'},group);
+      const lift=e('g',{class:'winner-lift',transform:`translate(${dx.toFixed(2)} ${dy.toFixed(2)})`},group);
+      const moving=e('g',{class:'winner-lift-motion'},lift);
+      moving.style.setProperty('--lift-x',`${-dx.toFixed(2)}px`);
+      moving.style.setProperty('--lift-y',`${-dy.toFixed(2)}px`);
+      if(n===1)e('circle',{cx:320,cy:320,r:259,fill:config.segments[index].color,class:'winner-lift-face'},moving);
+      else e('path',{d:sectorPath(259),fill:config.segments[index].color,class:'winner-lift-face'},moving);
       const original=wheel.querySelector(`[data-wheel-item="${index}"]`);
-      if(original)lift.appendChild(original.cloneNode(true));
-    }
-    // Always retain a clear selection, even after animated effects finish.
-    if(n===1)e('circle',{cx:320,cy:320,r:264,class:'winner-highlight-surface'},group);
-    else e('path',{d:sectorPath(264),class:'winner-highlight-surface','stroke-width':n>80?1:n>24?1.7:2.5*multiplier},group);
-    if(effect==='lights'||effect==='cinematic'){
-      const studs=e('g',{class:'winner-studs'},group);
-      const count=56;
-      const distance=(a,b)=>Math.abs((((a-b)%360)+540)%360-180);
-      let selected=[];
-      for(let j=0;j<count;j++){
-        const angle=j*360/count-90;
-        if(n===1||distance(angle,center)<=step/2+0.2)selected.push(j);
+      if(original){moving.appendChild(original.cloneNode(true));original.classList.add('winner-item-lifted');}
+      e('path',{d:sectorPath(259),class:'winner-lift-shimmer'},moving);
+    }else if(effect==='lights'){
+      makeMarquee(group,index,n,step,mult);
+      e('path',{d:sectorPath(260),class:'winner-lights-wedge'},group);
+    }else if(effect==='celebration'){
+      makeFireworks(group,center,step,mult);
+      const halo=e('circle',{cx:winnerX,cy:winnerY,r:24,class:'winner-burst-halo'},group);
+      halo.style.setProperty('--halo-scale',String(2.8*mult));
+    }else if(effect==='cinematic'){
+      shadeOtherSectors(group,index,n,step,dim*.80);
+      makeSpotBeam(group,sectorPath,center,mult);
+      makeMarquee(group,index,n,step,mult);
+      const rings=e('g',{class:'winner-cinema-rings'},group);
+      for(let j=0;j<3;j++){
+        const ring=e('circle',{cx:winnerX,cy:winnerY,r:13+j*14,class:'winner-cinema-ring'},rings);
+        ring.style.animationDelay=`${j*260}ms`;
       }
-      // Very narrow sectors still get a luminous stud at their center.
-      if(!selected.length)selected=[Math.round(((center+90)/360)*count)%count];
-      selected.forEach((j,k)=>{
-        const [x,y]=polar(291,j*360/count-90);
-        const bulb=e('circle',{cx:x,cy:y,r:5.4*multiplier,class:'winner-stud'},studs);
-        bulb.style.animationDelay=`${Math.min(k,20)*70}ms`;
-      });
+      e('path',{d:sectorPath(263),class:'winner-cinema-gold'},group);
+      e('circle',{cx:320,cy:320,r:279,class:'winner-cinema-orbit'},group);
     }
-    if(effect==='celebration'){
-      const glitters=e('g',{class:'winner-particles'},group),amount=Math.round(16*multiplier);
-      const arc=Math.min(45,Math.max(7,step*.43));
-      for(let i=0;i<amount;i++){
-        const phi=center+((i/Math.max(1,amount-1))-.5)*arc*2;
-        const [x,y]=polar(230+(i%5)*8,phi);
-        const particle=e('path',{d:'M0 -5 L1.5 -1.5 L5 0 L1.5 1.5 L0 5 L-1.5 1.5 L-5 0 L-1.5 -1.5Z',transform:`translate(${x.toFixed(2)} ${y.toFixed(2)})`,class:'winner-particle'},glitters);
-        const offset=phi*Math.PI/180;
-        particle.style.setProperty('--spark-x',`${(Math.cos(offset)*(13+i%6*5)).toFixed(2)}px`);
-        particle.style.setProperty('--spark-y',`${(Math.sin(offset)*(13+i%6*5)).toFixed(2)}px`);
-        particle.style.animationDelay=`${i%6*95}ms`;
-      }
-    }
-    // Reading and clicking stays possible: all overlays ignore pointer events.
+    const names={outline:'GOLDEN EDGE',spotlight:'CASINO SPOTLIGHT',lift:'GOLDEN LIFT',lights:'JACKPOT LIGHTS',celebration:'GOLDEN CELEBRATION',cinematic:'CASINO CINEMATIC'};
+    stage.dataset.effect=effect;
+    stage.dataset.strength=strength;
+    $('winnerStageKicker').textContent=names[effect]||'GEWINN';
+    $('winnerStageTitle').textContent=safeText(config.segments[index].label);
+    stage.hidden=false;
+    // Restart entrance timelines on repeated previews of the same winner.
     void group.getBoundingClientRect();
     group.classList.add('is-visible');
+    void stage.getBoundingClientRect();
+    stage.classList.add('is-visible');
+  }
+  function circlePath(cx,cy,r){return `M ${cx-r} ${cy} a ${r} ${r} 0 1 0 ${2*r} 0 a ${r} ${r} 0 1 0 ${-2*r} 0 Z`;}
+  function shadeOtherSectors(group,index,n,step,dim){
+    if(n===1)return;
+    const shade=e('g',{class:'winner-shade','clip-path':'url(#faceClip)'},group);
+    shade.style.setProperty('--winner-dim',String(dim));
+    if(n>100){
+      const disk=circlePath(320,320,265);
+      e('path',{d:disk+' '+wedgePath(-90+(index-.5)*step,-90+(index+.5)*step,265),'fill-rule':'evenodd',class:'winner-shade-sector'},shade);
+    }else{
+      for(let j=0;j<n;j++){
+        if(j===index)continue;
+        const mid=-90+j*step;
+        e('path',{d:wedgePath(mid-step/2,mid+step/2,265),class:'winner-shade-sector'},shade);
+      }
+    }
+  }
+  function makeSpotBeam(group,sectorPath,center,mult){
+    const defs=e('defs',{},group);
+    const grad=e('radialGradient',{id:'winner-spot-glow',cx:'45%',cy:'38%',r:'70%'},defs);
+    for(const [offset,color,opacity] of [['0%','#fffce5','.92'],['36%','#ffd681','.52'],['100%','#ffe29b','0']])
+      e('stop',{offset,'stop-color':color,'stop-opacity':opacity},grad);
+    const clip=e('clipPath',{id:'winner-spot-sector'},defs);
+    e('path',{d:sectorPath(266)},clip);
+    const beam=e('g',{'clip-path':'url(#winner-spot-sector)',class:'winner-spot-beam'},group);
+    const [x,y]=polar(178,center);
+    e('ellipse',{cx:x,cy:y,rx:100*mult,ry:155*mult,fill:'url(#winner-spot-glow)',class:'winner-spot-core'},beam);
+    const [ax,ay]=polar(68,center),[bx,by]=polar(258,center);
+    e('path',{d:`M ${ax} ${ay} L ${bx} ${by}`,class:'winner-spot-ray'},beam);
+    e('circle',{cx:x,cy:y,r:36*mult,class:'winner-spot-flare'},beam);
+  }
+  function makeMarquee(group,index,n,step,mult){
+    const ring=e('g',{class:'winner-marquee'},group);
+    e('circle',{cx:320,cy:320,r:291,class:'winner-marquee-orbit'},ring);
+    const center=-90+index*step;
+    const distance=(a,b)=>Math.abs((((a-b)%360)+540)%360-180);
+    let closest=0,smallest=Infinity;
+    for(let j=0;j<56;j++){
+      const angle=j*360/56-90;
+      const gap=distance(angle,center);
+      if(gap<smallest){smallest=gap;closest=j;}
+    }
+    for(let j=0;j<56;j++){
+      const angle=j*360/56-90;
+      const [x,y]=polar(291,angle);
+      const targeted=n===1||distance(angle,center)<=step/2+.01||j===closest;
+      const bulb=e('circle',{cx:x,cy:y,r:targeted?5.7*mult:4.1,class:targeted?'winner-marquee-bulb is-target':'winner-marquee-bulb'},ring);
+      bulb.style.animationDelay=`${(j*23).toFixed(0)}ms`;
+    }
+  }
+  function makeFireworks(group,center,step,mult){
+    const bursts=e('g',{class:'winner-fireworks'},group);
+    const amount=Math.round(39*mult);
+    const [cx,cy]=polar(193,center);
+    const span=Math.min(44,Math.max(9,step*.4));
+    for(let i=0;i<amount;i++){
+      const phi=(360*i/amount+Math.sin(i*11)*19)*Math.PI/180;
+      const drift=50+(i%6)*12;
+      const dx=Math.cos(phi)*drift*mult,dy=Math.sin(phi)*drift*mult;
+      const shape=i%4===0?'M0 -7 L2 -2 L7 0 L2 2 L0 7 L-2 2 L-7 0 L-2 -2Z':null;
+      const orbit=center+(i%7-3)*span/6;
+      const [x,y]=polar(184+(i%5)*10,orbit);
+      const item=shape?e('path',{d:shape,transform:`translate(${x} ${y})`,class:'winner-firework-star'},bursts):e('circle',{cx:x,cy:y,r:2+(i%3),class:'winner-firework-dot'},bursts);
+      item.style.setProperty('--spark-x',`${dx.toFixed(1)}px`);
+      item.style.setProperty('--spark-y',`${dy.toFixed(1)}px`);
+      item.style.animationDelay=`${(i%9)*65}ms`;
+    }
+    // Deliberately use a different flash from the casino cinematic light sweep.
+    e('circle',{cx,cy,r:12,class:'winner-firework-wave'},bursts);
   }
   function drawWheel(){
     const n=config.segments.length;
@@ -807,7 +926,7 @@ body.editor-open{overflow:hidden}
     if(!previewEffectTimer)return;
     clearTimeout(previewEffectTimer);
     previewEffectTimer=0;
-    // Restore normal dimming while keeping the editor open.
+    // Leave the editor open. Only the preview-specific backdrop override ends.
     editorBackdrop.classList.remove('is-effect-preview');
     if(!isSpinning){
       if(previewPreviousWinner===null)clearWinnerHighlight();
@@ -823,7 +942,7 @@ body.editor-open{overflow:hidden}
       previewPreviousWinner=highlightedWinner;
       previewPreviousStatus=$('statusText').textContent;
     }else clearTimeout(previewEffectTimer);
-    // Only remove background blur/overlay; the drawer remains visible.
+    // Keep the drawer and its scroll position, but reveal the unblurred wheel.
     editorBackdrop.classList.add('is-effect-preview');
     $('spinHub').disabled=true; // preview must not accidentally trigger a spin
     showWinnerHighlight(previewPreviousWinner??currentIndex(rotation,config.segments.length));
@@ -938,7 +1057,9 @@ body.editor-open{overflow:hidden}
   $('customIconName').addEventListener('keydown',ev=>{if(ev.key==='Enter')setIconForCurrent(ev.target.value.trim().toLowerCase());});
   // Präsentationsmodus: nur EINE Radinstanz wird verschoben, sodass Ergebnis,
   // Bedienbarkeit und Animation in beiden Layouts immer synchron bleiben.
-  // Preview the actual wheel without the dimmed/blurred configuration drawer.
+  // The effect preview uses the existing full-screen wheel stage. This removes
+  // the blurred/dimmed editor backdrop completely, rather than trying to show
+  // a winner effect behind the settings drawer.
   let effectPreviewActive=false;
   function openPresentation({winnerPreview=false}={}){
     if(isSpinning)return;
@@ -968,7 +1089,9 @@ body.editor-open{overflow:hidden}
     wheelStage.appendChild(assembly);
     if(effectPreviewActive){
       effectPreviewActive=false;
-      editorToggle.focus(); // Establish a visible focus-return target before reopening the dialog.
+      // Return focus to an element in the page *before* reopening the dialog;
+      // otherwise the next editor close could target the hidden overlay button.
+      editorToggle.focus();
       setEditorOpen(true);
       $('previewWinnerEffect').focus();
     }else{
@@ -1121,6 +1244,7 @@ body.editor-open{overflow:hidden}
     }).catch(()=>{});
   }
 })();
+
 </script>
 </body>
 </html>

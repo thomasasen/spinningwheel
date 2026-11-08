@@ -35,22 +35,25 @@ async def main():
                 assert await page.locator('#editorPanel').is_visible(), mode
                 assert await page.locator('#winnerHighlight.is-visible').count() == 1, mode
                 assert await page.locator('#winnerHighlight').get_attribute('data-effect') == mode
-                assert await page.locator('#winnerHighlight > .winner-highlight-surface').count() == 1
+                # Every mode is structurally unique; no shared gold-overlay-only effect.
                 expected = {
-                    'outline': (0, 0, 0, 0),
-                    'spotlight': (7, 0, 0, 0),
-                    'lift': (0, 1, 0, 0),
-                    'lights': (0, 0, 1, 0),
-                    'celebration': (0, 0, 0, 1),
-                    'cinematic': (7, 0, 1, 0),
+                    'outline': (1, 0, 0, 0, 0, 0),
+                    'spotlight': (0, 1, 0, 0, 0, 0),
+                    'lift': (0, 0, 1, 0, 0, 0),
+                    'lights': (0, 0, 0, 56, 0, 0),
+                    'celebration': (0, 0, 0, 0, 1, 0),
+                    'cinematic': (0, 1, 0, 56, 0, 1),
                 }[mode]
                 values = (
-                    await page.locator('.winner-shade-sector').count(),
+                    await page.locator('.winner-outline-trace').count(),
+                    await page.locator('.winner-spot-beam').count(),
                     await page.locator('.winner-lift').count(),
-                    int(await page.locator('.winner-stud').count() > 0),
-                    int(await page.locator('.winner-particle').count() > 0),
+                    await page.locator('.winner-marquee-bulb').count(),
+                    int(await page.locator('.winner-fireworks').count() > 0),
+                    int(await page.locator('.winner-cinema-orbit').count() > 0),
                 )
                 assert values == expected, (mode, values, expected)
+                assert await page.locator('#winnerStage').is_visible()
                 await page.keyboard.press('Escape')
                 assert await page.locator('#editorPanel').is_visible(), mode
             for strength in ('subtle','refined','show'):

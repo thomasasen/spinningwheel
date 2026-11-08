@@ -37,6 +37,7 @@ async def main():
                 assert await page.locator('#spinHub').is_disabled()
                 assert await page.evaluate('window.__casinoNoirDebug.rotation')==rotation_before
                 if effect=='outline':
+                    await page.screenshot(path=str(BASE/f'effect-preview-{name}.png'))
                     await page.wait_for_timeout(4300)
                 else:
                     await page.keyboard.press('Escape')
