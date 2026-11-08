@@ -114,3 +114,7 @@ Der Bereich **Gewinnerinszenierung** nutzt abgestimmte Casino-Noir-Selects und e
 ## Reihenfolge per Drag-and-drop ändern
 
 Jede Segmentzeile besitzt links einen eigenen Ziehgriff. Damit lassen sich Segmente mit Maus, Stift oder Finger in eine andere Position ziehen. Die goldene Einfügelinie zeigt die Ablageposition. Beim Loslassen wird die Reihenfolge im SVG-Rad aktualisiert und automatisch lokal gespeichert; Text, Icon und Farbe bleiben zusammen. Bei langen Listen scrollt die Konfiguration am Rand während des Ziehens weiter. Mit fokussiertem Griff ermöglichen auch Pfeil hoch/runter sowie Pos1/Ende eine Sortierung per Tastatur. Die bisherigen Auf-/Ab-Schaltflächen bleiben erhalten. Während einer Drehung ist die Sortierung gesperrt.
+
+## Anheben und Verschieben der Segmente
+
+Mit dem goldenen Ziehgriff lässt sich die **gesamte Segmentkarte aufnehmen**. Sie folgt beim Ziehen dem Mauszeiger, Stift oder Finger, erhält einen deutlichen Schatten und eine leichte 3D-Neigung. An der Einfügeposition entsteht eine **voll hohe Lücke**; die anderen Karten rücken animiert an ihre neue Position. Beim Loslassen gleitet die Karte in den Zielplatz, die Reihenfolge wird sofort am Rad aktualisiert und lokal gespeichert. Abbruch über `Esc` oder Touch-Abbruch verändert nichts. Die bisherigen Pfeiltasten und Auf-/Ab-Schaltflächen bleiben nutzbar. Reduzierte Animationen werden berücksichtigt.
