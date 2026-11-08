@@ -62,3 +62,9 @@ Segmentanzahl in größere Radien gelegt: 190 bei bis zu 8 Segmenten, 198 bei
 9–12 Segmenten, 204 bei 13–20 Segmenten und 220 für Nummern bei 21–72
 Segmenten. Das lässt mehr freie Fläche um die Radnabe und verhindert, dass
 Zeiger, Schrift und Symbole bei der 12-Uhr-Position überlagern.
+
+## Gewinnerinszenierung und Sounds
+
+Im Konfigurationsmenü stehen sechs Hervorhebungen zur Verfügung: Golden Edge (Kontur), Casino Spotlight (Abdunklung der anderen Segmente), Golden Lift (3D-Anhebung), Jackpot Lights (laufende Randbeleuchtung), Golden Celebration (Goldpartikel) und Casino Cinematic (Kontur + Spotlight + Lichter). Die Effektstärke lässt sich als Dezent, Edel oder Show festlegen. Der Button **Effekt vorführen** demonstriert die Auswahl ohne Drehung. Die Hervorhebung folgt stets dem tatsächlichen Gewinnersegment im SVG, bleibt nach dem Stopp sichtbar und ignoriert Zeiger-/Mausklicks. Bei reduzierter Bewegung werden die Animationen deaktiviert.
+
+Gewinner-Sounds: Keiner, Sanfter Ton, Casino-Glocke, Goldener Dreiklang, Jackpot und Show-Fanfare. Eine **Sound anhören**-Taste spielt den gewählten Effekt direkt ab. Alle Tonfolgen sind original synthetisiert mit der Web Audio API; es werden keine externen Sounddateien benötigt. Das mechanische Zeigerklicken kann unabhängig davon ein- oder ausgeschaltet werden. Gewinnerstil, -stärke und Sound werden lokal gespeichert und beim JSON-Export/-Import berücksichtigt.
