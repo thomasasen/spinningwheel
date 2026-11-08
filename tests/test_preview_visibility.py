@@ -26,10 +26,12 @@ async def main():
                 rotation_before=await page.evaluate('window.__casinoNoirDebug.rotation')
                 await page.locator('#previewWinnerEffect').click()
                 assert await page.locator('#presentation').is_hidden(),(name,effect)
-                assert await page.locator('#editorPanel').is_hidden(),(name,effect)
-                assert await page.locator('#editorBackdrop').is_hidden(),(name,effect)
+                assert await page.locator('#editorPanel').is_visible(),(name,effect)
+                assert await page.locator('#editorBackdrop').is_visible(),(name,effect)
+                assert await page.locator('#editorBackdrop').evaluate('(el)=>getComputedStyle(el).backdropFilter')=='none'
+                assert await page.locator('#editorBackdrop').evaluate('(el)=>getComputedStyle(el).backgroundColor')=='rgba(0, 0, 0, 0)'
                 assert await page.locator('#wheelAssembly').evaluate('(el)=>el.parentElement.classList.contains("wheel-stage")')
-                assert not await page.locator('body').evaluate('(el)=>el.classList.contains("editor-open")')
+                assert await page.locator('body').evaluate('(el)=>el.classList.contains("editor-open")')
                 assert await page.locator('#winnerHighlight.is-visible').count()==1
                 assert await page.locator('#winnerHighlight').get_attribute('data-effect')==effect
                 assert await page.locator('#spinHub').is_disabled()
@@ -40,6 +42,7 @@ async def main():
                     await page.keyboard.press('Escape')
                 assert await page.locator('#editorPanel').is_visible(),(name,effect)
                 assert await page.locator('#editorBackdrop').is_visible(),(name,effect)
+                assert 'blur' in await page.locator('#editorBackdrop').evaluate('(el)=>getComputedStyle(el).backdropFilter')
                 assert await page.evaluate('document.activeElement.id')=='previewWinnerEffect'
                 assert not await page.locator('#spinHub').is_disabled()
                 assert await page.evaluate('window.__casinoNoirDebug.highlightedWinner') is None

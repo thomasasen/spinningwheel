@@ -83,3 +83,7 @@ Vollbildwechsel. Danach wird das Menü automatisch wiederhergestellt, einschlie�
 Scrollposition und Fokus auf dem Vorschauknopf. Mit `Escape` lässt sich die Vorschau
 vorzeitig beenden. Während der Vorschau ist die Radmitte gegen unbeabsichtigte
 Drehungen gesperrt.
+
+## Effektvorschau bei geöffnetem Editor
+
+Beim Klick auf **Effekt 4 Sekunden vorführen** bleibt das Konfigurationsmenü geöffnet, einschließlich Scrollposition und Einstellungen. Für vier Sekunden werden **nur Abdunklung und Blur der Hintergrund-Überlagerung** ausgeschaltet. Die gewählte Gewinneranimation wird direkt am Rad gezeigt, ohne eine Drehung. Danach kehren Abdunklung und Blur automatisch zurück. `Escape` beendet die Vorschau vorzeitig. Während der Vorschau ist die Radmitte gegen unbeabsichtigte Drehungen gesperrt.

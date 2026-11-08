@@ -30,8 +30,9 @@ async def main():
                 await page.locator('#winnerEffect').select_option(mode)
                 await page.locator('#previewWinnerEffect').click()
                 assert await page.locator('#presentation').is_hidden(), mode
-                assert await page.locator('#editorBackdrop').is_hidden(), mode
-                assert await page.locator('#editorPanel').is_hidden(), mode
+                assert await page.locator('#editorBackdrop').is_visible(), mode
+                assert await page.locator('#editorBackdrop').evaluate('(el)=>getComputedStyle(el).backdropFilter')=='none'
+                assert await page.locator('#editorPanel').is_visible(), mode
                 assert await page.locator('#winnerHighlight.is-visible').count() == 1, mode
                 assert await page.locator('#winnerHighlight').get_attribute('data-effect') == mode
                 assert await page.locator('#winnerHighlight > .winner-highlight-surface').count() == 1
