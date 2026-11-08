@@ -78,3 +78,17 @@ body.editor-open{overflow:hidden}
   #presentationTarget{width:min(85vw,80dvh)}
   #presentationTarget .power-meter{right:-30px}
 }
+
+/* Adjustable late braking and winning-sector highlight. Keep the gold hub
+   and pointer above the wheel; do not intercept the wheel's only spin button. */
+.setting-row-coast{align-items:flex-start}
+.setting-descriptor{display:flex;flex-direction:column;gap:5px;max-width:225px}
+.setting-descriptor>label{font-size:12px;color:#ead6d3}
+.setting-descriptor small{font:10px/1.45 system-ui,sans-serif;color:#bfa5a5}
+.setting-help{margin:1px 0 4px;padding:0 3px 10px;border-bottom:1px solid #35262e;font:10px/1.5 system-ui,sans-serif;color:#a78c94}
+.winner-highlight{opacity:0;pointer-events:none}
+.winner-highlight.is-visible{opacity:1;animation:winner-gold-pulse 1800ms ease-in-out 3}
+.winner-highlight-surface{fill:#fce09a;fill-opacity:.18;stroke:#ffe8a3;stroke-linejoin:round;filter:drop-shadow(0 0 7px #ffcf6bcc)}
+@keyframes winner-gold-pulse{0%,100%{opacity:.85}50%{opacity:1;filter:drop-shadow(0 0 11px #ffcf77bb)}}
+@media(prefers-reduced-motion:reduce){.winner-highlight.is-visible{animation:none}}
+@media(max-width:520px){.setting-row-coast{gap:6px}.setting-descriptor{max-width:170px}.setting-value input[type=range]{width:105px}}

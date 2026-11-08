@@ -161,7 +161,7 @@
     ];
     return data.map((v,i) => ({ id:makeId(), label:v[0], icon:v[1], showLabel:v[2], showIcon:v[3], color:PALETTES.noir[i%2] }));
   }
-  function defaultConfig() { return {version:1, segments:initialSegments(), duration:6, sound:true, palette:'noir'}; }
+  function defaultConfig() { return {version:1, segments:initialSegments(), duration:6, coast:65, sound:true, palette:'noir'}; }
   function validColor(v) { return /^#[0-9a-f]{6}$/i.test(v || ''); }
   function validIcon(v) { return isValidMaterialSymbolName(v); }
   function saneConfig(raw) {
@@ -170,7 +170,8 @@
     const palette = PALETTES[raw.palette] ? raw.palette : 'noir';
     return {
       version:1, palette,
-      duration: Number.isFinite(Number(raw.duration)) ? Math.min(12,Math.max(3,Math.round(Number(raw.duration)))) : 6,
+      duration: Number.isFinite(Number(raw.duration)) ? Math.min(30,Math.max(3,Math.round(Number(raw.duration)))) : 6,
+      coast: Number.isFinite(Number(raw.coast)) ? Math.min(100,Math.max(0,Math.round(Number(raw.coast)))) : 65,
       sound:raw.sound !== false,
       segments:raw.segments.map((s,i) => ({
         id:makeId(), label: String(s?.label ?? '').slice(0,80),
@@ -184,6 +185,7 @@
   try { const saved=localStorage.getItem(STORAGE_KEY); config=saved?saneConfig(JSON.parse(saved)):defaultConfig(); }
   catch { config=defaultConfig(); }
   let isSpinning=false, rotation=0, iconFontReady=false, currentIconTarget=null;
+  let highlightedWinner=null;
   let activeCategory='Alle', lastFocusedElement=null, saveOk=true, audioContext=null, lastTickAt=0, lastTickSector=-1, toastTimer=0;
   const svg=$('wheelSvg'), wheel=$('rotatingWheel'), modal=$('iconModal'), assembly=$('wheelAssembly');
   const wheelStage=document.querySelector('.wheel-stage'), presentation=$('presentation');
@@ -250,6 +252,28 @@
     const node=e('text',{x:0,y:baseline,'text-anchor':'middle','dominant-baseline':'central','font-size':Math.round(size*.93),class:'face-fallback'},parent);
     node.textContent=iconFallback(icon);
     return node;
+  }
+  function clearWinnerHighlight(){
+    highlightedWinner=null;
+    const group=$('winnerHighlight');
+    if(group){group.classList.remove('is-visible');group.replaceChildren();}
+  }
+  function showWinnerHighlight(index){
+    const group=$('winnerHighlight'),n=config.segments.length;
+    if(!group||!Number.isInteger(index)||index<0||index>=n)return;
+    highlightedWinner=index;
+    group.replaceChildren();
+    const step=360/n,center=-90+index*step;
+    if(n===1){
+      e('circle',{cx:320,cy:320,r:264,class:'winner-highlight-surface','stroke-width':4},group);
+    }else{
+      e('path',{d:wedgePath(center-step/2,center+step/2,264),class:'winner-highlight-surface','stroke-width':n>80?1.2:n>24?2:4},group);
+    }
+    // A gold spotlight moves together with the stopped wedge; the central
+    // start button and the stationary pointer remain separate.
+    group.classList.remove('is-visible');
+    void group.getBoundingClientRect();
+    group.classList.add('is-visible');
   }
   function drawWheel(){
     const n=config.segments.length;
@@ -325,6 +349,8 @@
         }
       });
     }
+    e('g',{id:'winnerHighlight',class:'winner-highlight','pointer-events':'none','aria-hidden':'true'},wheel);
+    if(highlightedWinner!==null) showWinnerHighlight(highlightedWinner);
     e('circle',{cx:320,cy:320,r:61,fill:'url(#rimBevel)',stroke:'#4e2513','stroke-width':2.3},wheel);
     e('circle',{cx:320,cy:320,r:55,fill:'url(#rimMetal)',stroke:'#ffdf95','stroke-width':2.3},wheel);
     e('circle',{cx:320,cy:320,r:47,fill:'#1d1013',stroke:'#6b3e20','stroke-width':1.2},wheel);
@@ -366,17 +392,18 @@
     </div>`).join('');
     if(isSpinning) lockEditor(true);
   }
-  function renderSettings(){ $('spinDuration').value=config.duration; $('durationLabel').textContent=config.duration+' s'; $('soundEnabled').checked=config.sound; $('paletteSelect').value=config.palette; }
+  function renderSettings(){ $('spinDuration').value=config.duration; $('durationLabel').textContent=config.duration+' s'; $('coastIntensity').value=config.coast; $('coastLabel').textContent=config.coast+' %'; $('soundEnabled').checked=config.sound; $('paletteSelect').value=config.palette; }
   function render(){drawWheel();renderSegments();renderSettings();}
   function save(){
     try {localStorage.setItem(STORAGE_KEY,JSON.stringify(config));saveOk=true;$('saveIndicator').textContent='● Lokal gespeichert';$('saveIndicator').style.color='';}
     catch {saveOk=false;$('saveIndicator').textContent='⚠ Speicherung nicht möglich';$('saveIndicator').style.color='#ffb4a0';}
   }
-  function mutate(){drawWheel();save();}
+  function mutate(){clearWinnerHighlight();drawWheel();save();}
   function toast(message){const n=$('toast');n.textContent=message;n.classList.add('is-visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>n.classList.remove('is-visible'),2700);}
   function lockEditor(locked){
     $('addSegment').disabled=locked;
     $('spinDuration').disabled=locked;
+    $('coastIntensity').disabled=locked;
     $('soundEnabled').disabled=locked;
     $('paletteSelect').disabled=locked;
     $('importJson').disabled=locked;
@@ -429,6 +456,7 @@
     renderSegments();mutate();list.scrollTop=list.scrollHeight;
   });
   $('spinDuration').addEventListener('input',ev=>{config.duration=Number(ev.target.value);$('durationLabel').textContent=config.duration+' s';save();});
+  $('coastIntensity').addEventListener('input',ev=>{config.coast=Number(ev.target.value);$('coastLabel').textContent=config.coast+' %';save();});
   $('soundEnabled').addEventListener('change',ev=>{config.sound=ev.target.checked;save();});
   $('paletteSelect').addEventListener('change',ev=>{
     if(isSpinning)return;
@@ -438,10 +466,10 @@
   });
   $('resetConfig').addEventListener('click',()=>{
     if(!confirm('Alle Segmente und Einstellungen auf die Ausgangsversion zurücksetzen?'))return;
-    config=defaultConfig();rotation=0;render();save();$('statusText').textContent='Auf die goldene Mitte klicken, um zu drehen';toast('Ausgangskonfiguration wiederhergestellt.');
+    config=defaultConfig();rotation=0;clearWinnerHighlight();render();save();$('statusText').textContent='Auf die goldene Mitte klicken, um zu drehen';toast('Ausgangskonfiguration wiederhergestellt.');
   });
   $('exportJson').addEventListener('click',()=>{
-    const data={version:1,segments:config.segments.map(({id,...rest})=>rest),duration:config.duration,sound:config.sound,palette:config.palette};
+    const data={version:1,segments:config.segments.map(({id,...rest})=>rest),duration:config.duration,coast:config.coast,sound:config.sound,palette:config.palette};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
     const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='casino-noir-konfiguration.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
     toast('Konfiguration als JSON exportiert.');
@@ -450,7 +478,7 @@
   $('importFile').addEventListener('change',async ev=>{
     const file=ev.target.files?.[0];if(!file)return;
     if(file.size>2*1024*1024){toast('Die JSON-Datei ist zu groß (maximal 2 MB).');return;}
-    try{const parsed=JSON.parse(await file.text());config=saneConfig(parsed);rotation=0;render();save();toast(`${config.segments.length} Segmente importiert.`);}
+    try{const parsed=JSON.parse(await file.text());config=saneConfig(parsed);rotation=0;clearWinnerHighlight();render();save();toast(`${config.segments.length} Segmente importiert.`);}
     catch(err){toast('Import fehlgeschlagen: '+err.message);}
   });
   function openIconPicker(id){
@@ -554,6 +582,11 @@
     }catch{/* Sound ist optional und darf die Drehung nie blockieren. */}
   }
   function currentIndex(angle,n){return ((Math.round(-normalized(angle)/(360/n))%n)+n)%n;}
+  // The control changes when the wheel crosses its final segment boundary.
+  // A high coast value deliberately leaves more angular distance late in the spin.
+  // Values are strictly monotonic, reaching exactly the chosen segment centre.
+  function coastExponent(coast){return 3.9-2.55*Math.max(0,Math.min(100,coast))/100;}
+  function spinEase(t,coast){return 1-Math.pow(1-Math.max(0,Math.min(1,t)),coastExponent(coast));}
   // 0 -> 100 -> 0 every 1.6 seconds. A timestamp-based triangle wave keeps
   // the captured power independent of animation frame rate and input latency.
   const POWER_PERIOD_MS=1600;
@@ -584,6 +617,7 @@
   let raf=0;
   function spin(){
     const n=config.segments.length;if(isSpinning||!n)return;
+    clearWinnerHighlight();
     const power=powerAt(performance.now());
     displayPower(power); // Capture at the actual click, not at the previous frame.
     isSpinning=true;powerMeter.classList.add('is-locked');
@@ -607,7 +641,7 @@
     const duration=reduced?280:config.duration*1000*(.35+.65*power);
     const start=performance.now();lastTickAt=0;lastTickSector=currentIndex(from,n);
     function frame(now){
-      const t=Math.min(1,(now-start)/duration),ease=1-Math.pow(1-t,4.1);
+      const t=Math.min(1,(now-start)/duration),ease=spinEase(t,config.coast);
       const angle=from+delta*ease;
       wheel.style.transform=`rotate(${angle}deg)`;
       const sector=currentIndex(angle,n);
@@ -616,17 +650,18 @@
       rotation=finish;wheel.style.transform=`rotate(${rotation}deg)`;
       isSpinning=false;powerMeter.classList.remove('is-locked');powerEpoch=performance.now()-310;
       lockEditor(false);$('spinHub').disabled=false;$('spinHub').classList.remove('is-spinning');
+      showWinnerHighlight(winner);
       const selected=config.segments[winner],result=safeText(selected.label);
       $('statusText').textContent=`Ergebnis: ${result} · Feld ${winner+1} von ${n}`;
       $('presentationResult').textContent=`✦ ${result} ✦`;
       // Debugwerte erleichtern die Regressionstests und die Prüfung der Zeiger-/Ergebniszuordnung.
-      Object.assign(window.__casinoNoirDebug,{lastWinner:winner,lastRotation:rotation,spinning:false,lastPower:power,lastTurns:visibleTurns,lastDurationMs:duration});
+      Object.assign(window.__casinoNoirDebug,{lastWinner:winner,lastRotation:rotation,spinning:false,lastPower:power,lastTurns:visibleTurns,lastDurationMs:duration,lastCoast:config.coast,lastEasingExponent:coastExponent(config.coast)});
     }
     Object.assign(window.__casinoNoirDebug,{spinning:true,lastWinner:null});
     raf=requestAnimationFrame(frame);
   }
   $('spinHub').addEventListener('click',spin);
-  window.__casinoNoirDebug={get config(){return config;},get rotation(){return rotation;},get isSpinning(){return isSpinning;},get power(){return powerLevel;},get powerPeriodMs(){return POWER_PERIOD_MS;},get iconFontReady(){return iconFontReady;},get iconCatalogReady(){return fullCatalogReady;},get iconCatalogCount(){return ICONS.length;},get iconMatches(){return iconMatchCount;},get iconMatchingNames(){return [...iconMatches];},get iconCodepointMap(){return Object.fromEntries(ICON_CODEPOINTS);},loadIconCatalog,lastWinner:null,lastRotation:0,spinning:false,stop(){cancelAnimationFrame(raf);}};
+  window.__casinoNoirDebug={get config(){return config;},get rotation(){return rotation;},get isSpinning(){return isSpinning;},get power(){return powerLevel;},get powerPeriodMs(){return POWER_PERIOD_MS;},get highlightedWinner(){return highlightedWinner;},get spinEase(){return spinEase;},get iconFontReady(){return iconFontReady;},get iconCatalogReady(){return fullCatalogReady;},get iconCatalogCount(){return ICONS.length;},get iconMatches(){return iconMatchCount;},get iconMatchingNames(){return [...iconMatches];},get iconCodepointMap(){return Object.fromEntries(ICON_CODEPOINTS);},loadIconCatalog,lastWinner:null,lastRotation:0,spinning:false,stop(){cancelAnimationFrame(raf);}};
   restoreIconCatalog();
   render();
   loadIconCatalog();
