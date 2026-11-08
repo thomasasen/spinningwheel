@@ -187,6 +187,32 @@
   let activeCategory='Alle', lastFocusedElement=null, saveOk=true, audioContext=null, lastTickAt=0, lastTickSector=-1, toastTimer=0;
   const svg=$('wheelSvg'), wheel=$('rotatingWheel'), modal=$('iconModal'), assembly=$('wheelAssembly');
   const wheelStage=document.querySelector('.wheel-stage'), presentation=$('presentation');
+  // Closed by default: the wheel gets the full page width and viewport height.
+  // The editor is an accessible off-canvas dialog, not a second layout column.
+  const editorPanel=$('editorPanel'), editorBackdrop=$('editorBackdrop'), editorToggle=$('toggleEditor');
+  let editorFocusReturn=null;
+  function setEditorOpen(open) {
+    if (open === !editorPanel.hidden) return;
+    if (open) editorFocusReturn=document.activeElement;
+    editorPanel.hidden=!open;
+    editorBackdrop.hidden=!open;
+    document.body.classList.toggle('editor-open',open);
+    editorToggle.setAttribute('aria-expanded',String(open));
+    editorToggle.setAttribute('aria-label',open?'Konfiguration geöffnet':'Konfiguration öffnen');
+    if (open) $('closeEditor').focus();
+    else (editorFocusReturn?.isConnected ? editorFocusReturn : editorToggle).focus();
+  }
+  editorToggle.addEventListener('click',()=>setEditorOpen(editorPanel.hidden));
+  $('closeEditor').addEventListener('click',()=>setEditorOpen(false));
+  editorBackdrop.addEventListener('click',()=>setEditorOpen(false));
+  document.addEventListener('keydown',event=>{
+    if (event.key!=='Tab'||editorPanel.hidden||!modal.hidden) return;
+    const focusables=[...editorPanel.querySelectorAll('button:not(:disabled),input:not(:disabled):not([type="hidden"]),select:not(:disabled),a[href]')].filter(el=>el.getClientRects().length);
+    if (!focusables.length) return;
+    const first=focusables[0],last=focusables[focusables.length-1];
+    if(event.shiftKey && (document.activeElement===first||!editorPanel.contains(document.activeElement))){event.preventDefault();last.focus();}
+    else if(!event.shiftKey && (document.activeElement===last||!editorPanel.contains(document.activeElement))){event.preventDefault();first.focus();}
+  });
   function escapeHtml(v) { return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function safeText(v) { return String(v ?? '').trim() || 'Ohne Beschriftung'; }
   function wrapText(str,n,secondLine=true) {
@@ -435,7 +461,7 @@
   function closeIconPicker(){modal.hidden=true;currentIconTarget=null;lastFocusedElement?.focus?.();}
   $('closeIconModal').addEventListener('click',closeIconPicker);
   modal.addEventListener('click',ev=>{if(ev.target===modal)closeIconPicker();});
-  document.addEventListener('keydown',ev=>{if(ev.key==='Escape'){if(!modal.hidden)closeIconPicker();else if(!presentation.hidden)closePresentation();}});
+  document.addEventListener('keydown',ev=>{if(ev.key==='Escape'){if(!modal.hidden)closeIconPicker();else if(!presentation.hidden)closePresentation();else if(!editorPanel.hidden)setEditorOpen(false);}});
   function iconColumnCount(){return window.matchMedia('(max-width: 520px)').matches?4:5;}
   function paintVisibleIconRows(){
     const grid=$('iconGrid');
@@ -510,7 +536,7 @@
   $('customIconName').addEventListener('keydown',ev=>{if(ev.key==='Enter')setIconForCurrent(ev.target.value.trim().toLowerCase());});
   // Präsentationsmodus: nur EINE Radinstanz wird verschoben, sodass Ergebnis,
   // Bedienbarkeit und Animation in beiden Layouts immer synchron bleiben.
-  function openPresentation(){if(isSpinning)return;presentation.hidden=false;$('presentationTarget').appendChild(assembly);$('presentationResult').textContent='Auf die goldene Mitte klicken, um zu drehen';$('spinHub').focus();}
+  function openPresentation(){if(isSpinning)return;if(!editorPanel.hidden)setEditorOpen(false);presentation.hidden=false;$('presentationTarget').appendChild(assembly);$('presentationResult').textContent='Auf die goldene Mitte klicken, um zu drehen';$('spinHub').focus();}
   function closePresentation(){if(isSpinning)return;presentation.hidden=true;wheelStage.appendChild(assembly);$('showOnlyWheel').focus();}
   $('showOnlyWheel').addEventListener('click',openPresentation);
   $('closePresentation').addEventListener('click',closePresentation);
@@ -578,4 +604,3 @@
     }).catch(()=>{});
   }
 })();
-

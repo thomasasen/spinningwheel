@@ -16,7 +16,7 @@
   <div class="app-shell" id="appShell">
     <header class="topbar">
       <a class="brand" href="#" aria-label="Casino Noir, Startseite"><span class="brand-mark" aria-hidden="true">✦</span><span class="brand-name">CASINO <em>NOIR</em><small>SPINNING WHEEL STUDIO</small></span></a>
-      <div class="topbar-right"><span class="edition-tag">INTERACTIVE EDITION <span class="online-dot"></span></span><span id="saveIndicator" class="save-indicator" role="status">● Lokal gespeichert</span><button class="btn btn-quiet" id="showOnlyWheel" type="button">⛶ <span>Präsentationsmodus</span></button></div>
+      <div class="topbar-right"><span class="edition-tag">INTERACTIVE EDITION <span class="online-dot"></span></span><span id="saveIndicator" class="save-indicator" role="status">● Lokal gespeichert</span><button class="btn btn-editor-toggle" id="toggleEditor" type="button" aria-controls="editorPanel" aria-expanded="false" aria-label="Konfiguration öffnen"><span class="editor-gear" aria-hidden="true">⚙</span><span class="editor-toggle-label">Konfiguration</span></button><button class="btn btn-quiet" id="showOnlyWheel" type="button">⛶ <span>Präsentationsmodus</span></button></div>
     </header>
     <main class="main-layout">
       <section class="stage-panel" aria-label="Vorschau des Glücksrads">
@@ -54,8 +54,9 @@
         </div>
         <div class="stage-notice" id="densityNotice" hidden></div>
       </section>
-      <aside class="editor-panel" id="editorPanel" aria-label="Rad konfigurieren">
-        <div class="editor-header"><div><div class="eyebrow">✦ &nbsp; WHEEL CONFIGURATION</div><h1>Dein Glücksrad</h1><p>Jedes Segment individuell gestalten.</p></div><span class="editor-sparkle" aria-hidden="true">✧</span></div>
+      <div class="editor-backdrop" id="editorBackdrop" hidden></div>
+      <aside class="editor-panel" id="editorPanel" role="dialog" aria-modal="true" aria-labelledby="editorTitle" hidden>
+        <div class="editor-header"><div><div class="eyebrow">✦ &nbsp; WHEEL CONFIGURATION</div><h1 id="editorTitle">Dein Glücksrad</h1><p>Jedes Segment individuell gestalten.</p></div><button class="editor-close" id="closeEditor" type="button" aria-label="Konfiguration schließen" title="Schließen">×</button></div>
         <div class="section-title"><div><h2>Segmente <span class="count-pill" id="segmentCount">8</span></h2><p>Text, Material-Symbol oder beides</p></div><button type="button" id="addSegment" class="btn btn-primary"><span aria-hidden="true">＋</span> Hinzufügen</button></div>
         <div class="segment-list" id="segmentList" aria-label="Segmentliste"></div>
         <div class="editor-settings">

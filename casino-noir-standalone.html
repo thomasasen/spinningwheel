@@ -41,14 +41,39 @@
 .icon-fallback-svg{width:29px;height:29px;display:inline-block;color:#f4c98f}
 .segment-icon-btn .icon-fallback-svg{width:23px;height:23px}
 
-</style>
-  
+/* Spacious default play mode with an optional off-canvas settings drawer.
+   The wheel never shrinks merely because the editor is open. */
+.app-shell{max-width:none}
+.topbar{min-height:74px}
+.main-layout{display:block;padding-top:clamp(10px,1.8vh,22px)}
+.stage-panel{position:relative;top:auto;width:100%;max-width:none}
+.stage-heading,.stage-footer,.stage-notice{width:min(100%,1200px);margin-left:auto;margin-right:auto}
+.wheel-stage{width:100%;padding:0}
+.wheel-assembly{width:min(100%,calc(100dvh - 205px),1200px)}
+.main-footer{padding:12px 0 14px}
+.btn-editor-toggle{border-color:#a57651;background:linear-gradient(135deg,#46302e,#282029);color:#ffe3b0}
+.btn-editor-toggle:hover{border-color:#dfb779;background:#583839}
+.editor-gear{font-size:17px;line-height:1}
+.editor-backdrop{position:fixed;inset:0;z-index:45;background:rgba(7,4,7,.68);backdrop-filter:blur(3px)}
+.editor-panel{position:fixed;z-index:46;inset:0 0 0 auto;width:min(520px,100vw);height:100dvh;max-height:100dvh;overflow-y:auto;overscroll-behavior:contain;border-radius:0;border-block:0;border-right:0;scrollbar-color:#79515d #20151b}
+.editor-panel .segment-list{max-height:none;overflow:visible}
+.editor-header{padding-right:70px}
+.editor-close{position:absolute;top:18px;right:18px;display:grid;place-items:center;width:38px;height:38px;border:1px solid #775462;border-radius:10px;background:#35232d;color:#f4dcce;font-size:26px;line-height:1}
+.editor-close:hover{background:#513341;border-color:#d3a477}
+body.editor-open{overflow:hidden}
+/* The icon picker opens above the settings drawer, including on narrow screens. */
+.modal-backdrop{z-index:70}
+.toast{z-index:80}
+@media(max-width:860px){.main-layout{display:block}.stage-panel{width:100%;max-width:none}.wheel-assembly{width:min(100%,calc(100dvh - 205px),1200px)}.editor-panel{max-width:none;margin:0}}
+@media(max-width:520px){.app-shell{padding:0 10px}.topbar{min-height:68px}.topbar-right{gap:6px}.topbar-right .btn{padding:9px 10px}.topbar-right #showOnlyWheel span{display:none}.topbar-right .btn-editor-toggle .editor-gear{display:inline}.topbar-right .btn-editor-toggle .editor-toggle-label{display:none}.main-layout{padding-top:10px}.wheel-stage{padding:0}.wheel-assembly{width:min(100%,calc(100dvh - 175px))}.editor-panel{width:100vw}.editor-header{padding-right:65px}.stage-footer{padding-top:10px}.main-footer{padding:10px 0}}
+  </style>
+
 </head>
 <body>
   <div class="app-shell" id="appShell">
     <header class="topbar">
       <a class="brand" href="#" aria-label="Casino Noir, Startseite"><span class="brand-mark" aria-hidden="true">✦</span><span class="brand-name">CASINO <em>NOIR</em><small>SPINNING WHEEL STUDIO</small></span></a>
-      <div class="topbar-right"><span class="edition-tag">INTERACTIVE EDITION <span class="online-dot"></span></span><span id="saveIndicator" class="save-indicator" role="status">● Lokal gespeichert</span><button class="btn btn-quiet" id="showOnlyWheel" type="button">⛶ <span>Präsentationsmodus</span></button></div>
+      <div class="topbar-right"><span class="edition-tag">INTERACTIVE EDITION <span class="online-dot"></span></span><span id="saveIndicator" class="save-indicator" role="status">● Lokal gespeichert</span><button class="btn btn-editor-toggle" id="toggleEditor" type="button" aria-controls="editorPanel" aria-expanded="false" aria-label="Konfiguration öffnen"><span class="editor-gear" aria-hidden="true">⚙</span><span class="editor-toggle-label">Konfiguration</span></button><button class="btn btn-quiet" id="showOnlyWheel" type="button">⛶ <span>Präsentationsmodus</span></button></div>
     </header>
     <main class="main-layout">
       <section class="stage-panel" aria-label="Vorschau des Glücksrads">
@@ -86,8 +111,9 @@
         </div>
         <div class="stage-notice" id="densityNotice" hidden></div>
       </section>
-      <aside class="editor-panel" id="editorPanel" aria-label="Rad konfigurieren">
-        <div class="editor-header"><div><div class="eyebrow">✦ &nbsp; WHEEL CONFIGURATION</div><h1>Dein Glücksrad</h1><p>Jedes Segment individuell gestalten.</p></div><span class="editor-sparkle" aria-hidden="true">✧</span></div>
+      <div class="editor-backdrop" id="editorBackdrop" hidden></div>
+      <aside class="editor-panel" id="editorPanel" role="dialog" aria-modal="true" aria-labelledby="editorTitle" hidden>
+        <div class="editor-header"><div><div class="eyebrow">✦ &nbsp; WHEEL CONFIGURATION</div><h1 id="editorTitle">Dein Glücksrad</h1><p>Jedes Segment individuell gestalten.</p></div><button class="editor-close" id="closeEditor" type="button" aria-label="Konfiguration schließen" title="Schließen">×</button></div>
         <div class="section-title"><div><h2>Segmente <span class="count-pill" id="segmentCount">8</span></h2><p>Text, Material-Symbol oder beides</p></div><button type="button" id="addSegment" class="btn btn-primary"><span aria-hidden="true">＋</span> Hinzufügen</button></div>
         <div class="segment-list" id="segmentList" aria-label="Segmentliste"></div>
         <div class="editor-settings">
@@ -119,7 +145,7 @@
     <div id="presentationResult" class="presentation-result" aria-live="polite"></div>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script>
+  <script>
 /* Casino Noir – standalone configurable wheel. Material Symbols: Apache-2.0 (Google). */
 (() => {
   'use strict';
@@ -309,6 +335,32 @@
   let activeCategory='Alle', lastFocusedElement=null, saveOk=true, audioContext=null, lastTickAt=0, lastTickSector=-1, toastTimer=0;
   const svg=$('wheelSvg'), wheel=$('rotatingWheel'), modal=$('iconModal'), assembly=$('wheelAssembly');
   const wheelStage=document.querySelector('.wheel-stage'), presentation=$('presentation');
+  // Closed by default: the wheel gets the full page width and viewport height.
+  // The editor is an accessible off-canvas dialog, not a second layout column.
+  const editorPanel=$('editorPanel'), editorBackdrop=$('editorBackdrop'), editorToggle=$('toggleEditor');
+  let editorFocusReturn=null;
+  function setEditorOpen(open) {
+    if (open === !editorPanel.hidden) return;
+    if (open) editorFocusReturn=document.activeElement;
+    editorPanel.hidden=!open;
+    editorBackdrop.hidden=!open;
+    document.body.classList.toggle('editor-open',open);
+    editorToggle.setAttribute('aria-expanded',String(open));
+    editorToggle.setAttribute('aria-label',open?'Konfiguration geöffnet':'Konfiguration öffnen');
+    if (open) $('closeEditor').focus();
+    else (editorFocusReturn?.isConnected ? editorFocusReturn : editorToggle).focus();
+  }
+  editorToggle.addEventListener('click',()=>setEditorOpen(editorPanel.hidden));
+  $('closeEditor').addEventListener('click',()=>setEditorOpen(false));
+  editorBackdrop.addEventListener('click',()=>setEditorOpen(false));
+  document.addEventListener('keydown',event=>{
+    if (event.key!=='Tab'||editorPanel.hidden||!modal.hidden) return;
+    const focusables=[...editorPanel.querySelectorAll('button:not(:disabled),input:not(:disabled):not([type="hidden"]),select:not(:disabled),a[href]')].filter(el=>el.getClientRects().length);
+    if (!focusables.length) return;
+    const first=focusables[0],last=focusables[focusables.length-1];
+    if(event.shiftKey && (document.activeElement===first||!editorPanel.contains(document.activeElement))){event.preventDefault();last.focus();}
+    else if(!event.shiftKey && (document.activeElement===last||!editorPanel.contains(document.activeElement))){event.preventDefault();first.focus();}
+  });
   function escapeHtml(v) { return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function safeText(v) { return String(v ?? '').trim() || 'Ohne Beschriftung'; }
   function wrapText(str,n,secondLine=true) {
@@ -557,7 +609,7 @@
   function closeIconPicker(){modal.hidden=true;currentIconTarget=null;lastFocusedElement?.focus?.();}
   $('closeIconModal').addEventListener('click',closeIconPicker);
   modal.addEventListener('click',ev=>{if(ev.target===modal)closeIconPicker();});
-  document.addEventListener('keydown',ev=>{if(ev.key==='Escape'){if(!modal.hidden)closeIconPicker();else if(!presentation.hidden)closePresentation();}});
+  document.addEventListener('keydown',ev=>{if(ev.key==='Escape'){if(!modal.hidden)closeIconPicker();else if(!presentation.hidden)closePresentation();else if(!editorPanel.hidden)setEditorOpen(false);}});
   function iconColumnCount(){return window.matchMedia('(max-width: 520px)').matches?4:5;}
   function paintVisibleIconRows(){
     const grid=$('iconGrid');
@@ -632,7 +684,7 @@
   $('customIconName').addEventListener('keydown',ev=>{if(ev.key==='Enter')setIconForCurrent(ev.target.value.trim().toLowerCase());});
   // Präsentationsmodus: nur EINE Radinstanz wird verschoben, sodass Ergebnis,
   // Bedienbarkeit und Animation in beiden Layouts immer synchron bleiben.
-  function openPresentation(){if(isSpinning)return;presentation.hidden=false;$('presentationTarget').appendChild(assembly);$('presentationResult').textContent='Auf die goldene Mitte klicken, um zu drehen';$('spinHub').focus();}
+  function openPresentation(){if(isSpinning)return;if(!editorPanel.hidden)setEditorOpen(false);presentation.hidden=false;$('presentationTarget').appendChild(assembly);$('presentationResult').textContent='Auf die goldene Mitte klicken, um zu drehen';$('spinHub').focus();}
   function closePresentation(){if(isSpinning)return;presentation.hidden=true;wheelStage.appendChild(assembly);$('showOnlyWheel').focus();}
   $('showOnlyWheel').addEventListener('click',openPresentation);
   $('closePresentation').addEventListener('click',closePresentation);
@@ -700,7 +752,6 @@
     }).catch(()=>{});
   }
 })();
-
-</script>
+  </script>
 </body>
 </html>
