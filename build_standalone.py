@@ -8,6 +8,7 @@ html,n=re.subn(r'<link rel="stylesheet" href="styles\.css(?:\?[^"<>]*)?">',lambd
 assert n==1, 'Stylesheet reference not found'
 html,n=re.subn(r'<script defer src="app\.js(?:\?[^"<>]*)?"></script>','',html)
 assert n==1, 'App script reference not found'
-html=html.replace('</body>',f'<script>\n{js}\n</script>\n</body>')
+index=(base/'icon-search-index.json').read_text(encoding='utf-8').replace('<','\\u003c')
+html=html.replace('</body>',f'<script type="application/json" id="iconSearchIndexData">{index}</script>\n<script>\n{js}\n</script>\n</body>')
 (base/'casino-noir-standalone.html').write_text(html)
 print('standalone',len(html),'bytes')
