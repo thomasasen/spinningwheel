@@ -138,6 +138,7 @@ body.editor-open{overflow:hidden}
 .winner-highlight.is-visible .winner-marquee-bulb{animation:winner-led-travel 760ms ease-in-out 2}
 @keyframes winner-led-travel{0%,100%{opacity:.2}25%,55%{opacity:1;fill:#ffecc1;filter:drop-shadow(0 0 12px #ff57a2)}75%{opacity:.3}}
 .winner-lights-wedge{fill:transparent;stroke:#ff59a0;stroke-width:3.5;filter:drop-shadow(0 0 9px #f42a82)}
+.winner-celebration-lacquer{fill:#f53a79;fill-opacity:.15;stroke:#ffdd9a;stroke-width:2.5;filter:drop-shadow(0 0 7px #f47ca6)}
 .winner-firework-star,.winner-firework-dot{fill:#ffe8a6;opacity:0;filter:drop-shadow(0 0 6px #ff82bb)}
 .winner-firework-dot:nth-child(3n){fill:#f93e8d}
 .winner-highlight.is-visible .winner-firework-star,.winner-highlight.is-visible .winner-firework-dot{animation:winner-particle-flight 1750ms cubic-bezier(.18,.6,.43,1) 2 both}
@@ -463,7 +464,17 @@ body.editor-open{overflow:hidden}
   }
   const ICON_FALLBACKS = {
     apparel:'♧',checkroom:'♧',dry_cleaning:'✧',laundry:'◈',styler:'✧',
-    star:'★',stars:'✦',auto_awesome:'✧',diamond:'◆',workspace_premium:'✦',emoji_events:'♛',military_tech:'✪',verified:'✓',loyalty:'♥',favorite:'♥',favorite_border:'♡',celebration:'✷',redeem:'✦',card_giftcard:'♜',recommend:'★',thumb_up:'✓',theater_comedy:'◈',whatshot:'♨',flare:'✺',lightbulb:'☀',bolt:'ϟ',casino:'♠',paid:'$',savings:'$',credit_card:'▭',wallet:'▣',account_balance_wallet:'$',currency_exchange:'$',token:'◉',sell:'◇',local_offer:'◇',shopping_bag:'▣',shopping_cart:'▣',storefront:'♜',local_mall:'▣',monetization_on:'$',toll:'◎',receipt_long:'▤',card_membership:'▣',key:'⚿',lock_open:'◈',local_bar:'♧',wine_bar:'♧',sports_bar:'♧',nightlife:'♫',restaurant:'♧',coffee:'☕',cake:'♜',icecream:'♢',spa:'✿',self_improvement:'☯',beach_access:'☀',hotel:'⌂',flight:'✈',luggage:'▣',directions_car:'▰',two_wheeler:'◎',sports_esports:'✦',games:'♟',music_note:'♫',headphones:'♫',movie:'▣',camera_alt:'▣',sunny:'☀',dark_mode:'☾',nights_stay:'☾',forest:'♣',park:'♣',pets:'♟',cruelty_free:'♡',water_drop:'♦',eco:'❧',nature:'❧',flutter_dash:'✦',rocket_launch:'↟',public:'◎',travel_explore:'✧',explore:'✧',map:'♢',magic_button:'✧',filter_vintage:'✿',psychology_alt:'?',person:'♙',group:'♟',groups:'♟',face:'☻',sentiment_satisfied:'☺',mood:'☺',volunteer_activism:'♥',handshake:'⌘',diversity_1:'♡',child_care:'♡',alarm:'◷',schedule:'◷',timer:'◷',hourglass_empty:'⌛',done:'✓',check_circle:'✓',refresh:'↻',replay:'↻',shuffle:'⇄',question_mark:'?',help:'?',info:'i',flag:'⚑',sports_score:'⚑',smartphone:'▯',laptop:'▣',desktop_windows:'▣',devices:'▣',tv:'▣',watch:'◷',smart_toy:'✧',memory:'▦',science:'⚗',build:'⚒',settings:'⚙',extension:'✜',language:'◎',cloud:'☁',download:'↓',upload:'↑',print:'▣',qr_code:'▦',wifi:'≋',headset:'♫',videogame_asset:'✧'
+    star:'★',stars:'✦',auto_awesome:'✧',diamond:'◆',workspace_premium:'✦',emoji_events:'♛',military_tech:'✪',verified:'✓',loyalty:'♥',favorite:'♥',favorite_border:'♡',celebration:'✷',redeem:'✦',card_giftcard:'♜',recommend:'★',thumb_up:'✓',theater_comedy:'◈',whatshot:'♨',flare:'✺',lightbulb:'☀',bolt:'ϟ',casino:'♠',paid:'
+</html>
+,savings:'
+</html>
+,credit_card:'▭',wallet:'▣',account_balance_wallet:'
+</html>
+,currency_exchange:'
+</html>
+,token:'◉',sell:'◇',local_offer:'◇',shopping_bag:'▣',shopping_cart:'▣',storefront:'♜',local_mall:'▣',monetization_on:'
+</html>
+,toll:'◎',receipt_long:'▤',card_membership:'▣',key:'⚿',lock_open:'◈',local_bar:'♧',wine_bar:'♧',sports_bar:'♧',nightlife:'♫',restaurant:'♧',coffee:'☕',cake:'♜',icecream:'♢',spa:'✿',self_improvement:'☯',beach_access:'☀',hotel:'⌂',flight:'✈',luggage:'▣',directions_car:'▰',two_wheeler:'◎',sports_esports:'✦',games:'♟',music_note:'♫',headphones:'♫',movie:'▣',camera_alt:'▣',sunny:'☀',dark_mode:'☾',nights_stay:'☾',forest:'♣',park:'♣',pets:'♟',cruelty_free:'♡',water_drop:'♦',eco:'❧',nature:'❧',flutter_dash:'✦',rocket_launch:'↟',public:'◎',travel_explore:'✧',explore:'✧',map:'♢',magic_button:'✧',filter_vintage:'✿',psychology_alt:'?',person:'♙',group:'♟',groups:'♟',face:'☻',sentiment_satisfied:'☺',mood:'☺',volunteer_activism:'♥',handshake:'⌘',diversity_1:'♡',child_care:'♡',alarm:'◷',schedule:'◷',timer:'◷',hourglass_empty:'⌛',done:'✓',check_circle:'✓',refresh:'↻',replay:'↻',shuffle:'⇄',question_mark:'?',help:'?',info:'i',flag:'⚑',sports_score:'⚑',smartphone:'▯',laptop:'▣',desktop_windows:'▣',devices:'▣',tv:'▣',watch:'◷',smart_toy:'✧',memory:'▦',science:'⚗',build:'⚒',settings:'⚙',extension:'✜',language:'◎',cloud:'☁',download:'↓',upload:'↑',print:'▣',qr_code:'▦',wifi:'≋',headset:'♫',videogame_asset:'✧'
   };
   let idCounter = 0;
   function makeId() { return `seg-${Date.now().toString(36)}-${(idCounter++).toString(36)}`; }
@@ -635,6 +646,8 @@ body.editor-open{overflow:hidden}
       makeMarquee(group,index,n,step,mult);
       e('path',{d:sectorPath(260),class:'winner-lights-wedge'},group);
     }else if(effect==='celebration'){
+      // Keep the winner visually selected once the fireworks have faded.
+      e('path',{d:sectorPath(263),class:'winner-celebration-lacquer'},group);
       makeFireworks(group,center,step,mult);
       const halo=e('circle',{cx:winnerX,cy:winnerY,r:24,class:'winner-burst-halo'},group);
       halo.style.setProperty('--halo-scale',String(2.8*mult));
