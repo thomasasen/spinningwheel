@@ -15,8 +15,9 @@ Eine statische, responsive Glücksrad-Web-App im Casino-Noir-Stil. Das Rad beste
 - Vollständiger durchsuchbarer Google-Material-Symbols-Rounded-Katalog (mehr als 4.300 Namen), sortiert, vollständig durchsuchbar und per virtualisiertem Raster ohne manuelle Seitennavigation scrollbar; kuratierte Schnellkategorien und verifizierte Eingabe von Symbolnamen. Freie Suchbegriffe wie „shirt“, „T-Shirt“ und „Kleidung“ liefern das offizielle Symbol `apparel`; `shirt` selbst ist kein offizieller Google-Symbolname. Der Katalog wird von Googles offizieller Codepoints-Liste geladen und sieben Tage lokal zwischengespeichert. Beim allerersten Offline-Start stehen die Favoriten zur Verfügung.
 - Live-SVG, anpassbar an die Segmentanzahl: 1–12 volle Inhalte; 13–20 kompakte Inhalte; 21–72 Nummern; darüber reine Segmente. Vollständige Werte bleiben im Editor und beim Gewinnergebnis vorhanden.
 - Nur die goldene Radmitte löst die Drehung aus, der Zeiger bleibt feststehend.
-- Gewinnerermittlung per zufälliger Auswahl; die Animation endet geometrisch beim ausgewählten Sektor.
-- Drehdauer 3–12 Sekunden, optionaler synthetisierter Klicksound, vier Farbpaletten.
+- Gewinnerermittlung per zufälliger Auswahl, unabhängig von der Drehkraft; die Animation endet geometrisch beim ausgewählten Sektor.
+- Vertikaler, schnell pendelnder Drehkraftbalken (0–100 % in 0,8 Sekunden nach oben und in 0,8 Sekunden nach unten). Nur der Klick auf die goldene Radmitte übernimmt die momentane Kraft. Je nach Kraft macht das Rad 2–10 volle Umdrehungen und läuft unterschiedlich lang aus.
+- Die einstellbare maximale Drehdauer beträgt 3–12 Sekunden; bei schwacher Kraft ist die tatsächliche Drehdauer kürzer. Optionaler synthetisierter Klicksound und vier Farbpaletten.
 - Präsentationsmodus ohne Editor.
 - Automatische Browser-Speicherung über `localStorage`, JSON-Import und JSON-Export.
 - Desktop- und Mobilansicht, Fokus-/Tastaturbedienung und reduzierte Animation bei aktiver Betriebssystemeinstellung.
@@ -42,3 +43,7 @@ Text, Material-Symbole und Segmentnummern werden entlang der jeweiligen Segmenta
 ## Platzsparende Konfiguration
 
 Die Anwendung startet mit **eingeklapptem Konfigurationsmenü**. Das Glücksrad nutzt die gesamte verfügbare Breite und skaliert nach der Viewport-Höhe. Über **Konfiguration** (Zahnrad auf schmalen Displays) lässt sich ein seitliches Einstellungsmenü öffnen, ohne das Rad zu verkleinern. Der Editor wird durch das Schließen-Symbol, einen Klick außerhalb oder `Escape` geschlossen. Die Symbolauswahl erscheint über dem Editor und bleibt bedienbar. Der Konfigurationsstand wird weiterhin lokal gespeichert; die Sichtbarkeit des Menüs wird bewusst nicht gespeichert.
+
+## Drehkraft und Timing
+
+Der vertikale Kraftbalken pendelt ständig zwischen 0 und 100 Prozent (vollständiger Zyklus 1,6 Sekunden). Beim Klick auf **DREHEN** wird der genaue aktuelle Wert eingefroren. Er bestimmt die Anzahl der vollen Umdrehungen (2–10) und die Dauer (35–100 Prozent der eingestellten maximalen Drehdauer). Die Gewinnwahrscheinlichkeit der Segmente bleibt gleich; die Zielausrichtung wird unabhängig bestimmt und anschließend mathematisch korrekt angefahren. Die Anzeige funktioniert auch im Präsentationsmodus, ohne einen zusätzlichen Startknopf bereitzustellen.

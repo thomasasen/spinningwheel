@@ -554,20 +554,57 @@
     }catch{/* Sound ist optional und darf die Drehung nie blockieren. */}
   }
   function currentIndex(angle,n){return ((Math.round(-normalized(angle)/(360/n))%n)+n)%n;}
+  // 0 -> 100 -> 0 every 1.6 seconds. A timestamp-based triangle wave keeps
+  // the captured power independent of animation frame rate and input latency.
+  const POWER_PERIOD_MS=1600;
+  const powerMeter=$('powerMeter'), powerFill=$('powerFill'), powerTip=$('powerTip');
+  const powerOutput=$('powerValue');
+  let powerEpoch=performance.now()-310, powerLevel=0, powerRaf=0, lastAnnouncedPower=-1;
+  function powerAt(time){
+    const phase=((time-powerEpoch)%POWER_PERIOD_MS+POWER_PERIOD_MS)%POWER_PERIOD_MS/POWER_PERIOD_MS;
+    return Math.max(0,Math.min(1,phase<=.5 ? phase*2 : (1-phase)*2));
+  }
+  function displayPower(level){
+    powerLevel=level;
+    const value=Math.round(level*100);
+    powerFill.style.height=value+'%';
+    powerTip.style.bottom=value+'%';
+    powerOutput.value=value+'%';
+    if(value!==lastAnnouncedPower){
+      powerMeter.setAttribute('aria-valuenow',String(value));
+      powerMeter.setAttribute('aria-valuetext',value+' Prozent Drehkraft');
+      lastAnnouncedPower=value;
+    }
+  }
+  function animatePower(time){
+    if(!isSpinning){displayPower(config.segments.length ? powerAt(time) : 0);}
+    powerRaf=requestAnimationFrame(animatePower);
+  }
+  powerRaf=requestAnimationFrame(animatePower);
   let raf=0;
   function spin(){
     const n=config.segments.length;if(isSpinning||!n)return;
-    isSpinning=true;lockEditor(true);$('spinHub').disabled=true;$('spinHub').classList.add('is-spinning');
-    $('statusText').textContent='Das Rad dreht sich …';$('presentationResult').textContent='';
+    const power=powerAt(performance.now());
+    displayPower(power); // Capture at the actual click, not at the previous frame.
+    isSpinning=true;powerMeter.classList.add('is-locked');
+    lockEditor(true);$('spinHub').disabled=true;$('spinHub').classList.add('is-spinning');
+    const percent=Math.round(power*100);
+    $('statusText').textContent=`Drehkraft ${percent} % · Das Rad dreht sich …`;
+    $('presentationResult').textContent='';
     const winner=Math.floor(rand()*n),step=360/n;
     // Sektor 0 liegt zu Beginn mittig unter dem feststehenden Zeiger bei 12 Uhr.
     // Exakt auf die Sektormitte zielen: So steht die Gewinner-Beschriftung
     // beim Stillstand horizontal statt zufällig schräg zum Zeiger.
     const finalModulo=normalized(-winner*step);
     const forward=normalized(finalModulo-normalized(rotation));
-    const from=rotation,delta=2160+forward,finish=from+delta;
+    // Stronger timing increases both revolutions and duration. The winner is
+    // selected independently of power, so the gauge never manipulates odds.
+    const turns=2+Math.round(power*8); // 2 to 10 full revolutions
     const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const duration=reduced?280:config.duration*1000;
+    // For people requesting reduced motion, avoid rapid multiple rotations.
+    const visibleTurns=reduced?0:turns;
+    const from=rotation,delta=visibleTurns*360+forward,finish=from+delta;
+    const duration=reduced?280:config.duration*1000*(.35+.65*power);
     const start=performance.now();lastTickAt=0;lastTickSector=currentIndex(from,n);
     function frame(now){
       const t=Math.min(1,(now-start)/duration),ease=1-Math.pow(1-t,4.1);
@@ -577,18 +614,19 @@
       if(sector!==lastTickSector&&now-lastTickAt>38){lastTickSector=sector;lastTickAt=now;tick();svg.classList.remove('pointer-tick');void svg.getBoundingClientRect();svg.classList.add('pointer-tick');}
       if(t<1){raf=requestAnimationFrame(frame);return;}
       rotation=finish;wheel.style.transform=`rotate(${rotation}deg)`;
-      isSpinning=false;lockEditor(false);$('spinHub').disabled=false;$('spinHub').classList.remove('is-spinning');
+      isSpinning=false;powerMeter.classList.remove('is-locked');powerEpoch=performance.now()-310;
+      lockEditor(false);$('spinHub').disabled=false;$('spinHub').classList.remove('is-spinning');
       const selected=config.segments[winner],result=safeText(selected.label);
       $('statusText').textContent=`Ergebnis: ${result} · Feld ${winner+1} von ${n}`;
       $('presentationResult').textContent=`✦ ${result} ✦`;
       // Debugwerte erleichtern die Regressionstests und die Prüfung der Zeiger-/Ergebniszuordnung.
-      Object.assign(window.__casinoNoirDebug,{lastWinner:winner,lastRotation:rotation,spinning:false});
+      Object.assign(window.__casinoNoirDebug,{lastWinner:winner,lastRotation:rotation,spinning:false,lastPower:power,lastTurns:visibleTurns,lastDurationMs:duration});
     }
     Object.assign(window.__casinoNoirDebug,{spinning:true,lastWinner:null});
     raf=requestAnimationFrame(frame);
   }
   $('spinHub').addEventListener('click',spin);
-  window.__casinoNoirDebug={get config(){return config;},get rotation(){return rotation;},get isSpinning(){return isSpinning;},get iconFontReady(){return iconFontReady;},get iconCatalogReady(){return fullCatalogReady;},get iconCatalogCount(){return ICONS.length;},get iconMatches(){return iconMatchCount;},get iconMatchingNames(){return [...iconMatches];},get iconCodepointMap(){return Object.fromEntries(ICON_CODEPOINTS);},loadIconCatalog,lastWinner:null,lastRotation:0,spinning:false,stop(){cancelAnimationFrame(raf);}};
+  window.__casinoNoirDebug={get config(){return config;},get rotation(){return rotation;},get isSpinning(){return isSpinning;},get power(){return powerLevel;},get powerPeriodMs(){return POWER_PERIOD_MS;},get iconFontReady(){return iconFontReady;},get iconCatalogReady(){return fullCatalogReady;},get iconCatalogCount(){return ICONS.length;},get iconMatches(){return iconMatchCount;},get iconMatchingNames(){return [...iconMatches];},get iconCodepointMap(){return Object.fromEntries(ICON_CODEPOINTS);},loadIconCatalog,lastWinner:null,lastRotation:0,spinning:false,stop(){cancelAnimationFrame(raf);}};
   restoreIconCatalog();
   render();
   loadIconCatalog();

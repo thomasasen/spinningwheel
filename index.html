@@ -45,9 +45,15 @@
                 <path d="M320 29 L324 43 L335 47 L324 51 L320 65 L316 51 L305 47 L316 43Z" fill="#fff3cf" opacity=".91"/>
               </g>
             </svg>
-            <button type="button" class="spin-hub" id="spinHub" aria-label="Glücksrad drehen" title="Hier klicken, um das Rad zu drehen"><span>DREHEN</span><small>✦</small></button>
+            <div class="power-meter" id="powerMeter" role="meter" aria-label="Aktuelle Drehkraft" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0 Prozent Drehkraft">
+              <span class="power-meter-title" aria-hidden="true">KRAFT</span>
+              <div class="power-meter-track" aria-hidden="true"><div class="power-meter-fill" id="powerFill"></div><div class="power-meter-tip" id="powerTip"></div></div>
+              <output class="power-meter-value" id="powerValue" aria-hidden="true">0%</output>
+            </div>
+            <button type="button" class="spin-hub" id="spinHub" aria-label="Glücksrad mit der aktuellen Kraft drehen" aria-describedby="powerHint" title="Aktuelle Drehkraft übernehmen und Rad drehen"><span>DREHEN</span><small>✦</small></button>
           </div>
         </div>
+        <p class="power-hint" id="powerHint">Der Kraftbalken pendelt automatisch. Klick auf die goldene Mitte übernimmt die aktuelle Drehkraft.</p>
         <div class="stage-footer">
           <div class="stage-status" aria-live="polite" id="resultStatus"><span class="status-orb"></span><span id="statusText">Auf die goldene Mitte klicken, um zu drehen</span></div>
           <div class="stage-footnote">NUR DIE MITTE STARTET DAS RAD</div>
@@ -61,7 +67,7 @@
         <div class="segment-list" id="segmentList" aria-label="Segmentliste"></div>
         <div class="editor-settings">
           <h2>Spiel & Darstellung</h2>
-          <div class="setting-row"><label for="spinDuration">Drehdauer</label><div class="setting-value"><input type="range" id="spinDuration" min="3" max="12" value="6" step="1"><output id="durationLabel" for="spinDuration">6 s</output></div></div>
+          <div class="setting-row"><label for="spinDuration">Maximale Drehdauer</label><div class="setting-value"><input type="range" id="spinDuration" min="3" max="12" value="6" step="1"><output id="durationLabel" for="spinDuration">6 s</output></div></div>
           <div class="setting-row"><label for="soundEnabled">Mechanisches Klickgeräusch</label><label class="toggle"><input type="checkbox" id="soundEnabled" checked><span class="toggle-slider"></span></label></div>
           <div class="setting-row"><label for="paletteSelect">Farbwelt</label><select id="paletteSelect"><option value="noir">Casino Noir</option><option value="ruby">Royal Rouge</option><option value="emerald">Emerald Lounge</option><option value="midnight">Midnight Gold</option></select></div>
         </div>

@@ -54,3 +54,27 @@ body.editor-open{overflow:hidden}
 .toast{z-index:80}
 @media(max-width:860px){.main-layout{display:block}.stage-panel{width:100%;max-width:none}.wheel-assembly{width:min(100%,calc(100dvh - 205px),1200px)}.editor-panel{max-width:none;margin:0}}
 @media(max-width:520px){.app-shell{padding:0 10px}.topbar{min-height:68px}.topbar-right{gap:6px}.topbar-right .btn{padding:9px 10px}.topbar-right #showOnlyWheel span{display:none}.topbar-right .btn-editor-toggle .editor-gear{display:inline}.topbar-right .btn-editor-toggle .editor-toggle-label{display:none}.main-layout{padding-top:10px}.wheel-stage{padding:0}.wheel-assembly{width:min(100%,calc(100dvh - 175px))}.editor-panel{width:100vw}.editor-header{padding-right:65px}.stage-footer{padding-top:10px}.main-footer{padding:10px 0}}
+
+/* Mechanical power gauge. It floats beside the wheel, rather than taking
+   vertical space away from the playing surface. The hub remains the only trigger. */
+.power-meter{position:absolute;z-index:6;right:-47px;top:27%;height:48%;width:38px;min-height:135px;display:flex;flex-direction:column;align-items:center;gap:7px;pointer-events:none;user-select:none;filter:drop-shadow(0 5px 9px #080407aa)}
+.power-meter-title{font:800 9px/1.1 system-ui,sans-serif;letter-spacing:.13em;color:#e1b77d;white-space:nowrap}
+.power-meter-track{position:relative;flex:1;min-height:0;width:25px;border:2px solid #c48a4a;border-radius:8px;overflow:hidden;background:linear-gradient(90deg,#150c12,#37212a 55%,#1a0f16);box-shadow:inset 0 2px 8px #000b,0 0 0 2px #3b231d,0 0 8px #d9a06525}
+.power-meter-track::before{content:"";position:absolute;z-index:2;inset:0;background:repeating-linear-gradient(to top,transparent 0,transparent calc(25% - 1px),#f6d59b55 calc(25% - 1px),#f6d59b55 25%);pointer-events:none}
+.power-meter-fill{position:absolute;inset:auto 0 0;height:0%;background:linear-gradient(to top,#67213b 0%,#d82c73 46%,#fbb777 79%,#fff0bd 100%);box-shadow:inset 3px 0 4px #fff5ad55,0 0 14px #e85186a0}
+.power-meter-tip{position:absolute;left:-2px;right:-2px;bottom:0%;height:5px;background:#fff3be;box-shadow:0 0 8px 2px #ffc377;z-index:3;border-radius:2px}
+.power-meter-value{font:800 12px/1.2 system-ui,sans-serif;font-variant-numeric:tabular-nums;color:#ffe0af;min-width:38px;text-align:center}
+.power-meter.is-locked .power-meter-value{color:#fff5d5;text-shadow:0 0 9px #eab065}
+.power-meter.is-locked .power-meter-track{border-color:#fff2b1}
+.power-hint{width:min(100%,1200px);margin:0 auto 1px;padding:0 8px;text-align:center;font:11px/1.4 system-ui,sans-serif;color:#ae8991}
+@media(max-width:560px){
+  /* A narrow gutter prevents the vertical gauge from covering the wheel. */
+  .wheel-stage .wheel-assembly{width:min(calc(100% - 42px),calc(100dvh - 175px))}
+  .power-meter{right:-30px;width:32px;top:29%;height:44%;gap:5px;min-height:100px}
+  .power-meter-track{width:20px}
+  .power-meter-title{font-size:8px}
+  .power-meter-value{font-size:10px;min-width:32px}
+  .power-hint{font-size:10px;padding:0 6px}
+  #presentationTarget{width:min(85vw,80dvh)}
+  #presentationTarget .power-meter{right:-30px}
+}

@@ -66,8 +66,33 @@ body.editor-open{overflow:hidden}
 .toast{z-index:80}
 @media(max-width:860px){.main-layout{display:block}.stage-panel{width:100%;max-width:none}.wheel-assembly{width:min(100%,calc(100dvh - 205px),1200px)}.editor-panel{max-width:none;margin:0}}
 @media(max-width:520px){.app-shell{padding:0 10px}.topbar{min-height:68px}.topbar-right{gap:6px}.topbar-right .btn{padding:9px 10px}.topbar-right #showOnlyWheel span{display:none}.topbar-right .btn-editor-toggle .editor-gear{display:inline}.topbar-right .btn-editor-toggle .editor-toggle-label{display:none}.main-layout{padding-top:10px}.wheel-stage{padding:0}.wheel-assembly{width:min(100%,calc(100dvh - 175px))}.editor-panel{width:100vw}.editor-header{padding-right:65px}.stage-footer{padding-top:10px}.main-footer{padding:10px 0}}
-  </style>
 
+/* Mechanical power gauge. It floats beside the wheel, rather than taking
+   vertical space away from the playing surface. The hub remains the only trigger. */
+.power-meter{position:absolute;z-index:6;right:-47px;top:27%;height:48%;width:38px;min-height:135px;display:flex;flex-direction:column;align-items:center;gap:7px;pointer-events:none;user-select:none;filter:drop-shadow(0 5px 9px #080407aa)}
+.power-meter-title{font:800 9px/1.1 system-ui,sans-serif;letter-spacing:.13em;color:#e1b77d;white-space:nowrap}
+.power-meter-track{position:relative;flex:1;min-height:0;width:25px;border:2px solid #c48a4a;border-radius:8px;overflow:hidden;background:linear-gradient(90deg,#150c12,#37212a 55%,#1a0f16);box-shadow:inset 0 2px 8px #000b,0 0 0 2px #3b231d,0 0 8px #d9a06525}
+.power-meter-track::before{content:"";position:absolute;z-index:2;inset:0;background:repeating-linear-gradient(to top,transparent 0,transparent calc(25% - 1px),#f6d59b55 calc(25% - 1px),#f6d59b55 25%);pointer-events:none}
+.power-meter-fill{position:absolute;inset:auto 0 0;height:0%;background:linear-gradient(to top,#67213b 0%,#d82c73 46%,#fbb777 79%,#fff0bd 100%);box-shadow:inset 3px 0 4px #fff5ad55,0 0 14px #e85186a0}
+.power-meter-tip{position:absolute;left:-2px;right:-2px;bottom:0%;height:5px;background:#fff3be;box-shadow:0 0 8px 2px #ffc377;z-index:3;border-radius:2px}
+.power-meter-value{font:800 12px/1.2 system-ui,sans-serif;font-variant-numeric:tabular-nums;color:#ffe0af;min-width:38px;text-align:center}
+.power-meter.is-locked .power-meter-value{color:#fff5d5;text-shadow:0 0 9px #eab065}
+.power-meter.is-locked .power-meter-track{border-color:#fff2b1}
+.power-hint{width:min(100%,1200px);margin:0 auto 1px;padding:0 8px;text-align:center;font:11px/1.4 system-ui,sans-serif;color:#ae8991}
+@media(max-width:560px){
+  /* A narrow gutter prevents the vertical gauge from covering the wheel. */
+  .wheel-stage .wheel-assembly{width:min(calc(100% - 42px),calc(100dvh - 175px))}
+  .power-meter{right:-30px;width:32px;top:29%;height:44%;gap:5px;min-height:100px}
+  .power-meter-track{width:20px}
+  .power-meter-title{font-size:8px}
+  .power-meter-value{font-size:10px;min-width:32px}
+  .power-hint{font-size:10px;padding:0 6px}
+  #presentationTarget{width:min(85vw,80dvh)}
+  #presentationTarget .power-meter{right:-30px}
+}
+
+</style>
+  
 </head>
 <body>
   <div class="app-shell" id="appShell">
@@ -102,9 +127,15 @@ body.editor-open{overflow:hidden}
                 <path d="M320 29 L324 43 L335 47 L324 51 L320 65 L316 51 L305 47 L316 43Z" fill="#fff3cf" opacity=".91"/>
               </g>
             </svg>
-            <button type="button" class="spin-hub" id="spinHub" aria-label="Glücksrad drehen" title="Hier klicken, um das Rad zu drehen"><span>DREHEN</span><small>✦</small></button>
+            <div class="power-meter" id="powerMeter" role="meter" aria-label="Aktuelle Drehkraft" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0 Prozent Drehkraft">
+              <span class="power-meter-title" aria-hidden="true">KRAFT</span>
+              <div class="power-meter-track" aria-hidden="true"><div class="power-meter-fill" id="powerFill"></div><div class="power-meter-tip" id="powerTip"></div></div>
+              <output class="power-meter-value" id="powerValue" aria-hidden="true">0%</output>
+            </div>
+            <button type="button" class="spin-hub" id="spinHub" aria-label="Glücksrad mit der aktuellen Kraft drehen" aria-describedby="powerHint" title="Aktuelle Drehkraft übernehmen und Rad drehen"><span>DREHEN</span><small>✦</small></button>
           </div>
         </div>
+        <p class="power-hint" id="powerHint">Der Kraftbalken pendelt automatisch. Klick auf die goldene Mitte übernimmt die aktuelle Drehkraft.</p>
         <div class="stage-footer">
           <div class="stage-status" aria-live="polite" id="resultStatus"><span class="status-orb"></span><span id="statusText">Auf die goldene Mitte klicken, um zu drehen</span></div>
           <div class="stage-footnote">NUR DIE MITTE STARTET DAS RAD</div>
@@ -118,7 +149,7 @@ body.editor-open{overflow:hidden}
         <div class="segment-list" id="segmentList" aria-label="Segmentliste"></div>
         <div class="editor-settings">
           <h2>Spiel & Darstellung</h2>
-          <div class="setting-row"><label for="spinDuration">Drehdauer</label><div class="setting-value"><input type="range" id="spinDuration" min="3" max="12" value="6" step="1"><output id="durationLabel" for="spinDuration">6 s</output></div></div>
+          <div class="setting-row"><label for="spinDuration">Maximale Drehdauer</label><div class="setting-value"><input type="range" id="spinDuration" min="3" max="12" value="6" step="1"><output id="durationLabel" for="spinDuration">6 s</output></div></div>
           <div class="setting-row"><label for="soundEnabled">Mechanisches Klickgeräusch</label><label class="toggle"><input type="checkbox" id="soundEnabled" checked><span class="toggle-slider"></span></label></div>
           <div class="setting-row"><label for="paletteSelect">Farbwelt</label><select id="paletteSelect"><option value="noir">Casino Noir</option><option value="ruby">Royal Rouge</option><option value="emerald">Emerald Lounge</option><option value="midnight">Midnight Gold</option></select></div>
         </div>
@@ -145,7 +176,7 @@ body.editor-open{overflow:hidden}
     <div id="presentationResult" class="presentation-result" aria-live="polite"></div>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script>
+<script>
 /* Casino Noir – standalone configurable wheel. Material Symbols: Apache-2.0 (Google). */
 (() => {
   'use strict';
@@ -702,20 +733,57 @@ body.editor-open{overflow:hidden}
     }catch{/* Sound ist optional und darf die Drehung nie blockieren. */}
   }
   function currentIndex(angle,n){return ((Math.round(-normalized(angle)/(360/n))%n)+n)%n;}
+  // 0 -> 100 -> 0 every 1.6 seconds. A timestamp-based triangle wave keeps
+  // the captured power independent of animation frame rate and input latency.
+  const POWER_PERIOD_MS=1600;
+  const powerMeter=$('powerMeter'), powerFill=$('powerFill'), powerTip=$('powerTip');
+  const powerOutput=$('powerValue');
+  let powerEpoch=performance.now()-310, powerLevel=0, powerRaf=0, lastAnnouncedPower=-1;
+  function powerAt(time){
+    const phase=((time-powerEpoch)%POWER_PERIOD_MS+POWER_PERIOD_MS)%POWER_PERIOD_MS/POWER_PERIOD_MS;
+    return Math.max(0,Math.min(1,phase<=.5 ? phase*2 : (1-phase)*2));
+  }
+  function displayPower(level){
+    powerLevel=level;
+    const value=Math.round(level*100);
+    powerFill.style.height=value+'%';
+    powerTip.style.bottom=value+'%';
+    powerOutput.value=value+'%';
+    if(value!==lastAnnouncedPower){
+      powerMeter.setAttribute('aria-valuenow',String(value));
+      powerMeter.setAttribute('aria-valuetext',value+' Prozent Drehkraft');
+      lastAnnouncedPower=value;
+    }
+  }
+  function animatePower(time){
+    if(!isSpinning){displayPower(config.segments.length ? powerAt(time) : 0);}
+    powerRaf=requestAnimationFrame(animatePower);
+  }
+  powerRaf=requestAnimationFrame(animatePower);
   let raf=0;
   function spin(){
     const n=config.segments.length;if(isSpinning||!n)return;
-    isSpinning=true;lockEditor(true);$('spinHub').disabled=true;$('spinHub').classList.add('is-spinning');
-    $('statusText').textContent='Das Rad dreht sich …';$('presentationResult').textContent='';
+    const power=powerAt(performance.now());
+    displayPower(power); // Capture at the actual click, not at the previous frame.
+    isSpinning=true;powerMeter.classList.add('is-locked');
+    lockEditor(true);$('spinHub').disabled=true;$('spinHub').classList.add('is-spinning');
+    const percent=Math.round(power*100);
+    $('statusText').textContent=`Drehkraft ${percent} % · Das Rad dreht sich …`;
+    $('presentationResult').textContent='';
     const winner=Math.floor(rand()*n),step=360/n;
     // Sektor 0 liegt zu Beginn mittig unter dem feststehenden Zeiger bei 12 Uhr.
     // Exakt auf die Sektormitte zielen: So steht die Gewinner-Beschriftung
     // beim Stillstand horizontal statt zufällig schräg zum Zeiger.
     const finalModulo=normalized(-winner*step);
     const forward=normalized(finalModulo-normalized(rotation));
-    const from=rotation,delta=2160+forward,finish=from+delta;
+    // Stronger timing increases both revolutions and duration. The winner is
+    // selected independently of power, so the gauge never manipulates odds.
+    const turns=2+Math.round(power*8); // 2 to 10 full revolutions
     const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const duration=reduced?280:config.duration*1000;
+    // For people requesting reduced motion, avoid rapid multiple rotations.
+    const visibleTurns=reduced?0:turns;
+    const from=rotation,delta=visibleTurns*360+forward,finish=from+delta;
+    const duration=reduced?280:config.duration*1000*(.35+.65*power);
     const start=performance.now();lastTickAt=0;lastTickSector=currentIndex(from,n);
     function frame(now){
       const t=Math.min(1,(now-start)/duration),ease=1-Math.pow(1-t,4.1);
@@ -725,18 +793,19 @@ body.editor-open{overflow:hidden}
       if(sector!==lastTickSector&&now-lastTickAt>38){lastTickSector=sector;lastTickAt=now;tick();svg.classList.remove('pointer-tick');void svg.getBoundingClientRect();svg.classList.add('pointer-tick');}
       if(t<1){raf=requestAnimationFrame(frame);return;}
       rotation=finish;wheel.style.transform=`rotate(${rotation}deg)`;
-      isSpinning=false;lockEditor(false);$('spinHub').disabled=false;$('spinHub').classList.remove('is-spinning');
+      isSpinning=false;powerMeter.classList.remove('is-locked');powerEpoch=performance.now()-310;
+      lockEditor(false);$('spinHub').disabled=false;$('spinHub').classList.remove('is-spinning');
       const selected=config.segments[winner],result=safeText(selected.label);
       $('statusText').textContent=`Ergebnis: ${result} · Feld ${winner+1} von ${n}`;
       $('presentationResult').textContent=`✦ ${result} ✦`;
       // Debugwerte erleichtern die Regressionstests und die Prüfung der Zeiger-/Ergebniszuordnung.
-      Object.assign(window.__casinoNoirDebug,{lastWinner:winner,lastRotation:rotation,spinning:false});
+      Object.assign(window.__casinoNoirDebug,{lastWinner:winner,lastRotation:rotation,spinning:false,lastPower:power,lastTurns:visibleTurns,lastDurationMs:duration});
     }
     Object.assign(window.__casinoNoirDebug,{spinning:true,lastWinner:null});
     raf=requestAnimationFrame(frame);
   }
   $('spinHub').addEventListener('click',spin);
-  window.__casinoNoirDebug={get config(){return config;},get rotation(){return rotation;},get isSpinning(){return isSpinning;},get iconFontReady(){return iconFontReady;},get iconCatalogReady(){return fullCatalogReady;},get iconCatalogCount(){return ICONS.length;},get iconMatches(){return iconMatchCount;},get iconMatchingNames(){return [...iconMatches];},get iconCodepointMap(){return Object.fromEntries(ICON_CODEPOINTS);},loadIconCatalog,lastWinner:null,lastRotation:0,spinning:false,stop(){cancelAnimationFrame(raf);}};
+  window.__casinoNoirDebug={get config(){return config;},get rotation(){return rotation;},get isSpinning(){return isSpinning;},get power(){return powerLevel;},get powerPeriodMs(){return POWER_PERIOD_MS;},get iconFontReady(){return iconFontReady;},get iconCatalogReady(){return fullCatalogReady;},get iconCatalogCount(){return ICONS.length;},get iconMatches(){return iconMatchCount;},get iconMatchingNames(){return [...iconMatches];},get iconCodepointMap(){return Object.fromEntries(ICON_CODEPOINTS);},loadIconCatalog,lastWinner:null,lastRotation:0,spinning:false,stop(){cancelAnimationFrame(raf);}};
   restoreIconCatalog();
   render();
   loadIconCatalog();
@@ -752,6 +821,7 @@ body.editor-open{overflow:hidden}
     }).catch(()=>{});
   }
 })();
-  </script>
+
+</script>
 </body>
 </html>
