@@ -1,5 +1,5 @@
 """Regressions: a winner's icon, label or segment number is upright at 12 o'clock."""
-import asyncio, json, math
+import asyncio, json, math, shutil
 from pathlib import Path
 from playwright.async_api import async_playwright
 
