@@ -56,10 +56,11 @@ try{
   const spinSamples=await page.evaluate(async()=>{
     const out=[];
     const ptr=document.querySelector('#fixedPointer');
-    for(let i=0;i<210;i++){
+    for(let i=0;i<1200;i++){
       await new Promise(r=>requestAnimationFrame(r));
       const tr=ptr.getAttribute('transform')||'';
       out.push(Number(/rotate\((-?[\d.]+)/.exec(tr)?.[1]||0));
+      if(i>20&&!window.__casinoNoirDebug.isSpinning)break;
     }
     return out;
   });
