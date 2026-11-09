@@ -44,10 +44,31 @@ try{
   await page.locator('#cardOverlay').waitFor({state:'visible',timeout:7000});
   assert.equal(await page.locator('#drawCard').isVisible(),true);
   assert.equal(await page.locator('#cardFront img').count(),0);
+  await page.emulateMedia({reducedMotion:'no-preference'});
   await page.evaluate(()=>{document.getElementById('drawCard').click();document.getElementById('drawCard').click();});
   await page.locator('#nextRound').waitFor({state:'visible'});
   assert.equal(await page.locator('#cardFront .card-face-text').innerText(),'<img src=x onerror=alert(1)>');
   assert.equal(await page.locator('#cardFront img').count(),0,'untrusted text must stay text, not HTML');
+  // A textContent/innerText assertion is not sufficient for 3D cards:
+  // a CSS filter on the rotating parent can flatten the 3D scene, leaving
+  // invisible front-face text in the DOM while the mirrored back is painted.
+  await page.waitForTimeout(1250);
+  const cardFrontActuallyFacingViewer=await page.evaluate(()=>{
+    const flip=document.getElementById('cardFlip');
+    const front=document.getElementById('cardFront');
+    const box=flip.getBoundingClientRect();
+    const hit=document.elementFromPoint(box.left+box.width/2,box.top+box.height/2);
+    return {
+      frontInFront:front===hit||front.contains(hit),
+      hitClass:String(hit?.className||''),
+      filter:getComputedStyle(flip).filter,
+      content:front.querySelector('.card-face-text').textContent
+    };
+  });
+  assert.equal(cardFrontActuallyFacingViewer.filter,'none',
+    'the rotating 3D container must not have flattening filters');
+  assert.ok(cardFrontActuallyFacingViewer.frontInFront,
+    'the drawn card front must be visibly facing the viewer, not the mirrored back: '+JSON.stringify(cardFrontActuallyFacingViewer));
   const cardIcon=await page.locator('#cardFront .card-face-icon').innerText();
   assert.ok(cardIcon&&cardIcon!=='favorite'&&cardIcon!=='favorite_border','card must show the symbol glyph, not its raw catalogue name');
   let remaining=await page.evaluate(()=>JSON.parse(localStorage.getItem('casino-noir-card-decks-v1')).decks[0].state.remaining);
