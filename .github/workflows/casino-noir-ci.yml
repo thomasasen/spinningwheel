@@ -5,6 +5,7 @@ on:
       - 'app.js'
       - 'index.html'
       - 'styles.css'
+      - 'casino-noir-standalone.html'
       - 'tests/**'
       - '.github/workflows/casino-noir-ci.yml'
   workflow_dispatch:
