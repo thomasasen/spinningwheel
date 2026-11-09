@@ -122,3 +122,30 @@ Mit dem goldenen Ziehgriff lässt sich die **gesamte Segmentkarte aufnehmen**. S
 ## Semantische Material-Symbol-Suche
 
 Der gesamte aktuelle Rounded-Codepoint-Katalog bleibt durchsuchbar. Zusätzlich lädt die Symbolauswahl beim Öffnen den lokal mitgelieferten **icon-search-index.json** (3.946 Icons mit offiziellen englischen Tags und Beliebtheitswerten aus einem Snapshot der Google-Metadaten). Icons, die im neueren Font vorhanden sind, aber nicht im Suchindex, bleiben selbstverständlich per Symbolname auffindbar. Die Trefferrangfolge berücksichtigt Originalnamen, exakte Tags, Teiltreffer und Beliebtheit. Bei `shirt` erscheinen `apparel` und `laundry`. Die bisherige deutsche Synonymhilfe bleibt ergänzend erhalten. Der vollständige lokale Suchindex vermeidet eine Laufzeitabhängigkeit von einer undokumentierten Google-Such-API; GitHub Pages liefert ihn als statische Datei aus. Beim Standalone-Build wird er eingebettet, damit dieselbe Suche ohne externen Metadatenserver funktioniert. Google Fonts wird weiter nur für die Icon-Glyphen verwendet. Quelle: Google Material Symbols-Metadaten, Snapshot aus `timmaffett/material_symbols_icons`, Apache-2.0. Der Suchindex wird bei Bedarf durch Aktualisierung der Quelldaten erneuert; eine 1:1-Identität mit Googles interner Suche ist nicht zugesichert.
+
+
+## Gewichtete Ziehung, Radmechanik und mehrere gespeicherte Räder
+
+Die Funktionen sind in der modularen und der eigenständigen HTML-Version enthalten. Die automatisierte Qualitätssicherung wird unter GitHub Actions dokumentiert.
+
+### Gewichtung
+
+Jedes Segment erhält ein Gewicht zwischen 0 und 1.000.000 (Standard 1). Die Gewinnchance beträgt Gewicht / Summe aller Gewichte. Bei Gewichten 1, 3 und 0 ergeben sich 25 %, 75 % und 0 %. Das Rad kann entweder gleich große Segmente zeigen oder die Fläche proportional zur Chance aufteilen. Im gleich großen Modus gelten **nicht automatisch** gleiche Gewinnchancen. Der Editor zeigt die tatsächlichen Prozentwerte. Bei Summe 0 wird kein Spin gestartet.
+
+Die Auswahl erfolgt mit dem vorhandenen kryptografisch basierten Zufallswert. Drehkraft und Zeitdauer beeinflussen nicht die Gewichtung. Das Ziel des Rads wird auf den geometrischen Mittelpunkt des ausgewählten Sektors ausgerichtet. Ein Nullgewichtfeld bleibt sichtbar, kann aber nicht gewinnen.
+
+### Radmechanik
+
+Die zeitbasierte Auslaufkurve enthält eine Beschleunigungsphase und eine kontinuierliche Geschwindigkeitsabnahme bis zum Ziel. Die vorhandene Auslaufspannung bestimmt die Charakteristik der Kurve. Der Zeiger federt nach Segmentkontakten als gedämpfter Oszillator; ein hoher Kontakt-Takt wird begrenzt, damit die Animation bei vielen Segmenten nicht überlastet wird. Federung, Dämpfung und Ausschlag lassen sich einstellen. Vier originale Web-Audio-Klickcharaktere stehen zur Wahl: Casino, mechanisch, Ratsche und Metall. Bei reduzierter Bewegung wird die Zeigeranimation unterdrückt.
+
+Dieses Bewegungsmodell ist **zielgesteuert**, nicht das freie Auslaufen eines zufälligen starren Körpers. Nur dadurch kann ein vorher anhand expliziter Gewichte gezogenes Ergebnis exakt und ohne sichtbaren Korrektursprung dargestellt werden.
+
+### Mehrere Glücksräder
+
+Unter **Gespeicherte Glücksräder** kann man neue Räder erstellen, bestehende kopieren, umbenennen, laden und löschen. Der Browser hält bis zu 100 Profile in `localStorage` unter `casino-noir-wheel-profiles-v2`; das frühere `casino-noir-wheel-studio-v1` bleibt für die Migration verfügbar. Alle Änderungen werden automatisch gespeichert. Import akzeptiert ältere Einzelkonfigurationen, neue Einzelprofile oder Bündel. Man kann als neue Konfiguration importieren oder (bei einer einzelnen Konfiguration) das aktuell geladene Profil ersetzen. Export ist einzeln oder als Sammlung möglich. Speicherfehler erscheinen als Warnung im Kopfbereich.
+
+`localStorage` ist für textbasierte Einstellungen ausreichend; Bilddateien und Mediendateien werden nicht gespeichert. Diese Daten sind geräte- und browsergebunden. Ein JSON-Export ist deshalb die empfohlene zusätzliche Sicherung. Ein fehlgeschlagener Import wird vor einem Profilwechsel geprüft und darf die gespeicherten Konfigurationen nicht verändern.
+
+### Prüfung
+
+`node --check app.js` prüft JavaScript-Syntax. `tests/weighted-browser.mjs` prüft mit Playwright-Chromium die Darstellungsmodi, 100.000 Ziehungen mit gewichteten Verhältnissen und Nullgewichten, den Stopp und das Wiederherstellen mehrerer Profile. Die GitHub-Actions-Definition liegt unter `.github/workflows/casino-noir-ci.yml`. Die Chromium-Regression umfasst die modulare und die Standalone-Version sowie gewichtete Stichproben. Wie bei jedem modellierten Bewegungsablauf ersetzt das keine physikalische Messung an einem realen Glücksrad.
