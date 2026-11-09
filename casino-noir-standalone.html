@@ -317,6 +317,9 @@ body.editor-open{overflow:hidden}
 }
 @media(prefers-reduced-motion:reduce){.wheel-svg #fixedPointer{transition:none!important}}
 
+.profile-save-status{font:600 10px/1.45 system-ui,sans-serif;color:#e5bf89;margin:9px 0 0}
+.profile-save-status.is-warning{color:#ffb4a0}
+
 </style>
   
 </head>
@@ -381,7 +384,7 @@ body.editor-open{overflow:hidden}
           <div class="profile-select-row"><label for="profilePicker">Aktives Glücksrad</label><select id="profilePicker" aria-label="Gespeichertes Glücksrad auswählen"></select></div>
           <div class="profile-name-row"><label for="profileName">Name</label><input id="profileName" type="text" maxlength="60" autocomplete="off" aria-label="Name des Glücksrads" value="Mein Glücksrad"></div>
           <div class="profile-buttons"><button class="btn btn-primary" type="button" id="newProfile">＋ Neu</button><button class="btn" type="button" id="saveProfile">Speichern</button><button class="btn" type="button" id="duplicateProfile">Duplizieren</button><button class="btn" type="button" id="renameProfile">Umbenennen</button><button class="btn btn-danger" type="button" id="deleteProfile">Löschen</button></div>
-          <p class="profile-hint">Alle Änderungen werden automatisch auf diesem Gerät gespeichert. Weitere Glücksräder bleiben getrennt.</p>
+          <p class="profile-hint">Alle Änderungen werden automatisch auf diesem Gerät gespeichert. Weitere Glücksräder bleiben getrennt.</p><p id="profileSaveStatus" class="profile-save-status" role="status" aria-live="polite">● Lokal gespeichert</p>
         </section>
         <div class="section-title"><div><h2>Segmente <span class="count-pill" id="segmentCount">8</span></h2><p>Text, Material-Symbol oder beides</p></div><button type="button" id="addSegment" class="btn btn-primary"><span aria-hidden="true">＋</span> Hinzufügen</button></div>
         <div class="segment-list" id="segmentList" aria-label="Segmentliste"></div>
@@ -820,6 +823,7 @@ body.editor-open{overflow:hidden}
     saveOk=ok;
     $('saveIndicator').textContent=ok?'● Lokal gespeichert':'⚠ Speicherung nicht möglich';
     $('saveIndicator').style.color=ok?'':'#ffb4a0';
+    const inner=$('profileSaveStatus');if(inner){inner.textContent=ok?'● Alle Änderungen lokal gespeichert':'⚠ Änderungen konnten nicht gespeichert werden. Bitte JSON exportieren.';inner.classList.toggle('is-warning',!ok);}
   }
   function persist(next=workspace){
     try{
@@ -919,6 +923,8 @@ body.editor-open{overflow:hidden}
     highlightedWinner=index;
     group.classList.remove('is-visible');
     group.replaceChildren();
+    // Real overlay geometry is grouped as one semantic highlight surface.
+    const surface=e('g',{class:'winner-highlight-surface'},group);
     wheel.querySelectorAll('.winner-item-lifted').forEach(node=>node.classList.remove('winner-item-lifted'));
     stage.hidden=true;
     stage.classList.remove('is-visible');
@@ -934,21 +940,21 @@ body.editor-open{overflow:hidden}
     const [winnerX,winnerY]=polar(188,center);
     // Shared subtle marker is deliberately omitted: modes must look different.
     if(effect==='outline'){
-      const under=e('path',{d:sectorPath(263),class:'winner-outline-rest'},group);
-      const trace=e('path',{d:sectorPath(263),class:'winner-outline-trace'},group);
+      const under=e('path',{d:sectorPath(263),class:'winner-outline-rest'},surface);
+      const trace=e('path',{d:sectorPath(263),class:'winner-outline-trace'},surface);
       const length=Math.ceil(trace.getTotalLength());
       trace.style.strokeDasharray=`${length} ${length}`;
       trace.style.setProperty('--trace-length',String(length));
       const [p1x,p1y]=polar(260,center-step/2),[p2x,p2y]=polar(260,center+step/2);
-      for(const [x,y] of [[p1x,p1y],[p2x,p2y]])e('circle',{cx:x,cy:y,r:4*mult,class:'winner-outline-jewel'},group);
+      for(const [x,y] of [[p1x,p1y],[p2x,p2y]])e('circle',{cx:x,cy:y,r:4*mult,class:'winner-outline-jewel'},surface);
     }else if(effect==='spotlight'){
-      shadeOtherSectors(group,index,n,step,dim);
-      makeSpotBeam(group,sectorPath,center,mult);
+      shadeOtherSectors(surface,index,n,step,dim);
+      makeSpotBeam(surface,sectorPath,center,mult);
     }else if(effect==='lift'){
       const offset=17*mult,rad=center*Math.PI/180;
       const dx=Math.cos(rad)*offset,dy=Math.sin(rad)*offset;
-      e('path',{d:sectorPath(261),class:'winner-lift-groove'},group);
-      const lift=e('g',{class:'winner-lift',transform:`translate(${dx.toFixed(2)} ${dy.toFixed(2)})`},group);
+      e('path',{d:sectorPath(261),class:'winner-lift-groove'},surface);
+      const lift=e('g',{class:'winner-lift',transform:`translate(${dx.toFixed(2)} ${dy.toFixed(2)})`},surface);
       const moving=e('g',{class:'winner-lift-motion'},lift);
       moving.style.setProperty('--lift-x',`${-dx.toFixed(2)}px`);
       moving.style.setProperty('--lift-y',`${-dy.toFixed(2)}px`);
@@ -958,25 +964,25 @@ body.editor-open{overflow:hidden}
       if(original){moving.appendChild(original.cloneNode(true));original.classList.add('winner-item-lifted');}
       e('path',{d:sectorPath(259),class:'winner-lift-shimmer'},moving);
     }else if(effect==='lights'){
-      makeMarquee(group,index,n,step,mult);
-      e('path',{d:sectorPath(260),class:'winner-lights-wedge'},group);
+      makeMarquee(surface,index,n,step,mult);
+      e('path',{d:sectorPath(260),class:'winner-lights-wedge'},surface);
     }else if(effect==='celebration'){
       // Keep the winner visually selected once the fireworks have faded.
-      e('path',{d:sectorPath(263),class:'winner-celebration-lacquer'},group);
-      makeFireworks(group,center,step,mult);
-      const halo=e('circle',{cx:winnerX,cy:winnerY,r:24,class:'winner-burst-halo'},group);
+      e('path',{d:sectorPath(263),class:'winner-celebration-lacquer'},surface);
+      makeFireworks(surface,center,step,mult);
+      const halo=e('circle',{cx:winnerX,cy:winnerY,r:24,class:'winner-burst-halo'},surface);
       halo.style.setProperty('--halo-scale',String(2.8*mult));
     }else if(effect==='cinematic'){
-      shadeOtherSectors(group,index,n,step,dim*.80);
-      makeSpotBeam(group,sectorPath,center,mult);
-      makeMarquee(group,index,n,step,mult);
-      const rings=e('g',{class:'winner-cinema-rings'},group);
+      shadeOtherSectors(surface,index,n,step,dim*.80);
+      makeSpotBeam(surface,sectorPath,center,mult);
+      makeMarquee(surface,index,n,step,mult);
+      const rings=e('g',{class:'winner-cinema-rings'},surface);
       for(let j=0;j<3;j++){
         const ring=e('circle',{cx:winnerX,cy:winnerY,r:13+j*14,class:'winner-cinema-ring'},rings);
         ring.style.animationDelay=`${j*260}ms`;
       }
-      e('path',{d:sectorPath(263),class:'winner-cinema-gold'},group);
-      e('circle',{cx:320,cy:320,r:279,class:'winner-cinema-orbit'},group);
+      e('path',{d:sectorPath(263),class:'winner-cinema-gold'},surface);
+      e('circle',{cx:320,cy:320,r:279,class:'winner-cinema-orbit'},surface);
     }
     const names={outline:'GOLDEN EDGE',spotlight:'CASINO SPOTLIGHT',lift:'GOLDEN LIFT',lights:'JACKPOT LIGHTS',celebration:'GOLDEN CELEBRATION',cinematic:'CASINO CINEMATIC'};
     stage.dataset.effect=effect;
@@ -1075,7 +1081,7 @@ body.editor-open{overflow:hidden}
     } else {
       config.segments.forEach((s,i)=>{
         const sector=layout[i];if(sector.span<1e-10||(config.proportional&&s.weight===0))return;
-        const path=sector.span>=359.999999?e('circle',{cx:320,cy:320,r:267,fill:s.color},wheelSurface):e('path',{d:wedgePath(sector.center-sector.span/2,sector.center+sector.span/2,267),fill:s.color,stroke:'#c69456','stroke-width':n>72?.6:n>26?1:1.9,'stroke-linejoin':'round'},wheelSurface);
+        const path=sector.span>=359.999999?e('circle',{cx:320,cy:320,r:267,fill:s.color},wheelSurface):e('path',{d:wedgePath(sector.center-sector.span/2,sector.center+sector.span/2,267),fill:s.color,'fill-opacity':s.weight===0&&weightTotal>0&&!config.proportional?.25:1,stroke:'#c69456','stroke-width':n>72?.6:n>26?1:1.9,'stroke-linejoin':'round'},wheelSurface);
         path.appendChild(e('title',{},null));path.lastChild.textContent=`Segment ${i+1}: ${safeText(s.label)} · ${(100*s.weight/(weightTotal||1)).toFixed(2)} %`;
       });
     }
@@ -1139,7 +1145,7 @@ body.editor-open{overflow:hidden}
     e('circle',{cx:320,cy:320,r:47,fill:'#1d1013',stroke:'#6b3e20','stroke-width':1.2},wheel);
     wheel.style.transform=`rotate(${rotation}deg)`;
     $('segmentCount').textContent=n.toLocaleString('de-DE');
-    $('stageCount').textContent=String(n).padStart(2,'0')+' SEGMENTE';
+    $('stageCount').textContent=String(n).padStart(2,'0')+' SEGMENTE'+(config.proportional?' · PROPORTIONAL':config.segments.some(s=>s.weight!==config.segments[0]?.weight)?' · GEWICHTETE CHANCEN':'');
     $('spinHub').disabled=isSpinning||!hasEligibleSegments();
     const summary=$('probabilitySummary');if(summary){const count=config.segments.filter(item=>item.weight>0).length;summary.textContent=count?`${count} von ${n} Segmenten gewinnberechtigt · Summe der Gewichte: ${activeWeightTotal().toLocaleString('de-DE')}`:'Keine Ziehung möglich: Alle Gewichte sind 0.';summary.classList.toggle('is-warning',!count);}
     const notice=$('densityNotice');
@@ -1598,6 +1604,7 @@ body.editor-open{overflow:hidden}
       next.activeId=newActive;
       if(!commitProfileChange(next,prepared.length+' Glücksrad/-räder importiert.'))throw Error('Der Browser konnte die Sammlung nicht speichern.');
     }catch(error){toast('Import fehlgeschlagen: '+error.message);}
+    finally{ev.target.value='';} // Re-importing the same filename must trigger change again.
   });
   function openIconPicker(id){
     currentIconTarget=id;lastFocusedElement=document.activeElement;
@@ -1941,6 +1948,7 @@ body.editor-open{overflow:hidden}
   window.__casinoNoirDebug={get config(){return config;},get rotation(){return rotation;},get isSpinning(){return isSpinning;},get power(){return powerLevel;},get powerPeriodMs(){return POWER_PERIOD_MS;},get highlightedWinner(){return highlightedWinner;},showWinnerHighlight,playWinnerSound,get spinEase(){return spinEase;},motionProgress,segmentLayout,drawWeightedWinner,get pointerAngle(){return pointerAngle;},get iconFontReady(){return iconFontReady;},get iconCatalogReady(){return fullCatalogReady;},get iconCatalogCount(){return ICONS.length;},get iconSearchMetadataReady(){return iconSearchReady;},get iconSearchMetadataCount(){return ICON_SEARCH_TAGS.size;},get iconMatches(){return iconMatchCount;},get iconMatchingNames(){return [...iconMatches];},get iconCodepointMap(){return Object.fromEntries(ICON_CODEPOINTS);},loadIconCatalog,lastWinner:null,lastRotation:0,spinning:false,stop(){cancelAnimationFrame(raf);}};
   restoreIconCatalog();
   render();
+  persist();
   loadIconCatalog();
   // Material Symbols wird offiziell als Webfont über Google Fonts bezogen.
   // Falls Offline-/Privacy-Einstellungen das Laden verhindern, bleiben hochwertige
