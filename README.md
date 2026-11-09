@@ -124,9 +124,9 @@ Mit dem goldenen Ziehgriff lässt sich die **gesamte Segmentkarte aufnehmen**. S
 Der gesamte aktuelle Rounded-Codepoint-Katalog bleibt durchsuchbar. Zusätzlich lädt die Symbolauswahl beim Öffnen den lokal mitgelieferten **icon-search-index.json** (3.946 Icons mit offiziellen englischen Tags und Beliebtheitswerten aus einem Snapshot der Google-Metadaten). Icons, die im neueren Font vorhanden sind, aber nicht im Suchindex, bleiben selbstverständlich per Symbolname auffindbar. Die Trefferrangfolge berücksichtigt Originalnamen, exakte Tags, Teiltreffer und Beliebtheit. Bei `shirt` erscheinen `apparel` und `laundry`. Die bisherige deutsche Synonymhilfe bleibt ergänzend erhalten. Der vollständige lokale Suchindex vermeidet eine Laufzeitabhängigkeit von einer undokumentierten Google-Such-API; GitHub Pages liefert ihn als statische Datei aus. Beim Standalone-Build wird er eingebettet, damit dieselbe Suche ohne externen Metadatenserver funktioniert. Google Fonts wird weiter nur für die Icon-Glyphen verwendet. Quelle: Google Material Symbols-Metadaten, Snapshot aus `timmaffett/material_symbols_icons`, Apache-2.0. Der Suchindex wird bei Bedarf durch Aktualisierung der Quelldaten erneuert; eine 1:1-Identität mit Googles interner Suche ist nicht zugesichert.
 
 
-## Entwicklungsstand: gewichtete Ziehung, Radmechanik und mehrere Räder (Branch `feature/weighted-wheel-profiles-20261109`)
+## Gewichtete Ziehung, Radmechanik und mehrere gespeicherte Räder
 
-**Noch nicht veröffentlicht.** Die folgende Implementierung wird erst nach einem erfolgreichen Chromium-Test und einer gesonderten Prüfung der eigenständigen HTML-Version zur Veröffentlichung freigegeben.
+Die Funktionen sind in der modularen und der eigenständigen HTML-Version enthalten. Die automatisierte Qualitätssicherung wird unter GitHub Actions dokumentiert.
 
 ### Gewichtung
 
@@ -148,4 +148,4 @@ Unter **Gespeicherte Glücksräder** kann man neue Räder erstellen, bestehende 
 
 ### Prüfung
 
-`node --check app.js` prüft JavaScript-Syntax. `tests/weighted-browser.mjs` prüft mit Playwright-Chromium die Darstellungsmodi, 100.000 Ziehungen mit gewichteten Verhältnissen und Nullgewichten, den Stopp und das Wiederherstellen mehrerer Profile. Die GitHub-Actions-Definition liegt unter `.github/workflows/casino-noir-ci.yml`. Dieser Test ist eine erste Regression, **kein Beweis für eine vollständige physikalische oder statistische Validierung aller Randfälle**.
+`node --check app.js` prüft JavaScript-Syntax. `tests/weighted-browser.mjs` prüft mit Playwright-Chromium die Darstellungsmodi, 100.000 Ziehungen mit gewichteten Verhältnissen und Nullgewichten, den Stopp und das Wiederherstellen mehrerer Profile. Die GitHub-Actions-Definition liegt unter `.github/workflows/casino-noir-ci.yml`. Die Chromium-Regression umfasst die modulare und die Standalone-Version sowie gewichtete Stichproben. Wie bei jedem modellierten Bewegungsablauf ersetzt das keine physikalische Messung an einem realen Glücksrad.
