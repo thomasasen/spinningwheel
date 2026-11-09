@@ -1159,7 +1159,9 @@ body.card-overlay-open{overflow:hidden}
       face.querySelector('.card-face-title').textContent=revealed?(p.card.title||'CASINO NOIR'):'';
       face.querySelector('.card-face-text').textContent=revealed?p.card.text:'';
       const emblem=face.querySelector('.card-face-icon');
-      emblem.textContent=revealed?(p.card.icon?.replaceAll('_',' ')||'✦'):'';
+      const emblemIcon=revealed&&p.card.icon?options.resolveCardIcon?.(p.card.icon):null;
+      emblem.classList.toggle('material-symbols-rounded',Boolean(emblemIcon?.material));
+      emblem.textContent=revealed?(emblemIcon?.glyph||'✦'):'';
       inner.style.setProperty('--picked-color',revealed?(p.card.color||'#d6b679'):'#d6b679');
       inner.classList.remove('is-revealed');
       if(revealed){
@@ -2821,7 +2823,11 @@ body.card-overlay-open{overflow:hidden}
     refreshSegments:()=>renderSegments(),
     pickIcon:id=>openIconPicker('deck-card:'+id),
     notify:message=>toast(message),
-    isSpinning:()=>isSpinning
+    isSpinning:()=>isSpinning,
+    resolveCardIcon:icon=>{
+      const glyph=iconFontReady?actualIconGlyph(icon):null;
+      return glyph?{glyph,material:true}:{glyph:iconFallback(icon),material:false};
+    }
   });
   restoreIconCatalog();
   render();
