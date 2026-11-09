@@ -69,6 +69,25 @@ try{
   await page.reload({waitUntil:'domcontentloaded'});
   await page.locator('#toggleEditor').click();
   await assert.equal(await page.locator('#profileSelect option').count(),2);
+  // The self-contained build has to include the real UI and metadata.
+  const standalone=await browser.newPage({reducedMotion:'reduce',viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+  const standaloneErrors=[];
+  standalone.on('pageerror',error=>standaloneErrors.push(error.message));
+  await standalone.route(/https?:\/\//,route=>route.abort());
+  await standalone.goto(pathToFileURL(resolve('casino-noir-standalone.html')).href,{waitUntil:'domcontentloaded'});
+  await standalone.waitForFunction(()=>Boolean(window.__casinoNoirDebug),{timeout:10000});
+  const standaloneFeatures=await standalone.evaluate(()=>({
+    weights:window.__casinoNoirDebug.config.segments.every(segment=>segment.weight===1),
+    metadata:window.__casinoNoirDebug.iconSearchMetadataReady,
+    overflow:document.documentElement.scrollWidth>innerWidth+2
+  }));
+  assert.equal(standaloneFeatures.weights,true,'standalone defaults migrate weights');
+  assert.equal(standaloneFeatures.overflow,false,'standalone mobile viewport has no horizontal overflow');
+  await standalone.locator('#toggleEditor').click();
+  await standalone.waitForSelector('#profileSelect');
+  await standalone.waitForSelector('#sizeMode');
+  assert.deepEqual(standaloneErrors,[],'standalone should not throw errors');
+  await standalone.close();
   assert.deepEqual(errors,[],'no uncaught JavaScript errors');
-  console.log('PASS: Chromium smoke, geometry, 400000 weighted selections, zero weights, stop angle, local profiles.');
+  console.log('PASS: Chromium modular + standalone mobile, geometry, 400000 weighted selections, zero weights, stop angle, local profiles.');
 }finally{await browser.close();}
