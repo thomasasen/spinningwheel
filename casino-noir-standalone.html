@@ -292,7 +292,83 @@ body.editor-open{overflow:hidden}
 .weight-control small{min-width:42px;color:#e8b97a;text-align:right;font-variant-numeric:tabular-nums}
 @media(max-width:520px){.segment-controls{flex-wrap:wrap;gap:5px}.weight-control{order:2;width:100%;justify-content:flex-end}.weight-control input{width:70px}}
 
+
+/* Casino Noir card decks, segment assignments and cinematic reveal */
+.segment-action-row{display:flex;flex-wrap:wrap;align-items:end;gap:9px;margin:11px 0 0 30px;padding-top:11px;border-top:1px solid #49323b}
+.segment-action-row label{display:grid;gap:5px;flex:1 1 155px;min-width:0;color:#d9baac;font-size:10px;font-weight:650}
+.segment-action-row select{width:100%;min-height:36px;min-width:0;color:#f8ddbd;background:#251920;border:1px solid #73535b;border-radius:7px;padding:7px;font-size:11px}
+.segment-action-row .btn{min-height:36px;flex:1 1 140px}
+.deck-manager{margin:16px 12px 22px;border:1px solid #805c43;border-radius:13px;background:linear-gradient(145deg,#2a1b23,#1b141a);box-shadow:inset 0 1px #e6bc7b18;overflow:hidden}
+.deck-heading{padding:18px 15px 10px;align-items:center}
+.deck-heading h2{font:normal 19px Georgia,serif;color:#ffdfaa;margin:0 0 3px}
+.deck-heading .btn{padding:9px 10px}
+.deck-container{padding:6px 14px 18px}
+.deck-container label,.deck-card-row label{display:grid;gap:5px;color:#e7c7ab;font-size:11px;font-weight:620}
+.deck-container input:not([type=checkbox]),.deck-container select,.deck-container textarea{min-width:0;max-width:100%;width:100%;padding:9px 10px;border-radius:8px;border:1px solid #755463;color:#fae8d5;background:#191218;font:12px/1.5 system-ui,sans-serif}
+.deck-container textarea{resize:vertical;min-height:75px;overflow-wrap:anywhere}
+.deck-container input:focus-visible,.deck-container select:focus-visible,.deck-container textarea:focus-visible{outline:2px solid #efc787;outline-offset:2px}
+.deck-actions{display:flex;flex-wrap:wrap;gap:7px;margin:9px 0 11px}
+.deck-actions .btn{flex:1 1 95px;min-width:0;white-space:normal}
+.deck-file-actions{border-top:1px solid #514047;padding-top:13px;margin-top:18px}
+.deck-settings{display:grid;gap:10px;padding:13px 0;border-block:1px solid #4b323d}
+.deck-summary{padding:10px 12px;background:#37252a;border-radius:9px;border:1px solid #865b45;color:#f0ca92;font-variant-numeric:tabular-nums;font-size:12px}
+.deck-card-heading{display:flex;align-items:center;justify-content:space-between;gap:9px;margin:13px 0 9px}
+.deck-card-heading h3{margin:0;color:#edc895;font:18px Georgia,serif}
+.deck-cards{display:flex;flex-direction:column;gap:10px}
+.deck-card-row{display:grid;gap:10px;padding:12px;border-radius:11px;border:1px solid #58404a;background:linear-gradient(120deg,#2d2027,#21171e);box-shadow:0 4px 15px #0002;transition:border-color .18s,transform .18s}
+.deck-card-row:hover,.deck-card-row:focus-within{border-color:#c49967}
+.deck-card-row.deck-dragging{opacity:.55;transform:scale(.985)}
+.deck-card-row.deck-drop-target{border-color:#f6cf8e;box-shadow:0 0 0 2px #e5ba7b66}
+.deck-card-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:6px;color:#f5daa8}
+.deck-card-toolbar strong{font:600 12px Georgia,serif}
+.deck-grip{font-size:20px;color:#c8a276;cursor:grab}
+.deck-probability{margin-left:auto;color:#f8cc86;font-variant-numeric:tabular-nums;font-size:11px}
+.deck-card-options{display:grid;grid-template-columns:minmax(110px,1.1fr) minmax(80px,.75fr) 58px;align-items:end;gap:7px}
+.deck-card-options .deck-icon-button{grid-column:1/-1}
+.deck-card-options input[type=color]{padding:2px;width:100%;height:39px}
+.deck-card-options input:disabled{opacity:.4}
+.deck-card-chances{margin:0;padding:6px 2px;color:#c5a8a1;font-size:10px;font-variant-numeric:tabular-nums}
+.deck-container .setting-help{margin:6px 0;color:#b49da1;font-size:11px;line-height:1.55}
+.deck-export-session{display:flex!important;align-items:center;gap:8px;margin:12px 0;color:#d7b59a!important}
+.deck-export-session input{accent-color:#e7b573}
+.card-overlay{position:fixed;z-index:95;inset:0;display:grid;place-items:center;overflow-y:auto;overscroll-behavior:contain;padding:clamp(12px,3vh,30px);background:radial-gradient(ellipse at 50% 30%,#572239d9 0%,#140b13f5 48%,#080609 100%);backdrop-filter:blur(13px)}
+body.card-overlay-open{overflow:hidden}
+.card-reveal-panel{width:min(540px,100%);min-height:0;text-align:center;padding:clamp(12px,3vw,28px);border:1px solid #986e48;border-radius:19px;background:linear-gradient(160deg,#2f1d25,#140e15 64%);box-shadow:0 30px 120px #000c,inset 0 1px #e0b67555}
+.card-reveal-panel h2{margin:8px 0 4px;font:normal clamp(24px,4vw,34px) Georgia,serif;color:#ffdfae}
+.card-reveal-panel>p{margin:0 0 14px;font-size:12px;color:#c9a7a4}
+.card-perspective{perspective:1100px;display:grid;place-items:center;margin:auto;width:min(100%,320px);aspect-ratio:2.5/3.5}
+.card-flip{position:relative;width:100%;height:100%;transform-style:preserve-3d;transform:rotateY(0deg) translateY(0);transition:transform 1.05s cubic-bezier(.2,.72,.14,1);--picked-color:#d6b679;filter:drop-shadow(0 22px 21px #060407b0)}
+.card-flip.is-revealed{transform:rotateY(180deg) translateY(-6px)}
+.card-face{position:absolute;inset:0;border-radius:15px;border:3px solid #ab824a;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;box-shadow:inset 0 0 0 3px #25191d,inset 0 0 0 5px #d6b579}
+.card-back{display:grid;place-items:center;background:repeating-linear-gradient(45deg,#1c1018 0 8px,#2b1825 8px 16px);color:#f0cd8f}
+.card-back-pattern{width:84%;height:87%;border:1px solid #b78d52;outline:1px solid #a27c4a;outline-offset:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:radial-gradient(circle at 50% 45%,#672d42,#2c1725 72%);box-shadow:inset 0 0 30px #0007}
+.card-back-pattern>span{font-size:66px;line-height:1;color:#f5c981;text-shadow:0 0 35px #e1b77166}
+.card-back-pattern strong{font:700 21px Georgia,serif;letter-spacing:.12em}
+.card-back-pattern strong i{color:#ffd9a6;font-style:normal}
+.card-back-pattern small{font-size:8px;letter-spacing:.21em;color:#be9e8c}
+.card-front{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:19px 22px;transform:rotateY(180deg);background:linear-gradient(160deg,#38212c,#1a1119);border-color:var(--picked-color);color:#fbe7c9}
+.card-front::before{content:"";position:absolute;inset:12px;border:1px solid var(--picked-color);pointer-events:none;opacity:.5}
+.card-face-icon{font:23px/1.2 Georgia,serif;color:var(--picked-color);margin-bottom:12px;overflow-wrap:anywhere;max-height:55px;overflow:hidden}
+.card-face-title{margin:0 0 11px;font:normal 22px/1.24 Georgia,serif;color:#fbe3af;overflow-wrap:anywhere;max-height:64px;overflow-y:auto}
+.card-face-text{margin:0;max-height:55%;overflow-y:auto;overscroll-behavior:contain;font:clamp(13px,2.5vw,17px)/1.48 Georgia,serif;white-space:pre-wrap;overflow-wrap:anywhere;scrollbar-color:#af8955 #2c1b27}
+.card-front small{position:absolute;bottom:17px;color:#bc9780;font-size:8px;letter-spacing:.12em}
+.card-reveal-actions{display:flex;justify-content:center;margin-top:21px}
+.card-reveal-actions .btn{min-height:46px;min-width:180px;font-size:13px}
+@media(max-width:520px){
+  .segment-action-row{margin-left:0}
+  .segment-action-row label{flex-basis:125px}
+  .deck-manager{margin-left:8px;margin-right:8px}
+  .deck-container{padding:6px 10px 14px}
+  .deck-card-options{grid-template-columns:minmax(98px,1.2fr) minmax(70px,.7fr) 51px}
+  .card-perspective{width:min(100%,260px)}
+  .card-reveal-panel{padding:13px 10px}
+  .card-reveal-panel h2{font-size:24px}
+}
+@media(prefers-reduced-motion:reduce){.card-flip{transition:none!important}.card-overlay{backdrop-filter:none}}
+
 </style>
+  
+  
   
   
 </head>
@@ -359,6 +435,39 @@ body.editor-open{overflow:hidden}
         <div class="editor-header"><div><div class="eyebrow">✦ &nbsp; WHEEL CONFIGURATION</div><h1 id="editorTitle">Dein Glücksrad</h1><p>Jedes Segment individuell gestalten.</p></div><button class="editor-close" id="closeEditor" type="button" aria-label="Konfiguration schließen" title="Schließen">×</button></div>
         <div class="section-title"><div><h2>Segmente <span class="count-pill" id="segmentCount">8</span></h2><p>Text, Material-Symbol oder beides</p></div><button type="button" id="addSegment" class="btn btn-primary"><span aria-hidden="true">＋</span> Hinzufügen</button></div>
         <div class="segment-list" id="segmentList" aria-label="Segmentliste"></div>
+        <section class="deck-manager" aria-labelledby="deckHeading">
+          <div class="section-title deck-heading"><div><h2 id="deckHeading">Kartendecks <span class="count-pill" id="deckCount">0</span></h2><p>Karten und Wahrscheinlichkeiten verwalten</p></div><button type="button" class="btn btn-primary" id="deckNew">＋ Neues Deck</button></div>
+          <div class="deck-container">
+            <label for="deckSelect">Kartendeck auswählen</label><select id="deckSelect"></select>
+            <div class="deck-actions">
+              <button class="btn btn-quiet" id="deckDuplicate" type="button">⧉ Duplizieren</button>
+              <button class="btn btn-quiet btn-danger" id="deckDelete" type="button">× Löschen</button>
+              <button class="btn btn-quiet" id="deckReset" type="button">↻ Neu mischen</button>
+            </div>
+            <p id="deckEmptyNotice" class="setting-help">Lege ein Deck an, füge Karten hinzu und wähle es anschließend bei einem Segment unter „Aktion nach Gewinn“ aus.</p>
+            <div id="deckDetails" hidden>
+              <div class="deck-settings">
+                <label for="deckName">Deckname<input id="deckName" type="text" maxlength="80" required></label>
+                <label for="deckMode">Ziehmodus<select id="deckMode"><option value="without">Ohne Zurücklegen (Standard)</option><option value="with">Mit Zurücklegen</option></select></label>
+                <p class="setting-help">Ohne Zurücklegen: Jedes Exemplar wird nur einmal gezogen. Mit Zurücklegen: Mehrfachkarten behalten ihre ursprüngliche Häufigkeit. „Nur einmal“-Karten bleiben in beiden Modi nach der Ziehung gesperrt.</p>
+                <label for="deckExhaustion">Deck erschöpft<select id="deckExhaustion"><option value="manual">Manuell neu mischen (Standard)</option><option value="auto">Automatisch nächste Deckrunde</option></select></label>
+                <p class="deck-summary" id="deckStats" aria-live="polite"></p><p id="deckLinks" class="setting-help"></p>
+              </div>
+              <div class="deck-card-heading"><h3>Karten</h3><button class="btn btn-primary" type="button" id="deckAddCard">＋ Karte hinzufügen</button></div>
+              <div id="deckCards" class="deck-cards"></div>
+              <p class="setting-help">Pro Deck maximal 100 Kartentypen, je Karte 1–1.000 Exemplare und insgesamt 50.000 Exemplare. Kartentext maximal 1.200 Zeichen. Karten lassen sich ziehen oder mit den Pfeiltasten-Buttons verschieben.</p>
+            </div>
+            <div class="deck-actions deck-file-actions">
+              <button class="btn btn-quiet" type="button" id="deckExportOne">Deck exportieren</button>
+              <button class="btn btn-quiet" type="button" id="deckExportAll">Alle Decks exportieren</button>
+              <button class="btn btn-quiet" type="button" id="deckImport">Decks importieren</button>
+              <button class="btn btn-quiet btn-danger" type="button" id="deckResetAll">Alle Decks neu mischen</button>
+            </div>
+            <label class="deck-export-session"><input type="checkbox" id="includeDeckSession"> Laufenden Kartenvorrat beim JSON-Export einschließen</label>
+            <input id="deckImportFile" type="file" accept=".json,application/json" hidden>
+            <p class="setting-help">Automatische Speicherung im Browser. Maximal 100 Decks; JSON-Import bis 2 MB. Eine optionale Sicherung des laufenden Vorrats kann beim späteren Import wiederhergestellt werden.</p>
+          </div>
+        </section>
         <section class="profile-manager" aria-labelledby="profileHeading">
           <h2 id="profileHeading">Gespeicherte Glücksräder</h2>
           <label for="profileSelect">Aktives Glücksrad</label>
@@ -454,6 +563,20 @@ body.editor-open{overflow:hidden}
     <button class="presentation-close btn" id="closePresentation" type="button" aria-label="Präsentationsmodus schließen">✕ Schließen</button>
     <div id="presentationTarget"></div>
     <div id="presentationResult" class="presentation-result" aria-live="polite"></div>
+  </div>
+  <div class="card-overlay" id="cardOverlay" role="dialog" aria-modal="true" aria-labelledby="cardDeckName" hidden>
+    <div class="card-reveal-panel">
+      <div class="eyebrow">✦ &nbsp; CASINO NOIR · KARTENZIEHUNG</div>
+      <h2 id="cardDeckName">Kartendeck</h2>
+      <p id="cardRemaining" aria-live="polite">Kartenvorrat</p>
+      <div class="card-perspective">
+        <div class="card-flip" id="cardFlip">
+          <div class="card-face card-back" aria-hidden="true"><div class="card-back-pattern"><span>✦</span><strong>CASINO <i>NOIR</i></strong><small>THE HOUSE OF CHANCE</small></div></div>
+          <div class="card-face card-front" id="cardFront"><div class="card-face-icon"></div><h3 class="card-face-title"></h3><p class="card-face-text"></p><small>CASINO NOIR · PRIVATE DECK</small></div>
+        </div>
+      </div>
+      <div class="card-reveal-actions"><button type="button" id="drawCard" class="btn btn-primary">Karte ziehen</button><button type="button" id="nextRound" class="btn btn-primary" hidden>Weiter zum Glücksrad</button></div>
+    </div>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -634,6 +757,467 @@ body.editor-open{overflow:hidden}
   const api=Object.freeze({create,advance,finish,sectorAt,buildPegAngles,REST_SPEED,REST_HOLD_SECONDS});
   root.CasinoWheelPhysics=api;
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
+})(typeof window!=='undefined'?window:globalThis);
+
+</script>
+<script>
+/* Casino Noir cards: pure, versioned data model and finite weighted drawing. */
+(function (root) {
+  'use strict';
+  const MAX_DECKS=100,MAX_CARDS=100,MAX_COPIES=1000,MAX_TOTAL=50000;
+  const validId=v=>typeof v==='string'&&/^[a-z0-9_-]{1,100}$/i.test(v);
+  const id=(kind='card')=>kind+'-'+(root.crypto?.randomUUID?.()||
+    Array.from(root.crypto?.getRandomValues?.(new Uint32Array(4))||[Date.now(),Math.random()*1e9],
+      n=>Math.trunc(n).toString(36)).join(''));
+  function text(value,max,required=false){
+    if(typeof value!=='string'||value.length>max||(required&&!value.trim()))throw Error('Ungültiger oder zu langer Kartentext.');
+    return value;
+  }
+  function card(raw) {
+    if(!raw||!validId(raw.id))throw Error('Ungültige Karten-ID.');
+    const frequency=raw.frequency==='once'?'once':raw.frequency==='multiple'?'multiple':null;
+    if(!frequency)throw Error('Ungültiger Häufigkeitsmodus.');
+    if(!Number.isSafeInteger(raw.copies)||raw.copies<1||raw.copies>MAX_COPIES||
+      (frequency==='once'&&raw.copies!==1))throw Error('Kartenmultiplikator muss ganzzahlig von 1 bis 1.000 sein.');
+    const icon=raw.icon||'';
+    if(typeof icon!=='string'||(icon&&!/^[a-z0-9_]{1,80}$/.test(icon)))throw Error('Ungültiges Symbol.');
+    const color=raw.color||'';
+    if(typeof color!=='string'||(color&&!/^#[a-f0-9]{6}$/i.test(color)))throw Error('Ungültige Kartenfarbe.');
+    return {id:raw.id,title:text(raw.title??'',100),text:text(raw.text,1200,true),
+      icon,color,frequency,copies:raw.copies};
+  }
+  function freshState(cards,round=1){
+    return {round,remaining:Object.fromEntries(cards.map(c=>[c.id,c.copies]))};
+  }
+  function deck(raw,{keepState=true}={}) {
+    if(!raw||!validId(raw.id))throw Error('Ungültige Deck-ID.');
+    const name=text(raw.name,80,true);
+    if(!Array.isArray(raw.cards)||raw.cards.length>MAX_CARDS)throw Error('Maximal 100 Kartentypen pro Deck.');
+    const cards=raw.cards.map(card),ids=new Set(cards.map(c=>c.id));
+    if(ids.size!==cards.length)throw Error('Doppelte Karten-ID.');
+    if(cards.reduce((a,c)=>a+c.copies,0)>MAX_TOTAL)throw Error('Maximal 50.000 Exemplare pro Deck.');
+    if(!['without','with'].includes(raw.mode)||!['manual','auto'].includes(raw.exhaustion))throw Error('Ungültiger Deckmodus.');
+    const s=raw.state;
+    let state=freshState(cards);
+    if(keepState&&s){
+      if(!Number.isSafeInteger(s.round)||s.round<1||s.round>1000000||
+        !s.remaining||typeof s.remaining!=='object'||Array.isArray(s.remaining))
+        throw Error('Ungültiger Deckrundenzustand.');
+      state={round:s.round,remaining:{}};
+      for(const c of cards){
+        const n=s.remaining[c.id];
+        if(!Number.isSafeInteger(n)||n<0||n>c.copies)throw Error('Ungültiger verbleibender Kartenvorrat.');
+        state.remaining[c.id]=n;
+      }
+    }
+    return {id:raw.id,name,cards,mode:raw.mode,exhaustion:raw.exhaustion,state};
+  }
+  function store(raw) {
+    if(raw==null)return {version:1,decks:[],pending:null};
+    if(raw.version!==1||!Array.isArray(raw.decks)||raw.decks.length>MAX_DECKS)
+      throw Error('Nicht unterstütztes oder beschädigtes Kartendeck-Format.');
+    const decks=raw.decks.map(d=>deck(d)),ids=new Set(decks.map(d=>d.id));
+    if(ids.size!==decks.length)throw Error('Doppelte Deck-ID.');
+    let pending=null;
+    if(raw.pending!=null){
+      const p=raw.pending;
+      if(!p||!validId(p.deckId)||!validId(p.profileId)||!validId(p.segmentId)||
+        !['ready','revealed'].includes(p.phase)||!ids.has(p.deckId))
+        throw Error('Ungültiger gespeicherter Ziehvorgang.');
+      const snapshot=p.phase==='revealed'?card(p.card):null;
+      pending={deckId:p.deckId,profileId:p.profileId,segmentId:p.segmentId,phase:p.phase,card:snapshot};
+    }
+    return {version:1,decks,pending};
+  }
+  function makeDeck(name='Neues Kartendeck'){
+    return deck({id:id('deck'),name,cards:[],mode:'without',exhaustion:'manual'});
+  }
+  function makeCard(){
+    return {id:id('card'),title:'',text:'Neue Karte',icon:'',color:'',
+      frequency:'once',copies:1};
+  }
+  function stats(d) {
+    const configured=d.cards.reduce((s,c)=>s+c.copies,0);
+    const rows=d.cards.map(c=>({...c,available:d.state.remaining[c.id]??0}));
+    const available=rows.reduce((s,c)=>s+c.available,0);
+    return {types:rows.length,configured,available,rows:rows.map(c=>({
+      ...c,originalChance:configured?c.copies/configured*100:0,
+      currentChance:available?c.available/available*100:0
+    }))};
+  }
+  function reset(d) {
+    return {...d,state:freshState(d.cards,(d.state?.round||0)+1)};
+  }
+  function reconcile(previous,next){
+    const clean=deck({...next,state:undefined},{keepState:false});
+    if(previous.mode!==clean.mode)throw Error('Ziehmoduswechsel erfordert explizites Zurücksetzen.');
+    const old=new Map(previous.cards.map(c=>[c.id,c]));
+    clean.state={round:previous.state.round,remaining:{}};
+    for(const c of clean.cards){
+      const prior=old.get(c.id);
+      if(!prior){clean.state.remaining[c.id]=c.copies;continue;}
+      const used=prior.copies-(previous.state.remaining[c.id]??prior.copies);
+      clean.state.remaining[c.id]=clean.mode==='with'&&c.frequency==='multiple'
+        ?c.copies:Math.max(0,c.copies-used);
+      if(prior.frequency==='once'&&c.frequency==='multiple'&&clean.mode==='with')
+        clean.state.remaining[c.id]=c.copies;
+    }
+    return deck(clean);
+  }
+  function uniformInt(max,random=root.crypto){
+    if(!Number.isSafeInteger(max)||max<1||max>MAX_TOTAL)throw Error('Ungültige Zufallsgrenze.');
+    if(random?.getRandomValues){
+      const limit=Math.floor(4294967296/max)*max,arr=new Uint32Array(1);
+      let value;
+      do{random.getRandomValues(arr);value=arr[0];}while(value>=limit);
+      return value%max;
+    }
+    return Math.floor(Math.random()*max);
+  }
+  function draw(original,random) {
+    let d=deck(original),reshuffled=false;
+    let s=stats(d);
+    if(!s.available&&d.exhaustion==='auto'&&d.cards.length){
+      d=reset(d);s=stats(d);reshuffled=true;
+    }
+    if(!s.available)return {deck:d,card:null,reshuffled};
+    let ticket=uniformInt(s.available,random),chosen=null;
+    for(const row of s.rows){
+      if(ticket<row.available){chosen=row;break;}
+      ticket-=row.available;
+    }
+    if(!chosen)throw Error('Keine Karte für den Zufallswert.');
+    const current=d.state.remaining[chosen.id];
+    if(d.mode==='without'||chosen.frequency==='once')d.state.remaining[chosen.id]=current-1;
+    return {deck:d,card:card(chosen),reshuffled};
+  }
+  root.CasinoNoirCardEngine=Object.freeze({
+    id,card,deck,store,makeCard,makeDeck,stats,reset,reconcile,draw,uniformInt,
+    limits:{MAX_DECKS,MAX_CARDS,MAX_COPIES,MAX_TOTAL}
+  });
+  if(typeof module!=='undefined'&&module.exports)module.exports=root.CasinoNoirCardEngine;
+})(typeof window!=='undefined'?window:globalThis);
+
+</script>
+<script>
+/* Casino Noir card deck editor and reveal view. Depends on card-engine.js. */
+(function (root) {
+  'use strict';
+  const E=root.CasinoNoirCardEngine;
+  const KEY='casino-noir-card-decks-v1', $=id=>document.getElementById(id);
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const clone=v=>JSON.parse(JSON.stringify(v));
+  const number=n=>Number(n).toLocaleString('de-DE');
+  const percent=n=>n.toLocaleString('de-DE',{maximumFractionDigits:2})+' %';
+  const download=(data,name)=>{
+    const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+    const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  };
+  function create(options) {
+    let data,broken=false,selected='',dragged=null,drawing=false,returnFocus=null,animationTimer=0;
+    try{data=E.store(JSON.parse(localStorage.getItem(KEY)||'null'));}
+    catch(error){
+      broken=true;data=E.store(null);
+      options.notify('Kartenspeicher beschädigt. Original bleibt erhalten; kein Überschreiben möglich: '+error.message);
+    }
+    const selectedDeck=()=>data.decks.find(d=>d.id===selected);
+    function commit(candidate,{render=true}={}){
+      if(broken)throw Error('Kartenspeicher ist beschädigt. Bitte zuvor exportieren oder im Browser sichern.');
+      const next=E.store(candidate);
+      // Changes are visible only AFTER a successful durable write.
+      localStorage.setItem(KEY,JSON.stringify(next));
+      data=next;
+      if(render)renderAll();
+    }
+    function safe(fn){
+      if(options.isSpinning?.())return;
+      try{return fn();}catch(error){options.notify(error.message||'Kartendeck konnte nicht gespeichert werden.');}
+    }
+    function links(id){
+      return options.getProfiles().reduce((n,p)=>n+(p.config?.segments||[]).filter(s=>s.action==='deck'&&s.deckId===id).length,0);
+    }
+    function renderSelector(){
+      $('deckSelect').innerHTML=data.decks.map(d=>'<option value="'+esc(d.id)+'">'+esc(d.name)+'</option>').join('');
+      if(!data.decks.some(d=>d.id===selected))selected=data.decks[0]?.id||'';
+      $('deckSelect').value=selected;
+      const d=selectedDeck();
+      $('deckDetails').hidden=!d;
+      $('deckEmptyNotice').hidden=!!d;
+      $('deckCount').textContent=number(data.decks.length);
+      $('deckSelect').disabled=!d;
+      $('deckDuplicate').disabled=!d;
+      $('deckDelete').disabled=!d;
+      $('deckExportOne').disabled=!d;
+      $('deckReset').disabled=!d;
+      if(!d)return;
+      const s=E.stats(d);
+      $('deckName').value=d.name;
+      $('deckMode').value=d.mode;
+      $('deckExhaustion').value=d.exhaustion;
+      $('deckStats').textContent=number(s.types)+' Kartentypen · '+number(s.available)+' / '+number(s.configured)+' Exemplare · Runde '+d.state.round;
+      $('deckLinks').textContent=links(d.id)+' Segmentzuordnung(en)';
+    }
+    function renderCards(){
+      const d=selectedDeck();if(!d)return;
+      const s=E.stats(d);
+      $('deckCards').innerHTML=s.rows.map((c,i)=>'<article class="deck-card-row" draggable="true" data-card-id="'+esc(c.id)+'">'+
+        '<div class="deck-card-toolbar"><span class="deck-grip" aria-hidden="true">⠿</span><strong>Karte '+(i+1)+'</strong>'+
+        '<span class="deck-probability" data-prob="'+esc(c.id)+'">'+percent(c.currentChance)+'</span>'+
+        '<button type="button" class="icon-action" data-card-action="up" aria-label="Karte nach oben" '+(i===0?'disabled':'')+'>↑</button>'+
+        '<button type="button" class="icon-action" data-card-action="down" aria-label="Karte nach unten" '+(i===s.rows.length-1?'disabled':'')+'>↓</button>'+
+        '<button type="button" class="icon-action" data-card-action="duplicate" aria-label="Karte duplizieren">⧉</button>'+
+        '<button type="button" class="icon-action" data-card-action="delete" aria-label="Karte löschen">×</button></div>'+
+        '<label>Kartentitel (optional)<input data-card-field="title" maxlength="100" value="'+esc(c.title)+'" placeholder="z. B. Joker"></label>'+
+        '<label>Karteninhalt<textarea data-card-field="text" maxlength="1200" rows="3" required>'+esc(c.text)+'</textarea></label>'+
+        '<div class="deck-card-options"><label>Häufigkeit<select data-card-field="frequency"><option value="once" '+(c.frequency==='once'?'selected':'')+'>Nur einmal</option><option value="multiple" '+(c.frequency==='multiple'?'selected':'')+'>Mehrfach im Deck</option></select></label>'+
+        '<label>Multiplikator<input type="number" min="1" max="1000" step="1" data-card-field="copies" value="'+c.copies+'" '+(c.frequency==='once'?'disabled':'')+'></label>'+
+        '<label>Farbe<input type="color" data-card-field="color" value="'+esc(c.color||'#b68b51')+'"></label>'+
+        '<button type="button" class="btn btn-quiet deck-icon-button" data-card-action="icon" title="Material-Symbol auswählen">'+(c.icon?'Symbol: '+esc(c.icon):'＋ Symbol')+'</button></div>'+
+        '<p class="deck-card-chances" data-card-chances="'+esc(c.id)+'">Ursprünglich '+c.copies+' · verfügbar '+c.available+' · Anfang '+percent(c.originalChance)+' · aktuell '+percent(c.currentChance)+'</p>'+
+        '</article>').join('');
+      $('deckAddCard').disabled=d.cards.length>=E.limits.MAX_CARDS;
+    }
+    function renderAll(){renderSelector();renderCards();options.refreshSegments();renderPending();}
+    function changeDeck(id,transform){
+      const candidate=clone(data),i=candidate.decks.findIndex(d=>d.id===id);
+      if(i<0)throw Error('Deck nicht gefunden.');
+      candidate.decks[i]=transform(candidate.decks[i]);commit(candidate);
+    }
+    function replaceCard(id,change){
+      const d=selectedDeck();if(!d)return;
+      changeDeck(d.id,current=>{
+        const next=clone(current),index=next.cards.findIndex(c=>c.id===id);
+        if(index<0)throw Error('Karte nicht gefunden.');
+        change(next.cards[index],next.cards,index);
+        return E.reconcile(current,next);
+      });
+    }
+    function addDeck(){
+      if(data.decks.length>=E.limits.MAX_DECKS)throw Error('Maximal 100 Kartendecks.');
+      const d=E.makeDeck();
+      commit({...data,decks:[...data.decks,d]});selected=d.id;renderAll();
+      $('deckName').focus();
+      return d.id;
+    }
+    function deleteDeck(){
+      const d=selectedDeck();if(!d)return;
+      if(links(d.id))throw Error('Dieses Deck wird noch von Segmenten genutzt. Bitte zuerst alle Zuordnungen entfernen.');
+      if(data.pending?.deckId===d.id)throw Error('Eine Kartenziehung aus diesem Deck ist noch offen.');
+      if(!confirm('Kartendeck „'+d.name+'“ einschließlich Spielstand dauerhaft löschen?'))return;
+      commit({...data,decks:data.decks.filter(x=>x.id!==d.id)});
+    }
+    function setField(deckField,value){
+      const d=selectedDeck();if(!d)return;
+      if(deckField==='mode'){
+        if(value===d.mode)return;
+        if(!confirm('Ziehmodus ändern und den Vorrat dieses Decks ausdrücklich neu mischen?')){renderSelector();return;}
+        changeDeck(d.id,current=>E.reset(E.deck({...current,mode:value},{keepState:false})));
+        return;
+      }
+      changeDeck(d.id,current=>E.deck({...current,[deckField]:value}));
+    }
+    $('deckSelect').addEventListener('change',ev=>{selected=ev.target.value;renderAll();});
+    $('deckNew').addEventListener('click',()=>safe(addDeck));
+    $('deckDuplicate').addEventListener('click',()=>safe(()=>{
+      const d=selectedDeck();if(!d)return;
+      if(data.decks.length>=E.limits.MAX_DECKS)throw Error('Maximal 100 Kartendecks.');
+      const copy=E.deck({...clone(d),id:E.id('deck'),name:(d.name+' (Kopie)').slice(0,80),
+        cards:d.cards.map(c=>({...c,id:E.id('card')})),state:undefined},{keepState:false});
+      commit({...data,decks:[...data.decks,copy]});selected=copy.id;renderAll();
+    }));
+    $('deckDelete').addEventListener('click',()=>safe(deleteDeck));
+    $('deckName').addEventListener('change',ev=>safe(()=>setField('name',ev.target.value.trim())));
+    $('deckMode').addEventListener('change',ev=>safe(()=>setField('mode',ev.target.value)));
+    $('deckExhaustion').addEventListener('change',ev=>safe(()=>setField('exhaustion',ev.target.value)));
+    $('deckAddCard').addEventListener('click',()=>safe(()=>{
+      const d=selectedDeck();if(!d)return;
+      if(d.cards.length>=E.limits.MAX_CARDS)throw Error('Maximal 100 Karten pro Deck.');
+      changeDeck(d.id,current=>E.reconcile(current,{...current,cards:[...current.cards,E.makeCard()]}));
+      $('deckCards').lastElementChild?.querySelector('textarea')?.focus();
+    }));
+    const cardsEl=$('deckCards');
+    cardsEl.addEventListener('change',ev=>safe(()=>{
+      const row=ev.target.closest('[data-card-id]'),field=ev.target.dataset.cardField;
+      if(!row||!field)return;
+      replaceCard(row.dataset.cardId,c=>{
+        if(field==='copies'){
+          const n=Number(ev.target.value);
+          if(!Number.isSafeInteger(n)||n<1||n>1000)throw Error('Multiplikator muss ganzzahlig zwischen 1 und 1.000 liegen.');
+          c.copies=n;
+        }else if(field==='frequency'){
+          c.frequency=ev.target.value;
+          if(c.frequency==='once')c.copies=1;
+        }else c[field]=ev.target.value;
+      });
+    }));
+    cardsEl.addEventListener('click',ev=>safe(()=>{
+      const btn=ev.target.closest('button[data-card-action]');if(!btn)return;
+      const row=btn.closest('[data-card-id]'),id=row?.dataset.cardId;
+      const d=selectedDeck();if(!d||!id)return;
+      const action=btn.dataset.cardAction;
+      if(action==='icon'){options.pickIcon(id);return;}
+      replaceCard(id,(_card,all,index)=>{
+        if(action==='delete'){if(!confirm('Karte und ihren bisherigen Vorrat entfernen?'))return;all.splice(index,1);}
+        if(action==='duplicate'){
+          if(all.length>=E.limits.MAX_CARDS)throw Error('Maximal 100 Kartentypen.');
+          all.splice(index+1,0,{...all[index],id:E.id('card')});
+        }
+        if(action==='up'&&index>0)[all[index-1],all[index]]=[all[index],all[index-1]];
+        if(action==='down'&&index<all.length-1)[all[index+1],all[index]]=[all[index],all[index+1]];
+      });
+    }));
+    cardsEl.addEventListener('dragstart',ev=>{
+      if(!ev.target.matches('[data-card-id]'))return;
+      dragged=ev.target.dataset.cardId;ev.dataTransfer.effectAllowed='move';
+      ev.dataTransfer.setData('text/plain',dragged);ev.target.classList.add('deck-dragging');
+    });
+    cardsEl.addEventListener('dragover',ev=>{
+      if(!dragged)return;ev.preventDefault();ev.dataTransfer.dropEffect='move';
+      cardsEl.querySelectorAll('.deck-drop-target').forEach(el=>el.classList.remove('deck-drop-target'));
+      ev.target.closest('[data-card-id]')?.classList.add('deck-drop-target');
+    });
+    cardsEl.addEventListener('dragend',()=>{dragged=null;cardsEl.querySelectorAll('.deck-dragging,.deck-drop-target').forEach(el=>el.classList.remove('deck-dragging','deck-drop-target'));});
+    cardsEl.addEventListener('drop',ev=>safe(()=>{
+      ev.preventDefault();
+      const target=ev.target.closest('[data-card-id]')?.dataset.cardId,source=dragged;
+      dragged=null;if(!target||!source||target===source)return;
+      const d=selectedDeck();if(!d)return;
+      changeDeck(d.id,current=>{
+        const next=clone(current),from=next.cards.findIndex(c=>c.id===source),to=next.cards.findIndex(c=>c.id===target);
+        if(from<0||to<0)return current;
+        next.cards.splice(to,0,next.cards.splice(from,1)[0]);
+        return E.reconcile(current,next);
+      });
+    }));
+    $('deckReset').addEventListener('click',()=>safe(()=>{
+      const d=selectedDeck();if(!d||!confirm('Alle Karten dieses Decks neu mischen? Bereits gezogene Karten werden wieder verfügbar.'))return;
+      if(data.pending?.deckId===d.id)throw Error('Zuerst die offene Kartenziehung abschließen.');
+      changeDeck(d.id,current=>E.reset(current));
+    }));
+    $('deckResetAll').addEventListener('click',()=>safe(()=>{
+      if(data.pending)throw Error('Zuerst die offene Kartenziehung abschließen.');
+      if(!confirm('Alle Kartendecks neu mischen und bisherige Ziehungen zurücksetzen?'))return;
+      commit({...data,decks:data.decks.map(E.reset)});
+    }));
+    $('deckExportOne').addEventListener('click',()=>safe(()=>{
+      const d=selectedDeck();if(d)download({format:'casino-noir-deck-v1',deck:clone(d)},
+        'casino-noir-deck-'+d.name.toLowerCase().replace(/[^a-z0-9-]+/g,'-')+'.json');
+    }));
+    $('deckExportAll').addEventListener('click',()=>safe(()=>download({format:'casino-noir-decks-v1',decks:clone(data.decks)},
+      'casino-noir-decks.json')));
+    $('deckImport').addEventListener('click',()=>{$('deckImportFile').value='';$('deckImportFile').click();});
+    $('deckImportFile').addEventListener('change',async ev=>{
+      const file=ev.target.files?.[0];if(!file)return;
+      if(file.size>2*1024*1024){options.notify('Maximal 2 MB pro JSON-Datei.');return;}
+      try{const parsed=JSON.parse(await file.text());importDecks(parsed);options.notify('Kartendecks importiert.');}
+      catch(error){options.notify('Deckimport fehlgeschlagen: '+error.message);}
+    });
+    function importDecks(parsed,{keepState=false}={}){
+      const input=Array.isArray(parsed?.decks)?parsed.decks:parsed?.deck?[parsed.deck]:null;
+      if(!input||!input.length||input.length+data.decks.length>E.limits.MAX_DECKS)
+        throw Error('Keine gültigen Kartendecks oder Decklimit überschritten.');
+      const ids=new Set(),map={};
+      const imported=input.map(raw=>{
+        if(ids.has(raw.id))throw Error('Doppelte Deck-ID im Import.');
+        ids.add(raw.id);
+        const d=E.deck(raw,{keepState});
+        const newId=E.id('deck');map[d.id]=newId;
+        return {...d,id:newId};
+      });
+      commit({...data,decks:[...data.decks,...imported]});
+      selected=imported[0].id;renderAll();
+      return map;
+    }
+    function setCardIcon(id,icon){
+      safe(()=>replaceCard(id,c=>{c.icon=icon;}));
+    }
+    function availableDecks(){return data.decks.map(d=>({id:d.id,name:d.name}));}
+    function makePending(segment,profileId){
+      if(data.pending)return;
+      const d=data.decks.find(x=>x.id===segment.deckId);
+      if(!d){options.notify('Zugeordnetes Kartendeck fehlt. Bitte Segmentzuordnung prüfen.');return;}
+      commit({...data,pending:{deckId:d.id,profileId,segmentId:segment.id,phase:'ready',card:null}},{render:false});
+      setTimeout(()=>{if(data.pending?.segmentId===segment.id)renderPending();},900);
+    }
+    function showOverlay(){
+      const p=data.pending,overlay=$('cardOverlay');
+      clearTimeout(animationTimer);
+      overlay.hidden=!p;
+      if(!p){document.body.classList.remove('card-overlay-open');return;}
+      document.body.classList.add('card-overlay-open');
+      const d=data.decks.find(x=>x.id===p.deckId);
+      $('cardDeckName').textContent=d?.name||'Kartendeck';
+      const s=d?E.stats(d):null;
+      $('cardRemaining').textContent=s?number(s.available)+' Karten verfügbar · Runde '+d.state.round:'Deck nicht verfügbar';
+      const revealed=p.phase==='revealed';
+      const canDraw=Boolean(s&&(s.available>0||(d.exhaustion==='auto'&&s.configured>0)));
+      $('drawCard').hidden=revealed||!canDraw;
+      $('nextRound').hidden=!revealed&&canDraw;
+      $('nextRound').textContent=revealed?'Weiter zum Glücksrad':'Weiter ohne Karte';
+      const face=$('cardFront'),inner=$('cardFlip');
+      face.querySelector('.card-face-title').textContent=revealed?(p.card.title||'CASINO NOIR'):'';
+      face.querySelector('.card-face-text').textContent=revealed?p.card.text:'';
+      const emblem=face.querySelector('.card-face-icon');
+      emblem.textContent=revealed?(p.card.icon?.replaceAll('_',' ')||'✦'):'';
+      inner.style.setProperty('--picked-color',revealed?(p.card.color||'#d6b679'):'#d6b679');
+      inner.classList.remove('is-revealed');
+      if(revealed){
+        // Set the hidden face before flipping; refresh restores the already drawn card.
+        requestAnimationFrame(()=>inner.classList.add('is-revealed'));
+      }
+      if(!returnFocus)returnFocus=document.activeElement;
+      (revealed||!canDraw?$('nextRound'):$('drawCard')).focus({preventScroll:true});
+    }
+    function renderPending(){
+      if(data.pending)showOverlay();
+      else if(!$('cardOverlay').hidden)showOverlay();
+    }
+    $('drawCard').addEventListener('click',()=>safe(()=>{
+      if(drawing||data.pending?.phase!=='ready')return;
+      drawing=true;
+      try{
+        const p=data.pending,index=data.decks.findIndex(d=>d.id===p.deckId);
+        if(index<0)throw Error('Kartendeck nicht mehr verfügbar.');
+        const outcome=E.draw(data.decks[index]);
+        if(!outcome.card){options.notify('Deck erschöpft. Bitte in der Deckverwaltung neu mischen.');return;}
+        const next=clone(data);
+        next.decks[index]=outcome.deck;
+        next.pending={...p,phase:'revealed',card:outcome.card};
+        commit(next,{render:false});
+        if(outcome.reshuffled)options.notify('Neue Deckrunde begonnen.');
+        showOverlay();renderSelector();renderCards();
+      }finally{drawing=false;}
+    }));
+    $('nextRound').addEventListener('click',()=>safe(()=>{
+      if(!data.pending||data.pending.phase==='ready'&&$('nextRound').hidden)return;
+      commit({...data,pending:null},{render:false});
+      showOverlay();renderSelector();renderCards();options.refreshSegments();
+      $('spinHub').focus({preventScroll:true});returnFocus=null;
+    }));
+    $('cardOverlay').addEventListener('keydown',ev=>{
+      if(ev.key!=='Tab')return;
+      const els=[...$('cardOverlay').querySelectorAll('button:not([hidden]):not(:disabled)')];
+      if(!els.length)return;
+      const i=els.indexOf(document.activeElement);
+      if(ev.shiftKey&&(i<=0)){ev.preventDefault();els[els.length-1].focus();}
+      else if(!ev.shiftKey&&i===els.length-1){ev.preventDefault();els[0].focus();}
+    });
+    renderAll();
+    return {
+      availableDecks,hasDeck:id=>data.decks.some(d=>d.id===id),
+      isBlocking:()=>Boolean(data.pending),
+      makePending,render:renderAll,setCardIcon,
+      createFromSegment:()=>safe(()=>{const id=addDeck();$('deckDetails').scrollIntoView({behavior:'smooth',block:'nearest'});return id;}),
+      importDecks,exportData:({includeSession=false,referencedIds=null}={})=>({
+        decks:clone(data.decks.filter(d=>!referencedIds||referencedIds.includes(d.id))
+          .map(d=>includeSession?d:{...d,state:undefined})),
+        sessionState:includeSession
+      }),
+      get pending(){return data.pending;}
+    };
+  }
+  root.CasinoNoirDeckUI=Object.freeze({create});
 })(typeof window!=='undefined'?window:globalThis);
 
 </script>
@@ -911,7 +1495,8 @@ body.editor-open{overflow:hidden}
         id:(()=>{const input=s?.id;const id=typeof input==='string'&&/^[a-z0-9-]{1,100}$/i.test(input)&&!ids.has(input)?input:makeId();ids.add(id);return id;})(), label: String(s?.label ?? '').slice(0,80),
         icon:validIcon(normalizeIconName(s?.icon)) ? normalizeIconName(s.icon) : 'star',
         showLabel:s?.showLabel !== false, showIcon:s?.showIcon !== false,
-        color:validColor(s?.color) ? s.color : PALETTES[palette][i%2], weight:validWeight(s?.weight ?? 1)
+        color:validColor(s?.color) ? s.color : PALETTES[palette][i%2], weight:validWeight(s?.weight ?? 1),
+        action:s?.action==='deck'?'deck':'result',deckId:typeof s?.deckId==='string'&&/^[a-z0-9_-]{1,100}$/i.test(s.deckId)?s.deckId:''
       }))
     };
   }
@@ -944,13 +1529,14 @@ body.editor-open{overflow:hidden}
     select.value=profiles.activeId;
   }
   function switchProfile(id){
-    if(isSpinning||id===profiles.activeId)return;
+    if(isSpinning||decks?.isBlocking()||id===profiles.activeId)return;
     const target=profiles.entries.find(p=>p.id===id);
     if(!target)return;
     resetPointer();config=cloneConfig(target.config);profiles.activeId=id;rotation=0;wheel.style.transform='rotate(0deg)';
     clearWinnerHighlight();render();save();profileStatus();
   }
   let isSpinning=false, rotation=0, iconFontReady=false, currentIconTarget=null;
+  let decks=null;
   let highlightedWinner=null;
   let activeCategory='Alle', lastFocusedElement=null, saveOk=true, audioContext=null, lastTickAt=0, lastTickSector=-1, toastTimer=0;
   const svg=$('wheelSvg'), wheel=$('rotatingWheel'), modal=$('iconModal'), assembly=$('wheelAssembly');
@@ -1274,7 +1860,7 @@ body.editor-open{overflow:hidden}
     wheel.style.transform=`rotate(${rotation}deg)`;
     $('segmentCount').textContent=n.toLocaleString('de-DE');
     $('stageCount').textContent=String(n).padStart(2,'0')+' SEGMENTE'+(config.sizeMode==='proportional'?' · FLÄCHE = CHANCE':' · GLEICHE FLÄCHEN'+(config.segments.some(s=>s.weight!==config.segments[0]?.weight)?' · GEWICHTETE CHANCEN':''));
-    $('spinHub').disabled=isSpinning||n===0;
+    $('spinHub').disabled=isSpinning||n===0||Boolean(decks?.isBlocking());
     const notice=$('densityNotice');
     if(n>72)notice.textContent='Bei mehr als 72 Segmenten zeigt das Rad nur die Farbsegmente. Inhalte bleiben in der Liste und im Ergebnis erhalten.';
     else if(n>20)notice.textContent='Ab 21 Segmenten verwendet das Rad Nummern statt Symbolen und Text, um das Design lesbar zu halten.';
@@ -1305,6 +1891,10 @@ body.editor-open{overflow:hidden}
         <button class="icon-action" type="button" data-action="up" aria-label="Segment ${i+1} nach oben" title="Nach oben" ${i===0?'disabled':''}>↑</button>
         <button class="icon-action" type="button" data-action="down" aria-label="Segment ${i+1} nach unten" title="Nach unten" ${i===config.segments.length-1?'disabled':''}>↓</button>
         <button class="icon-action" type="button" data-action="duplicate" aria-label="Segment ${i+1} duplizieren" title="Duplizieren">⧉</button>
+      </div>
+      <div class="segment-action-row">
+        <label>Aktion nach Gewinn<select data-field="action" aria-label="Aktion von Segment ${i+1}"><option value="result" ${s.action!=='deck'?'selected':''}>Ergebnis anzeigen</option><option value="deck" ${s.action==='deck'?'selected':''}>Karte aus Deck ziehen</option></select></label>
+        ${s.action==='deck'?'<label>Kartendeck auswählen<select data-field="deckId" aria-label="Kartendeck für Segment '+(i+1)+'"><option value="">Bitte wählen …</option>'+((decks?.availableDecks()||[]).map(d=>'<option value="'+escapeHtml(d.id)+'" '+(d.id===s.deckId?'selected':'')+'>'+escapeHtml(d.name)+'</option>').join(''))+(s.deckId&&!decks?.hasDeck(s.deckId)?'<option selected value="'+escapeHtml(s.deckId)+'">⚠ Deck fehlt</option>':'')+'</select></label><button class="btn btn-quiet" type="button" data-action="newDeck">＋ Neues Deck</button>':''}
       </div>
     </div>`).join('');
     if(isSpinning) lockEditor(true);
@@ -1388,7 +1978,7 @@ body.editor-open{overflow:hidden}
     setTimeout(()=>URL.revokeObjectURL(url),1000);
   }
   $('profileExportAll').addEventListener('click',()=>{
-    const all={...profiles,entries:profiles.entries.map(p=>({...p,config:p.id===profiles.activeId?cloneConfig(config):p.config}))};
+    const all={...profiles,version:3,entries:profiles.entries.map(p=>({...p,config:p.id===profiles.activeId?cloneConfig(config):p.config})),...decks.exportData({includeSession:$('includeDeckSession').checked})};
     downloadJson(all,'casino-noir-alle-'+new Date().toISOString().slice(0,10)+'.json');
   });
   profileStatus();
@@ -1451,6 +2041,13 @@ body.editor-open{overflow:hidden}
   list.addEventListener('change',ev=>{
     if(isSpinning)return;
     const el=ev.target,field=el.dataset.field;
+    if(field==='action'||field==='deckId'){
+      const segment=config.segments.find(x=>x.id===el.closest('.segment-card')?.dataset.id);
+      if(!segment)return;
+      if(field==='action'){segment.action=el.value==='deck'?'deck':'result';if(segment.action==='result')segment.deckId='';}
+      else segment.deckId=el.value;
+      renderSegments();save();return;
+    }
     if(field==='weight'){
       const segment=config.segments.find(x=>x.id===el.closest('.segment-card')?.dataset.id);
       if(!segment)return;
@@ -1469,6 +2066,11 @@ body.editor-open{overflow:hidden}
     const action=btn.dataset.action;
     if(action==='drag')return; // Pointer/keyboard handlers own the reorder grip.
     if(action==='icon'){openIconPicker(card.dataset.id);return;}
+    if(action==='newDeck'){
+      const id=decks?.createFromSegment();
+      if(id){config.segments[idx].action='deck';config.segments[idx].deckId=id;renderSegments();save();}
+      return;
+    }
     if(action==='delete'){config.segments.splice(idx,1);}
     else if(action==='duplicate'){const clone={...config.segments[idx],id:makeId()};config.segments.splice(idx+1,0,clone);}
     else if(action==='up'&&idx>0){[config.segments[idx],config.segments[idx-1]]=[config.segments[idx-1],config.segments[idx]];}
@@ -1647,7 +2249,7 @@ body.editor-open{overflow:hidden}
     if(moveSegment(from,to,{focus:true}))toast('Segmentreihenfolge aktualisiert.');
   });
   $('addSegment').addEventListener('click',()=>{
-    if(isSpinning)return;
+    if(isSpinning||decks?.isBlocking())return;
     const n=config.segments.length;
     config.segments.push({id:makeId(),label:`Segment ${n+1}`,icon:'star',showLabel:true,showIcon:true,color:PALETTES[config.palette][n%2],weight:1});
     renderSegments();mutate();list.scrollTop=list.scrollHeight;
@@ -1697,10 +2299,12 @@ body.editor-open{overflow:hidden}
   });
   $('resetConfig').addEventListener('click',()=>{
     if(!confirm('Alle Segmente und Einstellungen auf die Ausgangsversion zurücksetzen?'))return;
+    if(decks?.isBlocking()){toast('Bitte zuerst die Kartenziehung abschließen.');return;}
     config=defaultConfig();rotation=0;clearWinnerHighlight();render();save();$('statusText').textContent='Auf die goldene Mitte klicken, um zu drehen';toast('Ausgangskonfiguration wiederhergestellt.');
   });
   $('exportJson').addEventListener('click',()=>{
-    downloadJson({version:2,name:activeProfile().name,config},'casino-noir-'+activeProfile().name.toLowerCase().replace(/[^a-z0-9äöüß-]+/gi,'-')+'-'+new Date().toISOString().slice(0,10)+'.json');
+    const ids=[...new Set(config.segments.filter(s=>s.action==='deck').map(s=>s.deckId).filter(Boolean))];
+    downloadJson({version:3,name:activeProfile().name,config,...decks.exportData({includeSession:$('includeDeckSession').checked,referencedIds:ids})},'casino-noir-'+activeProfile().name.toLowerCase().replace(/[^a-z0-9äöüß-]+/gi,'-')+'-'+new Date().toISOString().slice(0,10)+'.json');
     toast('Glücksrad exportiert.');
   });
   $('importJson').addEventListener('click',()=>{if(!isSpinning){$('importFile').value='';$('importFile').click();}});
@@ -1709,16 +2313,23 @@ body.editor-open{overflow:hidden}
     if(file.size>2*1024*1024){toast('Die JSON-Datei ist zu groß (maximal 2 MB).');return;}
     try{
       const parsed=JSON.parse(await file.text());
-      if(parsed?.version>2)throw Error('Neuere, nicht unterstützte Formatversion.');
+      if(parsed?.version>3)throw Error('Neuere, nicht unterstützte Formatversion.');
       let incoming;
-      if(parsed?.version===2&&Array.isArray(parsed.entries)){
+      if(parsed?.version>=2&&Array.isArray(parsed.entries)){
         if(!parsed.entries.length||parsed.entries.length>100)throw Error('Ungültige Anzahl von Profilen.');
         incoming=parsed.entries.map(p=>({name:String(p?.name||'Import').slice(0,60),config:cloneConfig(p.config)}));
       }else incoming=[{name:String(parsed.name||file.name.replace(/\.json$/i,'')).slice(0,60),config:cloneConfig(parsed.config||parsed)}];
       const mode=$('profileImportMode').value;
+      if(mode==='replace'&&incoming.length!==1)throw Error('Zum Ersetzen bitte eine einzelne Konfiguration auswählen.');
+      if(mode!=='replace'&&profiles.entries.length+incoming.length>100)throw Error('Maximal 100 Glücksräder möglich.');
+      if(mode==='replace'&&!confirm('Aktuelles Glücksrad durch den Import ersetzen?'))return;
+      const map=Array.isArray(parsed?.decks)&&parsed.decks.length
+        ?decks.importDecks(parsed,{keepState:parsed.sessionState===true}):{};
+      for(const item of incoming)for(const segment of item.config.segments){
+        if(segment.action==='deck'&&Object.hasOwn(map,segment.deckId))segment.deckId=map[segment.deckId];
+      }
       if(mode==='replace'){
         if(incoming.length!==1)throw Error('Zum Ersetzen bitte eine einzelne Konfiguration auswählen.');
-        if(!confirm('Aktuelles Glücksrad durch den Import ersetzen?'))return;
         config=incoming[0].config;activeProfile().config=cloneConfig(config);
       }else{
         if(profiles.entries.length+incoming.length>100)throw Error('Maximal 100 Glücksräder möglich.');
@@ -1815,6 +2426,10 @@ body.editor-open{overflow:hidden}
         ? `„${String(rawIcon).slice(0,30)}“ gibt es nicht als Material Symbol. Bitte ein angezeigtes Symbol wählen.`
         : 'Der vollständige Google-Katalog ist noch nicht verfügbar. Bitte Symbol aus der Liste wählen.');
       return;
+    }
+    if(currentIconTarget?.startsWith('deck-card:')){
+      const id=currentIconTarget.slice('deck-card:'.length);
+      closeIconPicker();decks?.setCardIcon(id,icon);return;
     }
     const s=config.segments.find(s=>s.id===currentIconTarget);if(!s)return;
     s.icon=icon;s.showIcon=true;
@@ -2069,6 +2684,7 @@ body.editor-open{overflow:hidden}
       lastPhysicalVelocity:details.velocity??null,lastRatchetStrength:details.ratchetStrength??null
     });
     currentPhysicalState=null;
+    if(selected.action==='deck')decks?.makePending(selected,profiles.activeId);
   }
   function runMechanicalSpin(power){
     const physics=window.CasinoWheelPhysics;
@@ -2165,7 +2781,7 @@ body.editor-open{overflow:hidden}
   }
   function spin(){
     const n=config.segments.length;
-    if(isSpinning||!n)return;
+    if(isSpinning||decks?.isBlocking()||!n)return;
     if(config.spinMode==='weighted'&&totalWeight()<=0){
       toast('Alle Segmentgewichte sind 0.');return;
     }
@@ -2200,6 +2816,13 @@ body.editor-open{overflow:hidden}
   }
   $('spinHub').addEventListener('click',spin);
   window.__casinoNoirDebug={selectWinner, ranges,get controlledWinnerSelections(){return controlledWinnerSelections;},get currentPhysicalState(){return currentPhysicalState?{angle:currentPhysicalState.angle,velocity:currentPhysicalState.velocity,contacts:currentPhysicalState.contacts,elapsed:currentPhysicalState.elapsed,restSeconds:currentPhysicalState.restSeconds,done:currentPhysicalState.done}:null;},get pointerAngle(){return pointerAngle;},get pointerContactCount(){return pointerContactCount;},get pointerMaxDeflection(){return pointerMaxDeflection;}, get config(){return config;},get rotation(){return rotation;},get isSpinning(){return isSpinning;},get power(){return powerLevel;},get powerPeriodMs(){return POWER_PERIOD_MS;},get highlightedWinner(){return highlightedWinner;},showWinnerHighlight,playWinnerSound,get spinEase(){return spinEase;},get iconFontReady(){return iconFontReady;},get iconCatalogReady(){return fullCatalogReady;},get iconCatalogCount(){return ICONS.length;},get iconSearchMetadataReady(){return iconSearchReady;},get iconSearchMetadataCount(){return ICON_SEARCH_TAGS.size;},get iconMatches(){return iconMatchCount;},get iconMatchingNames(){return [...iconMatches];},get iconCodepointMap(){return Object.fromEntries(ICON_CODEPOINTS);},loadIconCatalog,lastWinner:null,lastRotation:0,spinning:false,stop(){cancelAnimationFrame(raf);}};
+  decks=window.CasinoNoirDeckUI.create({
+    getProfiles:()=>profiles.entries.map(p=>p.id===profiles.activeId?{...p,config}:p),
+    refreshSegments:()=>renderSegments(),
+    pickIcon:id=>openIconPicker('deck-card:'+id),
+    notify:message=>toast(message),
+    isSpinning:()=>isSpinning
+  });
   restoreIconCatalog();
   render();
   loadIconCatalog();
