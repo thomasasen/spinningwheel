@@ -96,6 +96,16 @@ try{
   await page.waitForFunction(()=>window.__casinoNoirDebug.lastMode==='weighted'&&!window.__casinoNoirDebug.isSpinning,{timeout:25000});
   const after=await page.evaluate(()=>window.__casinoNoirDebug.controlledWinnerSelections);
   assert.equal(after,before+1,'controlled mode must call weighted CSPRNG draw once');
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>Boolean(window.__casinoNoirDebug));
+  assert.equal(await page.evaluate(()=>window.__casinoNoirDebug.config.spinMode),'weighted',
+    'selected mode must persist in browser storage');
+  await page.locator('#toggleEditor').click();
+  await page.locator('#spinMode').selectOption('physical');
+  await page.reload({waitUntil:'domcontentloaded'});
+  assert.equal(await page.evaluate(()=>window.__casinoNoirDebug.config.spinMode),'physical',
+    'returning to real physics must persist');
+
   assert.deepEqual(errors,[]);
   console.log('PASS: Chromium physical result follows wheel angle; weighted mode remains explicit.');
 }finally{await browser.close();}
