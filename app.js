@@ -232,7 +232,7 @@
   function totalWeight(){return config.segments.reduce((sum,s)=>sum+s.weight,0);}
   function ranges(){
     const n=config.segments.length, total=totalWeight();
-    let start=-180;
+    let start=-90-(n?(config.sizeMode==='proportional'&&total>0?360*config.segments[0].weight/total:360/n)/2:0);
     return config.segments.map(s=>{
       const size=config.sizeMode==='proportional'&&total>0?360*s.weight/total:360/n;
       const range={start,end:start+size,center:start+size/2,size};start+=size;return range;
@@ -364,7 +364,7 @@
     wheel.querySelectorAll('.winner-item-lifted').forEach(node=>node.classList.remove('winner-item-lifted'));
     stage.hidden=true;
     stage.classList.remove('is-visible');
-    const sector=ranges()[index],center=sector.center;
+    const sector=ranges()[index],center=sector.center,step=sector.size;
     const effect=config.winnerEffect,strength=config.winnerStrength;
     const mult={subtle:.72,refined:1,show:1.33}[strength]||1;
     const dim={subtle:.40,refined:.62,show:.76}[strength]||.62;
@@ -381,7 +381,7 @@
       const length=Math.ceil(trace.getTotalLength());
       trace.style.strokeDasharray=`${length} ${length}`;
       trace.style.setProperty('--trace-length',String(length));
-      const [p1x,p1y]=polar(260,center-step/2),[p2x,p2y]=polar(260,center+step/2);
+      const [p1x,p1y]=polar(260,sector.start),[p2x,p2y]=polar(260,sector.end);
       for(const [x,y] of [[p1x,p1y],[p2x,p2y]])e('circle',{cx:x,cy:y,r:4*mult,class:'winner-outline-jewel'},group);
     }else if(effect==='spotlight'){
       shadeOtherSectors(group,index,n,step,dim);
@@ -439,12 +439,11 @@
     shade.style.setProperty('--winner-dim',String(dim));
     if(n>100){
       const disk=circlePath(320,320,265);
-      e('path',{d:disk+' '+wedgePath(-90+(index-.5)*step,-90+(index+.5)*step,265),'fill-rule':'evenodd',class:'winner-shade-sector'},shade);
+      e('path',{d:disk+' '+wedgePath(ranges()[index].start,ranges()[index].end,265),'fill-rule':'evenodd',class:'winner-shade-sector'},shade);
     }else{
       for(let j=0;j<n;j++){
         if(j===index)continue;
-        const mid=-90+j*step;
-        e('path',{d:wedgePath(mid-step/2,mid+step/2,265),class:'winner-shade-sector'},shade);
+        const r=ranges()[j];if(r.size>0)e('path',{d:wedgePath(r.start,r.end,265),class:'winner-shade-sector'},shade);
       }
     }
   }
@@ -465,7 +464,7 @@
   function makeMarquee(group,index,n,step,mult){
     const ring=e('g',{class:'winner-marquee'},group);
     e('circle',{cx:320,cy:320,r:291,class:'winner-marquee-orbit'},ring);
-    const center=-90+index*step;
+    const center=ranges()[index].center;
     const distance=(a,b)=>Math.abs((((a-b)%360)+540)%360-180);
     let closest=0,smallest=Infinity;
     for(let j=0;j<56;j++){
