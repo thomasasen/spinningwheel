@@ -5,7 +5,7 @@ Eine statische, responsive Glücksrad-Web-App im Casino-Noir-Stil. Das Rad beste
 ## Start
 
 - **Einfach:** `casino-noir-standalone.html` im Browser öffnen. Dieses Dokument enthält HTML, CSS und JavaScript vollständig eingebettet.
-- **Für GitHub Pages:** `index.html`, `styles.css` und `app.js` ins Stammverzeichnis der gewünschten Branch legen und GitHub Pages dafür aktivieren. Es wird kein Build-Schritt benötigt.
+- **Für GitHub Pages:** `index.html`, `styles.css`, `wheel-physics.js` und `app.js` ins Stammverzeichnis der gewünschten Branch legen und GitHub Pages dafür aktivieren. Es wird kein Build-Schritt benötigt.
 - **Lokal mit Webserver:** Im Ordner `python -m http.server 8000` starten und `http://localhost:8000` öffnen.
 
 ## Funktionen
@@ -16,15 +16,15 @@ Eine statische, responsive Glücksrad-Web-App im Casino-Noir-Stil. Das Rad beste
 - Live-SVG, anpassbar an die Segmentanzahl: 1–12 volle Inhalte; 13–20 kompakte Inhalte; 21–72 Nummern; darüber reine Segmente. Vollständige Werte bleiben im Editor und beim Gewinnergebnis vorhanden.
 - Nur die goldene Radmitte löst die Drehung aus. Der Zeiger sitzt an einem festen Gelenk und federt bei Segmentkontakten sichtbar mit.
 - Standardmäßig entsteht der Gewinner erst durch mechanisches Auslaufen; optional bleibt eine ausdrücklich gekennzeichnete, vorab gewichtete Ziehung verfügbar.
-- Vertikaler, schnell pendelnder Drehkraftbalken (0–100 % in 0,8 Sekunden nach oben und in 0,8 Sekunden nach unten). Nur der Klick auf die goldene Radmitte übernimmt die momentane Kraft. Je nach Kraft macht das Rad 2–10 volle Umdrehungen und läuft unterschiedlich lang aus.
-- Die einstellbare maximale Drehdauer beträgt 3–30 Sekunden; bei schwacher Kraft ist die tatsächliche Drehdauer kürzer. Optionaler synthetisierter Klicksound und vier Farbpaletten.
+- Vertikaler Drehkraftbalken: Der Klick auf die goldene Radmitte übernimmt den momentanen Kraftwert. Im Physikmodus verändert er den Anfangsimpuls, nicht eine vorher festgelegte Umdrehungszahl.
+- Einstellbarer Dauer- bzw. Trägheitsrichtwert (3–30 Sekunden): Im Physikmodus entsteht die tatsächliche Auslaufzeit dynamisch; im gewichteten Modus wird die Drehdauer gezielt gesteuert. Optionaler synthetisierter Klicksound und vier Farbpaletten.
 - Präsentationsmodus ohne Editor.
 - Automatische Browser-Speicherung über `localStorage`, JSON-Import und JSON-Export.
 - Desktop- und Mobilansicht, Fokus-/Tastaturbedienung und reduzierte Animation bei aktiver Betriebssystemeinstellung.
 
 ## Technische Hinweise
 
-Das Rad verwendet vektorbasierte Pfade, Licht-/Metallverläufe und goldene Nieten. Seine Geometrie ist unabhängig von der Zahl der Segmente. Für die Ergebnisermittlung wird `crypto.getRandomValues` verwendet, soweit im Browser verfügbar. Die zufällige Zielposition bleibt innerhalb der Grenzen des ausgewählten Segments.
+Das Rad verwendet vektorbasierte Pfade, Licht-/Metallverläufe und goldene Nieten. Seine Geometrie ist unabhängig von der Zahl der Segmente. Im Physikmodus ergibt sich der Gewinner aus dem Endwinkel der Simulation. `crypto.getRandomValues` liefert dort lediglich natürliche Streuungen des Startimpulses und der Reibung. Im gezielt gewichteten Modus dient der kryptografische Zufallswert der Auswahl des Gewinnersegments, dessen Mitte anschließend angefahren wird.
 
 Material Symbols werden mit ihren offiziellen Unicode-Codepoints statt mit Ligaturen angezeigt. Ungültige Symboleinträge werden im Editor abgewiesen; „shirt“ wird auf `apparel` abgebildet, auch bei gespeicherten Konfigurationen. Ein einfaches T-Shirt-SVG dient als lokale Fallbackgrafik für `apparel`. Material Symbols werden über Google Fonts eingebunden. Der Symbolkatalog wird aus der offiziellen Datei `google/material-design-icons/variablefont/MaterialSymbolsRounded[FILL,GRAD,opsz,wght].codepoints` geladen. Alternative Quelle ist jsDelivr. Symbolnamen **und Codepoints** werden lokal gespeichert; neue Symbole werden beim nächsten Aktualisierungsintervall synchronisiert. **Dafür ist eine Internetverbindung erforderlich.** Wird das externe Symbol-Font blockiert oder offline geöffnet, verwendet die App dekorative Unicode-Fallbacksymbole. Es werden keine Fontdateien mitgeliefert. Die Icons werden von Google unter der **Apache License 2.0** angeboten: https://developers.google.com/fonts/docs/material_icons .
 
@@ -44,15 +44,13 @@ Text, Material-Symbole und Segmentnummern werden entlang der jeweiligen Segmenta
 
 Die Anwendung startet mit **eingeklapptem Konfigurationsmenü**. Das Glücksrad nutzt die gesamte verfügbare Breite und skaliert nach der Viewport-Höhe. Über **Konfiguration** (Zahnrad auf schmalen Displays) lässt sich ein seitliches Einstellungsmenü öffnen, ohne das Rad zu verkleinern. Der Editor wird durch das Schließen-Symbol, einen Klick außerhalb oder `Escape` geschlossen. Die Symbolauswahl erscheint über dem Editor und bleibt bedienbar. Der Konfigurationsstand wird weiterhin lokal gespeichert; die Sichtbarkeit des Menüs wird bewusst nicht gespeichert.
 
-## Drehkraft und Timing
+## Drehkraft, Reibung und Gewinnhervorhebung
 
-Der vertikale Kraftbalken pendelt ständig zwischen 0 und 100 Prozent (vollständiger Zyklus 1,6 Sekunden). Beim Klick auf **DREHEN** wird der genaue aktuelle Wert eingefroren. Er bestimmt die Anzahl der vollen Umdrehungen (2–10) und die Dauer (35–100 Prozent der eingestellten maximalen Drehdauer). Die Gewinnwahrscheinlichkeit der Segmente bleibt gleich; die Zielausrichtung wird unabhängig bestimmt und anschließend mathematisch korrekt angefahren. Die Anzeige funktioniert auch im Präsentationsmodus, ohne einen zusätzlichen Startknopf bereitzustellen.
+Der Kraftbalken pendelt zwischen 0 und 100 Prozent (Zyklus: 1,6 Sekunden). Der Klick auf **DREHEN** übernimmt den aktuellen Wert. Im standardmäßigen Physikmodus gibt er einen Anfangsimpuls vor; daraus folgen variable Umdrehungszahl und Stoppposition. Lagerreibung, geschwindigkeitsabhängiger Widerstand und Zeigerkontakte reduzieren die Rotationsenergie bis zum Stillstand. Bei geringem Tempo ist ein kleines Zurückprallen möglich. Es gibt **keine vorberechnete Zielposition**.
 
-## Auslaufspannung und Gewinnhervorhebung
+Die Einstellung **Drehträgheit** (3–30 Sekunden) skaliert die Reibungskoeffizienten. Die tatsächlich erlebte Auslaufzeit ist nicht exakt vorgegeben. **Auslaufspannung** steuert zusätzlich die Widerstände: Größere Werte bedeuten weniger Reibung und im Mittel längeres Auslaufen. Beim gezielt gewichteten Modus greifen dagegen weiterhin die ursprüngliche feste Zeitkurve und die Zahl der Umdrehungen (2–10), damit das vorher gezogene Ergebnis erreicht wird.
 
-Die **maximale Drehdauer** ist zwischen 3 und 30 Sekunden konfigurierbar. Wie bisher skaliert die tatsächlich gewählte Dauer mit dem beim Klick abgefangenen Kraftwert (35–100 % der eingestellten Obergrenze). Zusätzlich steuert **Auslaufspannung** (0–100 %, Standard: 65 %) die Bremskurve unabhängig von der Dauer: Niedrige Werte bremsen früher stark, hohe Werte bewegen das Rad noch bis kurz vor Schluss langsam über Segmentgrenzen. Die Abbremsung ist stetig und monoton; es gibt keinen künstlichen Nachrück-Sprung und keinen manipulierten Gewinner.
-
-Nach jedem Stillstand erhält der echte Gewinnersektor eine pulsierende Goldkontur mit leichtem Highlight. Die Hervorhebung bleibt bis zur nächsten Drehung oder Segmentänderung sichtbar; bei reduzierter Animation ohne Pulsieren. Die JSON-Konfiguration enthält nun `coast`, ältere Konfigurationen verwenden den Standardwert 65.
+Nach dem Stillstand erhält der ermittelte Sektor die gewählte Goldkontur bzw. Gewinnerinszenierung. Die Hervorhebung bleibt bis zum nächsten Spin oder einer Änderung sichtbar; bei reduzierter Bewegung ohne Pulsieren.
 
 ## Radgeometrie: kleiner Zeiger und außenliegende Beschriftungen
 
@@ -154,4 +152,4 @@ Unter **Gespeicherte Glücksräder** kann man neue Räder erstellen, bestehende 
 
 ### Prüfung
 
-`node --check app.js` prüft JavaScript-Syntax. `tests/weighted-browser.mjs` prüft mit Playwright-Chromium die Darstellungsmodi, 100.000 Ziehungen mit gewichteten Verhältnissen und Nullgewichten, den Stopp und das Wiederherstellen mehrerer Profile. Die GitHub-Actions-Definition liegt unter `.github/workflows/casino-noir-ci.yml`. Die Chromium-Regression umfasst die modulare und die Standalone-Version sowie gewichtete Stichproben. Wie bei jedem modellierten Bewegungsablauf ersetzt das keine physikalische Messung an einem realen Glücksrad.
+`node --check app.js` prüft JavaScript-Syntax. `tests/weighted-browser.mjs` prüft mit Playwright-Chromium die Darstellungsmodi, 100.000 Ziehungen mit gewichteten Verhältnissen und Nullgewichten, den Stopp und das Wiederherstellen mehrerer Profile. Zusätzlich simuliert `tests/physics-browser.mjs` 350 mechanische Ausläufe ohne Zielsektor und verifiziert im Browser die Endwinkel-Ergebnisermittlung. `tests/pointer-browser.mjs` kontrolliert die sichtbare Zeigerbewegung. Die GitHub-Actions-Definition liegt unter `.github/workflows/casino-noir-ci.yml`. Die Chromium-Regression umfasst die modulare und die Standalone-Version sowie gewichtete Stichproben. Wie bei jedem modellierten Bewegungsablauf ersetzt das keine physikalische Messung an einem realen Glücksrad.
