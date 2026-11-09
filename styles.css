@@ -304,3 +304,6 @@ body.editor-open{overflow:hidden}
   .export-options{margin-inline:10px}
 }
 @media(prefers-reduced-motion:reduce){.wheel-svg #fixedPointer{transition:none!important}}
+
+.profile-save-status{font:600 10px/1.45 system-ui,sans-serif;color:#e5bf89;margin:9px 0 0}
+.profile-save-status.is-warning{color:#ffb4a0}
