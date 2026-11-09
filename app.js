@@ -1596,7 +1596,8 @@
     getProfiles:()=>profiles.entries.map(p=>p.id===profiles.activeId?{...p,config}:p),
     refreshSegments:()=>renderSegments(),
     pickIcon:id=>openIconPicker('deck-card:'+id),
-    notify:message=>toast(message)
+    notify:message=>toast(message),
+    isSpinning:()=>isSpinning
   });
   restoreIconCatalog();
   render();
