@@ -19,10 +19,10 @@ jobs:
         with:
           node-version: '22'
       - name: JavaScript syntax
-        run: node --check app.js && node --check tests/weighted-browser.mjs
+        run: node --check app.js && node --check tests/weighted-browser.mjs && node --check tests/regression-browser.mjs && node --check tests/pointer-browser.mjs
       - name: Install Chromium and Playwright
         run: |
           npm install --no-save playwright@1.57.0
           npx playwright install --with-deps chromium
       - name: Browser regression and probability simulation
-        run: node tests/weighted-browser.mjs && node tests/regression-browser.mjs
+        run: node tests/weighted-browser.mjs && node tests/regression-browser.mjs && node tests/pointer-browser.mjs
