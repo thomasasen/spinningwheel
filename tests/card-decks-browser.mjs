@@ -27,9 +27,8 @@ try{
   const originalId=await page.locator('#deckSelect').inputValue();
   await page.locator('#deckDuplicate').click();
   assert.equal(await page.locator('#deckCount').innerText(),'2');
-  await page.locator('#deckDelete').click();
   page.once('dialog',dialog=>dialog.accept());
-  // Dialog might already be awaited above; delete is intentional.
+  await page.locator('#deckDelete').click();
   await page.locator('#deckSelect').selectOption(originalId);
   for(let i=0;i<7;i++)await page.locator('#segmentList .segment-delete').last().click();
   await page.locator('#segmentList select[data-field="action"]').selectOption('deck');
