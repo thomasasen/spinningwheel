@@ -220,9 +220,10 @@
     ];
     return data.map((v,i) => ({ id:makeId(), label:v[0], icon:v[1], showLabel:v[2], showIcon:v[3], color:PALETTES.noir[i%2], weight:1 }));
   }
-  function defaultConfig() { return {version:1, segments:initialSegments(), duration:6, coast:65, sound:true, winnerEffect:'cinematic', winnerStrength:'refined', winnerSound:'chime', palette:'noir', sizeMode:'equal'}; }
+  function defaultConfig() { return {version:1, segments:initialSegments(), duration:6, coast:65, sound:true, winnerEffect:'cinematic', winnerStrength:'refined', winnerSound:'chime', palette:'noir', sizeMode:'equal',pointerSpring:65,pointerDamping:60,pointerIntensity:60,tickStyle:'soft'}; }
   function validColor(v) { return /^#[0-9a-f]{6}$/i.test(v || ''); }
   function validIcon(v) { return isValidMaterialSymbolName(v); }
+  function clampSetting(value,fallback){return Number.isFinite(Number(value))&&value!==null?Math.max(0,Math.min(100,Number(value))):fallback;}
   function validWeight(value){
     if(value===''||value===null||typeof value==='boolean')throw new Error('Ungültiges Segmentgewicht.');
     const n=Number(value);
@@ -256,7 +257,7 @@
     if (raw.segments.length > 5000) throw new Error('Mehr als 5.000 Segmente können nicht auf einmal importiert werden.');
     const palette = PALETTES[raw.palette] ? raw.palette : 'noir';
     return {
-      version:2, palette, sizeMode:raw.sizeMode==='proportional'?'proportional':'equal',
+      version:2, palette, sizeMode:raw.sizeMode==='proportional'?'proportional':'equal', pointerSpring:clampSetting(raw.pointerSpring,65),pointerDamping:clampSetting(raw.pointerDamping,60),pointerIntensity:clampSetting(raw.pointerIntensity,60),tickStyle:['soft','mechanical','ratchet','metal'].includes(raw.tickStyle)?raw.tickStyle:'soft',
       duration: Number.isFinite(Number(raw.duration)) ? Math.min(30,Math.max(3,Math.round(Number(raw.duration)))) : 6,
       coast: Number.isFinite(Number(raw.coast)) ? Math.min(100,Math.max(0,Math.round(Number(raw.coast)))) : 65,
       sound:raw.sound !== false,
@@ -630,7 +631,10 @@
     return `<span class="symbol-fallback" aria-hidden="true">${escapeHtml(iconFallback(icon))}</span>`;
   }
   function renderSegments(){
-    $('sizeMode').addEventListener('change',event=>{if(isSpinning)return;config.sizeMode=event.target.value==='proportional'?'proportional':'equal';mutate();});
+    for(const key of ['pointerSpring','pointerDamping','pointerIntensity'])$(key).addEventListener('input',event=>{config[key]=clampSetting(event.target.value,60);$(key+'Label').textContent=config[key]+' %';save();});
+  $('tickStyle').addEventListener('change',event=>{config.tickStyle=event.target.value;save();});
+  $('previewTick').addEventListener('click',()=>{ensureAudioContext();tick(true);});
+  $('sizeMode').addEventListener('change',event=>{if(isSpinning)return;config.sizeMode=event.target.value==='proportional'?'proportional':'equal';mutate();});
   const list=$('segmentList');
     if(!config.segments.length){list.innerHTML='<div class="stage-notice">Noch keine Segmente. Mit „Hinzufügen“ beginnt dein neues Rad.</div>';return;}
     list.innerHTML=config.segments.map((s,i)=>`<div class="segment-card" data-id="${escapeHtml(s.id)}">
@@ -652,7 +656,7 @@
     </div>`).join('');
     if(isSpinning) lockEditor(true);
   }
-  function renderSettings(){ $('sizeMode').value=config.sizeMode; $('spinDuration').value=config.duration; $('durationLabel').textContent=config.duration+' s'; $('coastIntensity').value=config.coast; $('coastLabel').textContent=config.coast+' %'; $('soundEnabled').checked=config.sound; $('winnerEffect').value=config.winnerEffect; $('winnerStrength').value=config.winnerStrength; $('winnerSound').value=config.winnerSound; $('paletteSelect').value=config.palette; }
+  function renderSettings(){ $('sizeMode').value=config.sizeMode;for(const key of ['pointerSpring','pointerDamping','pointerIntensity']){$(key).value=config[key];$(key+'Label').textContent=config[key]+' %';}$('tickStyle').value=config.tickStyle; $('spinDuration').value=config.duration; $('durationLabel').textContent=config.duration+' s'; $('coastIntensity').value=config.coast; $('coastLabel').textContent=config.coast+' %'; $('soundEnabled').checked=config.sound; $('winnerEffect').value=config.winnerEffect; $('winnerStrength').value=config.winnerStrength; $('winnerSound').value=config.winnerSound; $('paletteSelect').value=config.palette; }
   function render(){drawWheel();renderSegments();renderSettings();}
   function save(){
     try {
@@ -708,6 +712,7 @@
     $('addSegment').disabled=locked;
     $('spinDuration').disabled=locked;
     $('coastIntensity').disabled=locked;
+    for(const id of ['sizeMode','pointerSpring','pointerDamping','pointerIntensity','tickStyle','previewTick','profileSelect','profileNew','profileDuplicate','profileRename','profileDelete','profileExportAll','profileImportMode'])$(id).disabled=locked;
     $('soundEnabled').disabled=locked;
     for(const id of ['winnerEffect','winnerStrength','winnerSound','previewWinnerEffect','previewWinnerSound'])$(id).disabled=locked;
     $('paletteSelect').disabled=locked;
@@ -1192,23 +1197,68 @@
     }
   }
   function normalized(angle){return ((angle%360)+360)%360;}
-  function tick(){
-    if(!config.sound)return;
+  function tick(preview=false){
+    if(!preview&&!config.sound)return;
     try{
       const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return;
-      if(!audioContext)audioContext=new Ctx();if(audioContext.state==='suspended')audioContext.resume();
-      const oscillator=audioContext.createOscillator(),gain=audioContext.createGain(),now=audioContext.currentTime;
-      oscillator.type='triangle';oscillator.frequency.setValueAtTime(870,now);oscillator.frequency.exponentialRampToValueAtTime(340,now+.035);
-      gain.gain.setValueAtTime(.065,now);gain.gain.exponentialRampToValueAtTime(.001,now+.04);
-      oscillator.connect(gain);gain.connect(audioContext.destination);oscillator.start(now);oscillator.stop(now+.04);
-    }catch{/* Sound ist optional und darf die Drehung nie blockieren. */}
+      if(!audioContext)audioContext=new Ctx();
+      if(audioContext.state==='suspended')audioContext.resume();
+      const settings={
+        soft:['sine',720,360,.035,.045],
+        mechanical:['triangle',1020,390,.073,.033],
+        ratchet:['square',720,250,.032,.018],
+        metal:['triangle',560,165,.082,.09]
+      };
+      const [wave,high,low,volume,duration]=settings[config.tickStyle]||settings.soft;
+      const osc=audioContext.createOscillator(),gain=audioContext.createGain(),now=audioContext.currentTime;
+      osc.type=wave;osc.frequency.setValueAtTime(high,now);
+      osc.frequency.exponentialRampToValueAtTime(low,now+duration);
+      gain.gain.setValueAtTime(volume,now);
+      gain.gain.exponentialRampToValueAtTime(.0001,now+duration);
+      osc.connect(gain);gain.connect(audioContext.destination);
+      osc.start(now);osc.stop(now+duration+.005);
+    }catch{/* Sound darf die Drehung nicht blockieren. */}
   }
+  // A damped spring driven by the actual sector-boundary contacts.
+  let pointerAngle=0,pointerVelocity=0,pointerTime=0,pointerRaf=0;
+  const pointer=$('fixedPointer');
+  function pointerImpulse(speed){
+    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    const strength=Math.max(.2,Math.min(1.4,2.2/(1+Math.abs(speed)/260)));
+    pointerVelocity+=Math.min(150,28*strength*(config.pointerIntensity/100)+8);
+    if(!pointerRaf){pointerTime=performance.now();pointerRaf=requestAnimationFrame(pointerFrame);}
+  }
+  function pointerFrame(now){
+    const dt=Math.min(.035,(now-pointerTime)/1000);pointerTime=now;
+    const stiffness=50+config.pointerSpring*2.8;
+    const damping=5+config.pointerDamping*.24;
+    pointerVelocity+=(-stiffness*pointerAngle-damping*pointerVelocity)*dt;
+    pointerAngle+=pointerVelocity*dt;
+    pointerAngle=Math.max(-18,Math.min(18,pointerAngle));
+    pointer.style.transform=`rotate(${pointerAngle.toFixed(3)}deg)`;
+    pointer.style.transformBox='fill-box';pointer.style.transformOrigin='50% 14%';
+    if(Math.abs(pointerAngle)<.025&&Math.abs(pointerVelocity)<.1){pointerAngle=0;pointerVelocity=0;pointer.style.transform='';pointerRaf=0;return;}
+    pointerRaf=requestAnimationFrame(pointerFrame);
+  }
+  function resetPointer(){cancelAnimationFrame(pointerRaf);pointerRaf=0;pointerAngle=0;pointerVelocity=0;pointer.style.transform='';}
   function currentIndex(angle,n){ const at=normalized(-90-angle);const rs=ranges();return rs.findIndex(s=>s.size>0&&normalized(at-s.start)<s.size-1e-8); }
   // The control changes when the wheel crosses its final segment boundary.
   // A high coast value deliberately leaves more angular distance late in the spin.
   // Values are strictly monotonic, reaching exactly the chosen segment centre.
   function coastExponent(coast){return 3.9-2.55*Math.max(0,Math.min(100,coast))/100;}
-  function spinEase(t,coast){return 1-Math.pow(1-Math.max(0,Math.min(1,t)),coastExponent(coast));}
+  const coastCache=new Map();
+  function spinEase(t,coast){
+    const p=Math.max(0,Math.min(1,t)),k=coastExponent(coast);
+    let table=coastCache.get(k);
+    if(!table){
+      const steps=400, values=[0];let area=0;
+      const rate=x=>(1-Math.exp(-x/.045))*Math.pow(1-x,k-.9);
+      for(let i=1;i<=steps;i++){area+=(rate((i-1)/steps)+rate(i/steps))/(2*steps);values.push(area);}
+      table=values.map(v=>v/area);coastCache.set(k,table);
+    }
+    const x=p*400,i=Math.min(399,Math.floor(x)),f=x-i;
+    return i===400?1:table[i]*(1-f)+table[i+1]*f;
+  }
   // 0 -> 100 -> 0 every 1.6 seconds. A timestamp-based triangle wave keeps
   // the captured power independent of animation frame rate and input latency.
   const POWER_PERIOD_MS=1600;
@@ -1262,13 +1312,14 @@
     const visibleTurns=reduced?0:turns;
     const from=rotation,delta=visibleTurns*360+forward,finish=from+delta;
     const duration=reduced?280:config.duration*1000*(.35+.65*power);
-    const start=performance.now();lastTickAt=0;lastTickSector=currentIndex(from,n);
+    const start=performance.now();lastTickAt=0;lastTickSector=currentIndex(from,n);let lastAngle=from,lastFrameTime=start;
     function frame(now){
       const t=Math.min(1,(now-start)/duration),ease=spinEase(t,config.coast);
       const angle=from+delta*ease;
       wheel.style.transform=`rotate(${angle}deg)`;
       const sector=currentIndex(angle,n);
-      if(sector!==lastTickSector&&now-lastTickAt>38){lastTickSector=sector;lastTickAt=now;tick();svg.classList.remove('pointer-tick');void svg.getBoundingClientRect();svg.classList.add('pointer-tick');}
+      if(sector!==lastTickSector&&now-lastTickAt>28){const speed=(angle-lastAngle)/Math.max(.001,(now-lastFrameTime)/1000);lastTickSector=sector;lastTickAt=now;tick();pointerImpulse(speed);}
+      lastAngle=angle;lastFrameTime=now;
       if(t<1){raf=requestAnimationFrame(frame);return;}
       rotation=finish;wheel.style.transform=`rotate(${rotation}deg)`;
       isSpinning=false;powerMeter.classList.remove('is-locked');powerEpoch=performance.now()-310;
