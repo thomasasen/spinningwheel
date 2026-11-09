@@ -256,6 +256,7 @@
     if (!raw || !Array.isArray(raw.segments)) throw new Error('Die JSON-Datei enthält keine Segmentliste.');
     if (raw.segments.length > 5000) throw new Error('Mehr als 5.000 Segmente können nicht auf einmal importiert werden.');
     const palette = PALETTES[raw.palette] ? raw.palette : 'noir';
+    const ids=new Set();
     return {
       version:2, palette, sizeMode:raw.sizeMode==='proportional'?'proportional':'equal', pointerSpring:clampSetting(raw.pointerSpring,65),pointerDamping:clampSetting(raw.pointerDamping,60),pointerIntensity:clampSetting(raw.pointerIntensity,60),tickStyle:['soft','mechanical','ratchet','metal'].includes(raw.tickStyle)?raw.tickStyle:'soft',
       duration: Number.isFinite(Number(raw.duration)) ? Math.min(30,Math.max(3,Math.round(Number(raw.duration)))) : 6,
@@ -265,7 +266,7 @@
       winnerStrength: WINNER_STRENGTHS.includes(raw.winnerStrength) ? raw.winnerStrength : 'refined',
       winnerSound: WINNER_SOUNDS.includes(raw.winnerSound) ? raw.winnerSound : 'chime',
       segments:raw.segments.map((s,i) => ({
-        id:makeId(), label: String(s?.label ?? '').slice(0,80),
+        id:(()=>{const input=s?.id;const id=typeof input==='string'&&/^[a-z0-9-]{1,100}$/i.test(input)&&!ids.has(input)?input:makeId();ids.add(id);return id;})(), label: String(s?.label ?? '').slice(0,80),
         icon:validIcon(normalizeIconName(s?.icon)) ? normalizeIconName(s.icon) : 'star',
         showLabel:s?.showLabel !== false, showIcon:s?.showIcon !== false,
         color:validColor(s?.color) ? s.color : PALETTES[palette][i%2], weight:validWeight(s?.weight ?? 1)
@@ -631,11 +632,7 @@
     return `<span class="symbol-fallback" aria-hidden="true">${escapeHtml(iconFallback(icon))}</span>`;
   }
   function renderSegments(){
-    for(const key of ['pointerSpring','pointerDamping','pointerIntensity'])$(key).addEventListener('input',event=>{config[key]=clampSetting(event.target.value,60);$(key+'Label').textContent=config[key]+' %';save();});
-  $('tickStyle').addEventListener('change',event=>{config.tickStyle=event.target.value;save();});
-  $('previewTick').addEventListener('click',()=>{ensureAudioContext();tick(true);});
-  $('sizeMode').addEventListener('change',event=>{if(isSpinning)return;config.sizeMode=event.target.value==='proportional'?'proportional':'equal';mutate();});
-  const list=$('segmentList');
+    const list=$('segmentList');
     if(!config.segments.length){list.innerHTML='<div class="stage-notice">Noch keine Segmente. Mit „Hinzufügen“ beginnt dein neues Rad.</div>';return;}
     list.innerHTML=config.segments.map((s,i)=>`<div class="segment-card" data-id="${escapeHtml(s.id)}">
       <div class="segment-top">
@@ -656,6 +653,10 @@
     </div>`).join('');
     if(isSpinning) lockEditor(true);
   }
+  for(const key of ['pointerSpring','pointerDamping','pointerIntensity'])$(key).addEventListener('input',event=>{config[key]=clampSetting(event.target.value,60);$(key+'Label').textContent=config[key]+' %';save();});
+  $('tickStyle').addEventListener('change',event=>{config.tickStyle=event.target.value;save();});
+  $('previewTick').addEventListener('click',()=>{ensureAudioContext();tick(true);});
+  $('sizeMode').addEventListener('change',event=>{if(isSpinning)return;config.sizeMode=event.target.value==='proportional'?'proportional':'equal';mutate();});
   function renderSettings(){ $('sizeMode').value=config.sizeMode;for(const key of ['pointerSpring','pointerDamping','pointerIntensity']){$(key).value=config[key];$(key+'Label').textContent=config[key]+' %';}$('tickStyle').value=config.tickStyle; $('spinDuration').value=config.duration; $('durationLabel').textContent=config.duration+' s'; $('coastIntensity').value=config.coast; $('coastLabel').textContent=config.coast+' %'; $('soundEnabled').checked=config.sound; $('winnerEffect').value=config.winnerEffect; $('winnerStrength').value=config.winnerStrength; $('winnerSound').value=config.winnerSound; $('paletteSelect').value=config.palette; }
   function render(){drawWheel();renderSegments();renderSettings();}
   function save(){
