@@ -301,22 +301,23 @@
   function segmentLayout(){
     const n=config.segments.length,total=activeWeightTotal();
     if(!n)return [];
+    const firstSpan=config.proportional&&total>0?360*config.segments[0].weight/total:360/n;
     let cursor=0;
     return config.segments.map((segment,i)=>{
       const span=config.proportional&&total>0?360*segment.weight/total:360/n;
       const start=cursor;
       cursor=i===n-1?360:cursor+span;
       const end=cursor;
-      return {start,end,span:end-start,center:-90+(start+end)/2,index:i};
+      return {start,end,span:end-start,center:-90+(start+end)/2-firstSpan/2,index:i};
     });
   }
   function selectedAtRotation(angle,layout=segmentLayout()){
     if(!layout.length)return -1;
-    const pointerAngle=normalized(-angle);
+    const pointerAngle=normalized(-angle+(layout[0].span/2));
     let lo=0,hi=layout.length-1;
     while(lo<hi){const mid=(lo+hi)>>1;if(pointerAngle>=layout[mid].end)lo=mid+1;else hi=mid;}
     // With a zero-width wedge, never report a sector that has no visible area.
-    if(layout[lo].span<=0)return layout.findIndex(item=>item.span>0);
+    if(layout[lo].span<1e-10)return layout.findIndex(item=>item.span>1e-10);
     return lo;
   }
   function drawWeightedWinner(){
@@ -591,7 +592,7 @@
       t.textContent='Segmente hinzufügen';
     } else {
       config.segments.forEach((s,i)=>{
-        const sector=layout[i];if(sector.span<=0)return;
+        const sector=layout[i];if(sector.span<1e-10||(config.proportional&&s.weight===0))return;
         const path=sector.span>=359.999999?e('circle',{cx:320,cy:320,r:267,fill:s.color},wheelSurface):e('path',{d:wedgePath(sector.center-sector.span/2,sector.center+sector.span/2,267),fill:s.color,stroke:'#c69456','stroke-width':n>72?.6:n>26?1:1.9,'stroke-linejoin':'round'},wheelSurface);
         path.appendChild(e('title',{},null));path.lastChild.textContent=`Segment ${i+1}: ${safeText(s.label)} · ${(100*s.weight/(activeWeightTotal()||1)).toFixed(2)} %`;
       });
@@ -658,6 +659,7 @@
     $('segmentCount').textContent=n.toLocaleString('de-DE');
     $('stageCount').textContent=String(n).padStart(2,'0')+' SEGMENTE';
     $('spinHub').disabled=isSpinning||!hasEligibleSegments();
+    const summary=$('probabilitySummary');if(summary){const count=config.segments.filter(item=>item.weight>0).length;summary.textContent=count?`${count} von ${n} Segmenten gewinnberechtigt · Summe der Gewichte: ${activeWeightTotal().toLocaleString('de-DE')}`:'Keine Ziehung möglich: Alle Gewichte sind 0.';summary.classList.toggle('is-warning',!count);}
     const notice=$('densityNotice');
     if(n>72)notice.textContent='Bei mehr als 72 Segmenten zeigt das Rad nur die Farbsegmente. Inhalte bleiben in der Liste und im Ergebnis erhalten.';
     else if(n>20)notice.textContent='Ab 21 Segmenten verwendet das Rad Nummern statt Symbolen und Text, um das Design lesbar zu halten.';
@@ -719,6 +721,7 @@
     $('importJson').disabled=locked;
     $('resetConfig').disabled=locked;
     $('importFile').disabled=locked;
+    for(const id of ['proportionalMode','pointerSpring','pointerDamping','pointerIntensity','mechanicalSound','previewMechanicalSound','profilePicker','profileName','newProfile','saveProfile','duplicateProfile','renameProfile','deleteProfile','importMode','exportJson','exportAllJson'])$(id).disabled=locked;
     $('segmentList').querySelectorAll('button,input').forEach(el=>{
       if(!locked && el.dataset.field==='label'){
         const s=config.segments.find(x=>x.id===el.closest('.segment-card')?.dataset.id);
@@ -956,6 +959,10 @@
   });
   $('spinDuration').addEventListener('input',ev=>{config.duration=Number(ev.target.value);$('durationLabel').textContent=config.duration+' s';save();});
   $('coastIntensity').addEventListener('input',ev=>{config.coast=Number(ev.target.value);$('coastLabel').textContent=config.coast+' %';save();});
+  $('proportionalMode').addEventListener('change',ev=>{if(isSpinning)return;config.proportional=ev.target.value==='proportional';mutate();renderSegments();});
+  for(const key of ['pointerSpring','pointerDamping','pointerIntensity'])$(key).addEventListener('input',ev=>{config[key]=Number(ev.target.value);$(key+'Label').textContent=config[key]+' %';save();});
+  $('mechanicalSound').addEventListener('change',ev=>{config.mechanicalSound=ev.target.value;save();});
+  $('previewMechanicalSound').addEventListener('click',()=>{if(!isSpinning)tick(true);});
   $('soundEnabled').addEventListener('change',ev=>{config.sound=ev.target.checked;save();});
   $('winnerEffect').addEventListener('change',ev=>{if(isSpinning)return;config.winnerEffect=ev.target.value;save();if(highlightedWinner!==null)showWinnerHighlight(highlightedWinner);});
   $('winnerStrength').addEventListener('change',ev=>{if(isSpinning)return;config.winnerStrength=ev.target.value;save();if(highlightedWinner!==null)showWinnerHighlight(highlightedWinner);});
@@ -971,13 +978,13 @@
     if(!isSpinning){
       if(previewPreviousWinner===null)clearWinnerHighlight();
       else if(previewPreviousWinner!==highlightedWinner)showWinnerHighlight(previewPreviousWinner);
-      $('spinHub').disabled=config.segments.length===0;
+      $('spinHub').disabled=!hasEligibleSegments();
     }
     $('statusText').textContent=previewPreviousStatus;
     if(!editorPanel.hidden)$('previewWinnerEffect').focus({preventScroll:true});
   }
   function startEffectPreview(){
-    if(isSpinning||!config.segments.length||!presentation.hidden||editorPanel.hidden)return;
+    if(isSpinning||!hasEligibleSegments()||!presentation.hidden||editorPanel.hidden)return;
     if(!previewEffectTimer){
       previewPreviousWinner=highlightedWinner;
       previewPreviousStatus=$('statusText').textContent;
@@ -985,7 +992,7 @@
     // Keep the drawer and its scroll position, but reveal the unblurred wheel.
     editorBackdrop.classList.add('is-effect-preview');
     $('spinHub').disabled=true; // preview must not accidentally trigger a spin
-    showWinnerHighlight(previewPreviousWinner??currentIndex(rotation,config.segments.length));
+    showWinnerHighlight(previewPreviousWinner??(config.segments[currentIndex(rotation,config.segments.length)]?.weight>0?currentIndex(rotation,config.segments.length):config.segments.findIndex(item=>item.weight>0)));
     $('statusText').textContent='Effektvorschau: Das Rad ist vier Sekunden ohne Blur sichtbar.';
     previewEffectTimer=setTimeout(finishEffectPreview,4000);
   }
@@ -1001,18 +1008,113 @@
     if(!confirm('Alle Segmente und Einstellungen auf die Ausgangsversion zurücksetzen?'))return;
     config=defaultConfig();rotation=0;clearWinnerHighlight();render();save();$('statusText').textContent='Auf die goldene Mitte klicken, um zu drehen';toast('Ausgangskonfiguration wiederhergestellt.');
   });
+  function renderProfiles(){
+    const picker=$('profilePicker');picker.replaceChildren();
+    for(const item of workspace.items){const option=document.createElement('option');option.value=item.id;option.textContent=item.name;picker.append(option);}
+    picker.value=workspace.activeId;
+    if(document.activeElement!==$('profileName'))$('profileName').value=profile().name;
+    $('deleteProfile').disabled=isSpinning||workspace.items.length<=1;
+  }
+  function commitProfileChange(next,message){
+    if(!persist(next)){toast('Speichern fehlgeschlagen. Bisherige Glücksräder bleiben erhalten.');return false;}
+    workspace=next;
+    config=profile().config;
+    rotation=0;clearWinnerHighlight();render();
+    $('statusText').textContent='Auf die goldene Mitte klicken, um zu drehen';
+    if(message)toast(message);
+    return true;
+  }
+  function switchProfile(id){
+    if(isSpinning||id===workspace.activeId)return;
+    if(!save()){renderProfiles();toast('Wechsel nicht möglich: Änderungen konnten nicht gespeichert werden.');return;}
+    if(!workspace.items.some(item=>item.id===id))return;
+    commitProfileChange({...workspace,activeId:id},'Glücksrad geladen.');
+  }
+  $('profilePicker').addEventListener('change',ev=>switchProfile(ev.target.value));
+  $('profileName').addEventListener('change',()=>renameCurrentProfile());
+  function renameCurrentProfile(){
+    if(isSpinning)return;
+    const name=profileName($('profileName').value);
+    const next=JSON.parse(JSON.stringify(workspace));
+    next.items.find(item=>item.id===next.activeId).name=name;
+    if(commitProfileChange(next,'Glücksrad umbenannt.'))$('profileName').value=name;
+  }
+  $('renameProfile').addEventListener('click',renameCurrentProfile);
+  $('saveProfile').addEventListener('click',()=>{if(save())toast('Glücksrad gespeichert.');else toast('Lokaler Speicher ist nicht verfügbar.');});
+  $('newProfile').addEventListener('click',()=>{
+    if(isSpinning||!save())return;
+    if(workspace.items.length>=100){toast('Maximal 100 gespeicherte Glücksräder.');return;}
+    const name=profileName($('profileName').value);
+    const next=JSON.parse(JSON.stringify(workspace)),item=makeProfile(name===profile().name?'Glücksrad '+(workspace.items.length+1):name,defaultConfig());
+    next.items.push(item);next.activeId=item.id;
+    commitProfileChange(next,'Neues Glücksrad angelegt.');
+  });
+  $('duplicateProfile').addEventListener('click',()=>{
+    if(isSpinning||!save())return;
+    if(workspace.items.length>=100){toast('Maximal 100 gespeicherte Glücksräder.');return;}
+    const next=JSON.parse(JSON.stringify(workspace));
+    const copy=makeProfile(profile().name+' (Kopie)',saneConfig(config));
+    next.items.push(copy);next.activeId=copy.id;
+    commitProfileChange(next,'Glücksrad dupliziert.');
+  });
+  $('deleteProfile').addEventListener('click',()=>{
+    if(isSpinning||workspace.items.length<=1)return;
+    if(!confirm('Glücksrad „'+profile().name+'“ dauerhaft aus diesem Browser löschen? Vorher ggf. exportieren.'))return;
+    const next=JSON.parse(JSON.stringify(workspace));
+    next.items=next.items.filter(item=>item.id!==workspace.activeId);next.activeId=next.items[0].id;
+    commitProfileChange(next,'Glücksrad gelöscht.');
+  });
+  function downloadJson(data,filename){
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'});
+    const url=URL.createObjectURL(blob),link=document.createElement('a');
+    link.href=url;link.download=filename;document.body.append(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  function fileSlug(value){return profileName(value).toLowerCase().normalize('NFKD').replace(/[^a-z0-9äöüß]+/g,'-').replace(/^-|-$/g,'').slice(0,45)||'gluecksrad';}
+  function exportDate(){return new Date().toISOString().slice(0,10);}
   $('exportJson').addEventListener('click',()=>{
-    const data={version:1,segments:config.segments.map(({id,...rest})=>rest),duration:config.duration,coast:config.coast,sound:config.sound,winnerEffect:config.winnerEffect,winnerStrength:config.winnerStrength,winnerSound:config.winnerSound,palette:config.palette};
-    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-    const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='casino-noir-konfiguration.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
-    toast('Konfiguration als JSON exportiert.');
+    downloadJson({...config,id:profile().id,name:profile().name,format:'casino-noir-single',version:2},'casino-noir-'+fileSlug(profile().name)+'-'+exportDate()+'.json');
+    toast('Aktuelles Glücksrad exportiert.');
+  });
+  $('exportAllJson').addEventListener('click',()=>{
+    downloadJson({format:'casino-noir-collection',version:2,exportedAt:new Date().toISOString(),activeId:workspace.activeId,configurations:workspace.items},'casino-noir-alle-gluecksraeder-'+exportDate()+'.json');
+    toast('Alle Glücksräder exportiert.');
   });
   $('importJson').addEventListener('click',()=>{if(!isSpinning){$('importFile').value='';$('importFile').click();}});
   $('importFile').addEventListener('change',async ev=>{
-    const file=ev.target.files?.[0];if(!file)return;
-    if(file.size>2*1024*1024){toast('Die JSON-Datei ist zu groß (maximal 2 MB).');return;}
-    try{const parsed=JSON.parse(await file.text());config=saneConfig(parsed);rotation=0;clearWinnerHighlight();render();save();toast(`${config.segments.length} Segmente importiert.`);}
-    catch(err){toast('Import fehlgeschlagen: '+err.message);}
+    const file=ev.target.files?.[0];if(!file||isSpinning)return;
+    if(file.size>8*1024*1024){toast('Die JSON-Datei ist zu groß (maximal 8 MB).');return;}
+    try{
+      const parsed=JSON.parse(await file.text()),mode=$('importMode').value;
+      if(!parsed||typeof parsed!=='object'||Array.isArray(parsed))throw Error('Keine gültige Konfigurationsdatei.');
+      if(parsed.version!==undefined&&(!Number.isInteger(parsed.version)||parsed.version<1||parsed.version>2))throw Error('Unbekannte JSON-Version.');
+      const collection=parsed.format==='casino-noir-collection';
+      if(parsed.format&& !['casino-noir-collection','casino-noir-single'].includes(parsed.format))throw Error('Unbekanntes Importformat.');
+      if(collection&&(!Array.isArray(parsed.configurations)||!parsed.configurations.length||parsed.configurations.length>100))throw Error('Ungültige Sammlung.');
+      const input=collection?parsed.configurations:[{id:parsed.id,name:parsed.name,config:parsed}];
+      // Validate the complete import before touching the workspace (atomic import).
+      const prepared=input.map((item,i)=>{
+        if(!item||typeof item!=='object'||!item.config)throw Error('Ungültiger Datensatz '+(i+1)+'.');
+        const cfg=saneConfig(item.config,{strict:true});
+        const id=typeof item.id==='string'&&/^[a-zA-Z0-9_-]{1,80}$/.test(item.id)?item.id:profileId();
+        return makeProfile(item.name||file.name.replace(/\.json$/i,''),cfg,id);
+      });
+      const next=JSON.parse(JSON.stringify(workspace));
+      let newActive=next.activeId,first=true;
+      for(const incoming of prepared){
+        const existing=mode==='replace'?(collection?next.items.findIndex(p=>p.id===incoming.id||p.name===incoming.name):next.items.findIndex(p=>p.id===next.activeId)):-1;
+        if(existing>=0){const previous=next.items[existing];incoming.id=previous.id;next.items[existing]=incoming;if(first)newActive=incoming.id;}
+        else {
+          incoming.id=profileId();
+          if(next.items.some(p=>p.name===incoming.name))incoming.name+=' (Import)';
+          next.items.push(incoming);if(first)newActive=incoming.id;
+        }
+        first=false;
+      }
+      if(next.items.length>100)throw Error('Maximal 100 gespeicherte Glücksräder.');
+      next.activeId=newActive;
+      if(!commitProfileChange(next,prepared.length+' Glücksrad/-räder importiert.'))throw Error('Der Browser konnte die Sammlung nicht speichern.');
+    }catch(error){toast('Import fehlgeschlagen: '+error.message);}
   });
   function openIconPicker(id){
     currentIconTarget=id;lastFocusedElement=document.activeElement;
