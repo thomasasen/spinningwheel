@@ -128,6 +128,11 @@
             <button id="previewWinnerSound" class="btn winner-preview winner-preview-sound" type="button"><span class="winner-preview-glyph" aria-hidden="true">♫</span><span class="winner-preview-label">Sound anhören</span><span class="winner-preview-trailing" aria-hidden="true">›</span></button>
             <p class="winner-setting-note">Soundeffekte werden im Browser erzeugt. Mechanisches Zeigerklicken lässt sich getrennt einstellen.</p>
           </div>
+          <div class="setting-row"><div class="setting-descriptor"><label for="pointerSpring">Zeigerfederung</label><small>Wie schnell der Zeiger zurückfedert</small></div><div class="setting-value"><input type="range" id="pointerSpring" min="10" max="100" value="65" step="5"><output id="pointerSpringLabel">65 %</output></div></div>
+          <div class="setting-row"><label for="pointerDamping">Zeigerdämpfung</label><div class="setting-value"><input type="range" id="pointerDamping" min="10" max="100" value="60" step="5"><output id="pointerDampingLabel">60 %</output></div></div>
+          <div class="setting-row"><label for="pointerIntensity">Zeigerbewegung</label><div class="setting-value"><input type="range" id="pointerIntensity" min="0" max="100" value="60" step="5"><output id="pointerIntensityLabel">60 %</output></div></div>
+          <div class="setting-row"><label for="tickStyle">Klickcharakter</label><select id="tickStyle"><option value="soft">Weiches Casino-Klicken</option><option value="mechanical">Mechanisch</option><option value="ratchet">Klassische Ratsche</option><option value="metal">Massiver Metallzeiger</option></select></div>
+          <button type="button" class="btn btn-quiet" id="previewTick">Klick anhören</button>
           <div class="setting-row"><label for="soundEnabled">Mechanisches Klickgeräusch</label><label class="toggle"><input type="checkbox" id="soundEnabled" checked><span class="toggle-slider"></span></label></div>
           <div class="setting-row"><label for="paletteSelect">Farbwelt</label><select id="paletteSelect"><option value="noir">Casino Noir</option><option value="ruby">Royal Rouge</option><option value="emerald">Emerald Lounge</option><option value="midnight">Midnight Gold</option></select></div>
         </div>
