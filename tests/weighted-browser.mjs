@@ -30,6 +30,25 @@ try{
   assert.ok(Math.abs(sampled.values[1]/100000-.75)<.012,'weighted 1:3 ratio');
   assert.ok(Math.abs(sampled.geo[0].size-90)<1e-6);
   assert.ok(Math.abs(sampled.geo[1].size-270)<1e-6);
+  const stats=await page.evaluate(()=>{
+    const api=window.__casinoNoirDebug;
+    const run=(weights,count=100000)=>{
+      api.config.segments.forEach((segment,i)=>segment.weight=weights[i]||0);
+      const observed=Array(weights.length).fill(0);
+      for(let i=0;i<count;i++)observed[api.selectWinner()]++;
+      return observed;
+    };
+    const equal=run(Array(8).fill(1));
+    const singleton=run([0,0,0,0,1,0,0,0]);
+    const extreme=run([1000000,1,0,0,0,0,0,0]);
+    api.config.segments.forEach(s=>s.weight=0);
+    let zeroThrows=false;try{api.selectWinner();}catch{zeroThrows=true;}
+    return {equal,singleton,extreme,zeroThrows};
+  });
+  assert.ok(stats.equal.every(value=>Math.abs(value-12500)<600),'equal weights should be uniformly distributed');
+  assert.equal(stats.singleton[4],100000,'one eligible segment should always win');
+  assert.equal(stats.extreme.slice(2).reduce((a,b)=>a+b,0),0,'excluded segments must never win');
+  assert.equal(stats.zeroThrows,true,'all-zero weights must prevent a draw');
   await page.locator('#segmentList .segment-card').nth(0).locator('input[data-field="weight"]').fill('1');
   await page.locator('#segmentList .segment-card').nth(0).locator('input[data-field="weight"]').dispatchEvent('change');
   await page.locator('#segmentList .segment-card').nth(1).locator('input[data-field="weight"]').fill('0');
@@ -51,5 +70,5 @@ try{
   await page.locator('#toggleEditor').click();
   await assert.equal(await page.locator('#profileSelect option').count(),2);
   assert.deepEqual(errors,[],'no uncaught JavaScript errors');
-  console.log('PASS: Chromium smoke, geometry, 100000 weighted selections, zero weights, stop angle, local profiles.');
+  console.log('PASS: Chromium smoke, geometry, 400000 weighted selections, zero weights, stop angle, local profiles.');
 }finally{await browser.close();}
