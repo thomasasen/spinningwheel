@@ -72,6 +72,7 @@
         <div class="segment-list" id="segmentList" aria-label="Segmentliste"></div>
         <div class="editor-settings">
           <h2>Spiel & Darstellung</h2>
+          <div class="setting-row"><div class="setting-descriptor"><label for="sizeMode">Gewinnchancen darstellen</label><small>Gleich große Felder zeigen nicht die tatsächlichen Gewinnchancen. Die Prozentangaben stehen an jedem Segment.</small></div><select id="sizeMode"><option value="equal">Gleich große Segmente</option><option value="proportional">Proportionale Segmente</option></select></div>
           <div class="setting-row"><label for="spinDuration">Maximale Drehdauer</label><div class="setting-value"><input type="range" id="spinDuration" min="3" max="30" value="6" step="1"><output id="durationLabel" for="spinDuration">6 s</output></div></div>
           <div class="setting-row setting-row-coast"><div class="setting-descriptor"><label for="coastIntensity">Auslaufspannung</label><small>Höher = das Rad schleicht länger über die letzten Felder.</small></div><div class="setting-value"><input type="range" id="coastIntensity" min="0" max="100" value="65" step="5" aria-describedby="coastHint"><output id="coastLabel" for="coastIntensity">65 %</output></div></div><p class="setting-help" id="coastHint">0 %: bremst früh · 100 %: bleibt bis kurz vor Schluss in Bewegung.</p>
           <div class="winner-settings" aria-labelledby="winnerSettingsTitle">
