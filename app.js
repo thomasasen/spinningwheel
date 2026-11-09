@@ -220,7 +220,7 @@
     ];
     return data.map((v,i) => ({ id:makeId(), label:v[0], icon:v[1], showLabel:v[2], showIcon:v[3], color:PALETTES.noir[i%2], weight:1 }));
   }
-  function defaultConfig() { return {version:1, segments:initialSegments(), duration:6, coast:65, sound:true, winnerEffect:'cinematic', winnerStrength:'refined', winnerSound:'chime', palette:'noir', sizeMode:'equal',pointerSpring:65,pointerDamping:60,pointerIntensity:60,tickStyle:'soft'}; }
+  function defaultConfig() { return {version:1, segments:initialSegments(), duration:6, coast:65, sound:true, winnerEffect:'cinematic', winnerStrength:'refined', winnerSound:'chime', palette:'noir', sizeMode:'equal',spinMode:'physical',pointerSpring:65,pointerDamping:60,pointerIntensity:60,tickStyle:'soft'}; }
   function validColor(v) { return /^#[0-9a-f]{6}$/i.test(v || ''); }
   function validIcon(v) { return isValidMaterialSymbolName(v); }
   function clampSetting(value,fallback){return Number.isFinite(Number(value))&&value!==null?Math.max(0,Math.min(100,Number(value))):fallback;}
@@ -239,7 +239,9 @@
       const range={start,end:start+size,center:start+size/2,size};start+=size;return range;
     });
   }
+  let controlledWinnerSelections=0;
   function selectWinner(){
+    controlledWinnerSelections++;
     const total=totalWeight();
     if(!Number.isFinite(total)||total<=0)throw new Error('Kein Segment ist gewinnberechtigt.');
     const target=rand()*total;
@@ -258,7 +260,7 @@
     const palette = PALETTES[raw.palette] ? raw.palette : 'noir';
     const ids=new Set();
     return {
-      version:2, palette, sizeMode:raw.sizeMode==='proportional'?'proportional':'equal', pointerSpring:clampSetting(raw.pointerSpring,65),pointerDamping:clampSetting(raw.pointerDamping,60),pointerIntensity:clampSetting(raw.pointerIntensity,60),tickStyle:['soft','mechanical','ratchet','metal'].includes(raw.tickStyle)?raw.tickStyle:'soft',
+      version:2, palette, sizeMode:raw.sizeMode==='proportional'?'proportional':'equal',spinMode:raw.spinMode==='weighted'?'weighted':'physical', pointerSpring:clampSetting(raw.pointerSpring,65),pointerDamping:clampSetting(raw.pointerDamping,60),pointerIntensity:clampSetting(raw.pointerIntensity,60),tickStyle:['soft','mechanical','ratchet','metal'].includes(raw.tickStyle)?raw.tickStyle:'soft',
       duration: Number.isFinite(Number(raw.duration)) ? Math.min(30,Math.max(3,Math.round(Number(raw.duration)))) : 6,
       coast: Number.isFinite(Number(raw.coast)) ? Math.min(100,Math.max(0,Math.round(Number(raw.coast)))) : 65,
       sound:raw.sound !== false,
@@ -645,7 +647,7 @@
       <div class="segment-controls">
         <label class="pill-check"><input type="checkbox" data-field="showLabel" ${s.showLabel?'checked':''}><span>Text</span></label>
         <label class="pill-check"><input type="checkbox" data-field="showIcon" ${s.showIcon?'checked':''}><span>Symbol</span></label>
-        <label class="weight-control" title="Relatives Gewinngewicht"><span>Gewicht</span><input type="number" data-field="weight" min="0" max="1000000" step="any" value="${s.weight}" aria-label="Gewicht für Segment ${i+1}"><small>${totalWeight()?((s.weight/totalWeight())*100).toLocaleString('de-DE',{maximumFractionDigits:2}):0} %</small></label><span class="spacer"></span>
+        <label class="weight-control" title="Relatives Gewinngewicht"><span>Gewicht</span><input type="number" data-field="weight" min="0" max="1000000" step="any" value="${s.weight}" aria-label="Gewicht für Segment ${i+1}"><small>${segmentChance(i).toLocaleString('de-DE',{maximumFractionDigits:2})} %</small></label><span class="spacer"></span>
         <button class="icon-action" type="button" data-action="up" aria-label="Segment ${i+1} nach oben" title="Nach oben" ${i===0?'disabled':''}>↑</button>
         <button class="icon-action" type="button" data-action="down" aria-label="Segment ${i+1} nach unten" title="Nach unten" ${i===config.segments.length-1?'disabled':''}>↓</button>
         <button class="icon-action" type="button" data-action="duplicate" aria-label="Segment ${i+1} duplizieren" title="Duplizieren">⧉</button>
@@ -656,9 +658,25 @@
   for(const key of ['pointerSpring','pointerDamping','pointerIntensity'])$(key).addEventListener('input',event=>{config[key]=clampSetting(event.target.value,60);$(key+'Label').textContent=config[key]+' %';save();});
   $('tickStyle').addEventListener('change',event=>{config.tickStyle=event.target.value;save();});
   $('previewTick').addEventListener('click',()=>{ensureAudioContext();tick(true);});
-  $('sizeMode').addEventListener('change',event=>{if(isSpinning)return;config.sizeMode=event.target.value==='proportional'?'proportional':'equal';mutate();});
-  function renderSettings(){ $('sizeMode').value=config.sizeMode;for(const key of ['pointerSpring','pointerDamping','pointerIntensity']){$(key).value=config[key];$(key+'Label').textContent=config[key]+' %';}$('tickStyle').value=config.tickStyle; $('spinDuration').value=config.duration; $('durationLabel').textContent=config.duration+' s'; $('coastIntensity').value=config.coast; $('coastLabel').textContent=config.coast+' %'; $('soundEnabled').checked=config.sound; $('winnerEffect').value=config.winnerEffect; $('winnerStrength').value=config.winnerStrength; $('winnerSound').value=config.winnerSound; $('paletteSelect').value=config.palette; }
-  function render(){drawWheel();renderSegments();renderSettings();}
+  $('sizeMode').addEventListener('change',event=>{
+    if(isSpinning)return;
+    config.sizeMode=event.target.value==='proportional'?'proportional':'equal';
+    mutate();updateWeightPercentages();renderMechanicsHint();
+  });
+  $('spinMode').addEventListener('change',event=>{
+    if(isSpinning)return;
+    config.spinMode=event.target.value==='weighted'?'weighted':'physical';
+    mutate();updateWeightPercentages();renderMechanicsHint();
+  });
+  function renderMechanicsHint(){
+    $('spinModeHint').textContent=config.spinMode==='physical'
+      ?config.sizeMode==='proportional'
+        ?'Echter Auslauf: Der Gewinner ergibt sich aus der Endposition. Die Sektorflächen entsprechen den Gewichten, die tatsächlichen Häufigkeiten können durch Reibung und Zeigerkontakte abweichen.'
+        :'Echter Auslauf: Alle gleich großen Sektoren haben näherungsweise die gleiche Chance. Segmentgewichte beeinflussen hier das Ergebnis nicht.'
+      :'Gezielte Gewichtung: Der Gewinner wird vor der Drehung nach den eingestellten Gewichten gezogen. Die Landung in der Sektormitte ist dabei eine gesteuerte Darstellung, keine Physiksimulation.';
+  }
+  function renderSettings(){ $('spinMode').value=config.spinMode;renderMechanicsHint(); $('sizeMode').value=config.sizeMode;for(const key of ['pointerSpring','pointerDamping','pointerIntensity']){$(key).value=config[key];$(key+'Label').textContent=config[key]+' %';}$('tickStyle').value=config.tickStyle; $('spinDuration').value=config.duration; $('durationLabel').textContent=config.duration+' s'; $('coastIntensity').value=config.coast; $('coastLabel').textContent=config.coast+' %'; $('soundEnabled').checked=config.sound; $('winnerEffect').value=config.winnerEffect; $('winnerStrength').value=config.winnerStrength; $('winnerSound').value=config.winnerSound; $('paletteSelect').value=config.palette; }
+  function render(){drawWheel();renderSegments();renderSettings();updateWeightPercentages();}
   function save(){
     try {
       activeProfile().config=cloneConfig(config);
@@ -713,7 +731,7 @@
     $('addSegment').disabled=locked;
     $('spinDuration').disabled=locked;
     $('coastIntensity').disabled=locked;
-    for(const id of ['sizeMode','pointerSpring','pointerDamping','pointerIntensity','tickStyle','previewTick','previewPointer','profileSelect','profileNew','profileDuplicate','profileRename','profileDelete','profileExportAll','profileImportMode'])$(id).disabled=locked;
+    for(const id of ['spinMode','sizeMode','pointerSpring','pointerDamping','pointerIntensity','tickStyle','previewTick','previewPointer','profileSelect','profileNew','profileDuplicate','profileRename','profileDelete','profileExportAll','profileImportMode'])$(id).disabled=locked;
     $('soundEnabled').disabled=locked;
     for(const id of ['winnerEffect','winnerStrength','winnerSound','previewWinnerEffect','previewWinnerSound'])$(id).disabled=locked;
     $('paletteSelect').disabled=locked;
@@ -740,11 +758,26 @@
     if(field==='color'&&!validColor(el.value))return;
     s[field]=el.value;mutate();
   });
-  function updateWeightPercentages(){
+  function segmentChance(index){
+    if(index<0)return 0;
+    if(config.spinMode==='physical'){
+      const geo=ranges()[index];
+      return geo?100*geo.size/360:0;
+    }
     const total=totalWeight();
+    return total?100*config.segments[index].weight/total:0;
+  }
+  function updateWeightPercentages(){
+    const geometry=config.spinMode==='physical'?ranges():null;
+    const total=totalWeight();
+    const indexes=new Map(config.segments.map((s,i)=>[s.id,i]));
     for(const card of list.querySelectorAll('.segment-card')){
-      const item=config.segments.find(s=>s.id===card.dataset.id),label=card.querySelector('.weight-control small');
-      if(item&&label)label.textContent=(total?(100*item.weight/total):0).toLocaleString('de-DE',{maximumFractionDigits:2})+' %';
+      const i=indexes.get(card.dataset.id),label=card.querySelector('.weight-control small');
+      if(i!==undefined&&label){
+        const chance=geometry?100*geometry[i].size/360:(total?100*config.segments[i].weight/total:0);
+        label.textContent=(config.spinMode==='physical'?'≈ ':'')+chance.toLocaleString('de-DE',{maximumFractionDigits:2})+' %';
+        label.title=config.spinMode==='physical'?'Geometrischer Sektoranteil, keine garantierte Gewinnchance':'Gewichtete Gewinnwahrscheinlichkeit';
+      }
     }
   }
   list.addEventListener('change',ev=>{
