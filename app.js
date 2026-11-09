@@ -8,6 +8,9 @@
   const WINNER_EFFECTS = ['outline','spotlight','lift','lights','celebration','cinematic'];
   const WINNER_STRENGTHS = ['subtle','refined','show'];
   const WINNER_SOUNDS = ['off','soft','bell','chime','jackpot','fanfare'];
+  const MECHANICAL_SOUNDS = ['subtle','ratchet','metal','casino'];
+  const WORKSPACE_KEY = 'casino-noir-wheel-studio-workspace-v2';
+  const MAX_WEIGHT = 1000000;
   const PALETTES = {
     noir: ['#981439', '#181318'],
     ruby: ['#b7193d', '#2b1319'],
@@ -218,34 +221,134 @@
       ['Nochmal','refresh',true,true],
       ['Glücksgriff','favorite',false,true]
     ];
-    return data.map((v,i) => ({ id:makeId(), label:v[0], icon:v[1], showLabel:v[2], showIcon:v[3], color:PALETTES.noir[i%2] }));
+    return data.map((v,i) => ({id:makeId(),label:v[0],icon:v[1],showLabel:v[2],showIcon:v[3],color:PALETTES.noir[i%2],weight:1}));
   }
-  function defaultConfig() { return {version:1, segments:initialSegments(), duration:6, coast:65, sound:true, winnerEffect:'cinematic', winnerStrength:'refined', winnerSound:'chime', palette:'noir'}; }
-  function validColor(v) { return /^#[0-9a-f]{6}$/i.test(v || ''); }
-  function validIcon(v) { return isValidMaterialSymbolName(v); }
-  function saneConfig(raw) {
-    if (!raw || !Array.isArray(raw.segments)) throw new Error('Die JSON-Datei enthält keine Segmentliste.');
-    if (raw.segments.length > 5000) throw new Error('Mehr als 5.000 Segmente können nicht auf einmal importiert werden.');
-    const palette = PALETTES[raw.palette] ? raw.palette : 'noir';
+  function defaultConfig(){return {version:2,segments:initialSegments(),duration:6,coast:65,sound:true,winnerEffect:'cinematic',winnerStrength:'refined',winnerSound:'chime',palette:'noir',proportional:false,pointerSpring:55,pointerDamping:62,pointerIntensity:60,mechanicalSound:'casino'};}
+  function validColor(v){return typeof v==='string'&&/^#[0-9a-f]{6}$/i.test(v);}
+  function validIcon(v){return isValidMaterialSymbolName(v);}
+  function validWeight(v){return typeof v==='number'&&Number.isFinite(v)&&v>=0&&v<=MAX_WEIGHT;}
+  function clampSetting(v,fallback){return Number.isFinite(Number(v))?Math.max(0,Math.min(100,Math.round(Number(v)))):fallback;}
+  function saneConfig(raw,{strict=false}={}){
+    if(!raw||typeof raw!=='object'||Array.isArray(raw)||!Array.isArray(raw.segments))throw Error('Die JSON-Datei enthält keine gültige Segmentliste.');
+    if(raw.version!==undefined&&(!Number.isInteger(raw.version)||raw.version<1||raw.version>2))throw Error('Unbekannte Konfigurationsversion.');
+    if(raw.segments.length>5000)throw Error('Maximal 5.000 Segmente je Glücksrad.');
+    const palette=Object.hasOwn(PALETTES,raw.palette)?raw.palette:'noir';
+    const controls=['coast','pointerSpring','pointerDamping','pointerIntensity'];
+    if(strict&&raw.version===2){
+      if(raw.duration!==undefined&&(!Number.isFinite(raw.duration)||raw.duration<3||raw.duration>30))throw Error('Ungültige Drehdauer.');
+      for(const key of controls)if(raw[key]!==undefined&&(!Number.isFinite(raw[key])||raw[key]<0||raw[key]>100))throw Error('Ungültiger Wert für '+key+'.');
+      if(raw.proportional!==undefined&&typeof raw.proportional!=='boolean')throw Error('Ungültiger Darstellungsmodus.');
+    }
+    const seen=new Set();
     return {
-      version:1, palette,
-      duration: Number.isFinite(Number(raw.duration)) ? Math.min(30,Math.max(3,Math.round(Number(raw.duration)))) : 6,
-      coast: Number.isFinite(Number(raw.coast)) ? Math.min(100,Math.max(0,Math.round(Number(raw.coast)))) : 65,
-      sound:raw.sound !== false,
-      winnerEffect: WINNER_EFFECTS.includes(raw.winnerEffect) ? raw.winnerEffect : 'cinematic',
-      winnerStrength: WINNER_STRENGTHS.includes(raw.winnerStrength) ? raw.winnerStrength : 'refined',
-      winnerSound: WINNER_SOUNDS.includes(raw.winnerSound) ? raw.winnerSound : 'chime',
-      segments:raw.segments.map((s,i) => ({
-        id:makeId(), label: String(s?.label ?? '').slice(0,80),
-        icon:validIcon(normalizeIconName(s?.icon)) ? normalizeIconName(s.icon) : 'star',
-        showLabel:s?.showLabel !== false, showIcon:s?.showIcon !== false,
-        color:validColor(s?.color) ? s.color : PALETTES[palette][i%2]
-      }))
+      version:2,palette,
+      duration:Number.isFinite(Number(raw.duration))?Math.max(3,Math.min(30,Math.round(Number(raw.duration)))):6,
+      coast:clampSetting(raw.coast,65),sound:raw.sound!==false,
+      winnerEffect:WINNER_EFFECTS.includes(raw.winnerEffect)?raw.winnerEffect:'cinematic',
+      winnerStrength:WINNER_STRENGTHS.includes(raw.winnerStrength)?raw.winnerStrength:'refined',
+      winnerSound:WINNER_SOUNDS.includes(raw.winnerSound)?raw.winnerSound:'chime',
+      proportional:raw.proportional===true,
+      pointerSpring:clampSetting(raw.pointerSpring,55),
+      pointerDamping:clampSetting(raw.pointerDamping,62),
+      pointerIntensity:clampSetting(raw.pointerIntensity,60),
+      mechanicalSound:MECHANICAL_SOUNDS.includes(raw.mechanicalSound)?raw.mechanicalSound:'casino',
+      segments:raw.segments.map((entry,i)=>{
+        if(!entry||typeof entry!=='object'||Array.isArray(entry))throw Error('Ungültiges Segment '+(i+1)+'.');
+        if(strict&&entry.weight!==undefined&&!validWeight(entry.weight))throw Error('Ungültiges Gewicht in Segment '+(i+1)+'.');
+        const weight=entry.weight===undefined?1:Number(entry.weight);
+        if(!validWeight(weight))throw Error('Ungültiges Gewicht in Segment '+(i+1)+'.');
+        const normalizedName=normalizeIconName(entry.icon);
+        let id=typeof entry.id==='string'&&/^[a-zA-Z0-9_-]{1,80}$/.test(entry.id)?entry.id:makeId();
+        if(seen.has(id))id=makeId();
+        seen.add(id);
+        return {id,label:String(entry.label??'').slice(0,80),icon:validIcon(normalizedName)?normalizedName:'star',
+          showLabel:entry.showLabel!==false,showIcon:entry.showIcon!==false,
+          color:validColor(entry.color)?entry.color:PALETTES[palette][i%2],weight};
+      })
     };
   }
-  let config;
-  try { const saved=localStorage.getItem(STORAGE_KEY); config=saved?saneConfig(JSON.parse(saved)):defaultConfig(); }
-  catch { config=defaultConfig(); }
+  function profileId(){return globalThis.crypto?.randomUUID?.() || makeId();}
+  function profileName(raw){return String(raw??'').trim().slice(0,60)||'Neues Glücksrad';}
+  function makeProfile(name,settings,id=profileId()){return {id,name:profileName(name),config:settings};}
+  function loadWorkspace(){
+    try{
+      const saved=localStorage.getItem(WORKSPACE_KEY);
+      if(saved){
+        const value=JSON.parse(saved);
+        if(value?.version!==2||!Array.isArray(value.items)||!value.items.length||value.items.length>100)throw Error('Ungültiges gespeichertes Profilformat');
+        const ids=new Set();
+        const items=value.items.map(item=>{
+          const id=typeof item.id==='string'&&/^[a-zA-Z0-9_-]{1,80}$/.test(item.id)&&!ids.has(item.id)?item.id:profileId();
+          ids.add(id);
+          return makeProfile(item.name,saneConfig(item.config),id);
+        });
+        return {version:2,activeId:ids.has(value.activeId)?value.activeId:items[0].id,items};
+      }
+    }catch(error){console.warn('Profilverwaltung wird aus dem bisherigen Speicher wiederhergestellt:',error);}
+    let legacy;
+    try{const value=localStorage.getItem(STORAGE_KEY);legacy=value?saneConfig(JSON.parse(value)):defaultConfig();}
+    catch(error){console.warn('Bisherige lokale Konfiguration ungültig:',error);legacy=defaultConfig();}
+    const first=makeProfile('Mein Glücksrad',legacy);
+    return {version:2,activeId:first.id,items:[first]};
+  }
+  let workspace=loadWorkspace();
+  let config=workspace.items.find(item=>item.id===workspace.activeId).config;
+  function profile(){return workspace.items.find(item=>item.id===workspace.activeId);}
+  function activeWeightTotal(){return config.segments.reduce((sum,segment)=>sum+segment.weight,0);}
+  function hasEligibleSegments(){return activeWeightTotal()>0;}
+  // All geometry derives from one layout in degrees measured clockwise from 12 o'clock.
+  // Zero-weight segments are invisible in proportional mode but remain editable.
+  function segmentLayout(){
+    const n=config.segments.length,total=activeWeightTotal();
+    if(!n)return [];
+    let cursor=0;
+    return config.segments.map((segment,i)=>{
+      const span=config.proportional&&total>0?360*segment.weight/total:360/n;
+      const start=cursor;
+      cursor=i===n-1?360:cursor+span;
+      const end=cursor;
+      return {start,end,span:end-start,center:-90+(start+end)/2,index:i};
+    });
+  }
+  function selectedAtRotation(angle,layout=segmentLayout()){
+    if(!layout.length)return -1;
+    const pointerAngle=normalized(-angle);
+    let lo=0,hi=layout.length-1;
+    while(lo<hi){const mid=(lo+hi)>>1;if(pointerAngle>=layout[mid].end)lo=mid+1;else hi=mid;}
+    // With a zero-width wedge, never report a sector that has no visible area.
+    if(layout[lo].span<=0)return layout.findIndex(item=>item.span>0);
+    return lo;
+  }
+  function drawWeightedWinner(){
+    const total=activeWeightTotal();
+    if(!(total>0))throw Error('Kein Segment ist gewinnberechtigt.');
+    if(!globalThis.crypto?.getRandomValues)throw Error('Sicherer Zufall ist in diesem Browser nicht verfügbar.');
+    const values=new Uint32Array(2);crypto.getRandomValues(values);
+    const r=(values[0]*2097152+(values[1]>>>11))/9007199254740992;
+    const target=r*total;
+    let lo=0,hi=config.segments.length-1;
+    // prefix sums: binary search, not dependent on segment position or spin force.
+    const prefix=[];let running=0;
+    for(const segment of config.segments){running+=segment.weight;prefix.push(running);}
+    while(lo<hi){const mid=(lo+hi)>>1;if(target<prefix[mid])hi=mid;else lo=mid+1;}
+    return lo;
+  }
+  function storageStatus(ok){
+    saveOk=ok;
+    $('saveIndicator').textContent=ok?'● Lokal gespeichert':'⚠ Speicherung nicht möglich';
+    $('saveIndicator').style.color=ok?'':'#ffb4a0';
+  }
+  function persist(next=workspace){
+    try{
+      const serialized=JSON.stringify(next);
+      localStorage.setItem(WORKSPACE_KEY,serialized);
+      // Retain the original single-wheel key as a backwards-compatible backup.
+      // The workspace key is the canonical source when both keys exist.
+      try{localStorage.setItem(STORAGE_KEY,JSON.stringify(next.items.find(x=>x.id===next.activeId).config));}catch(error){console.warn('Legacy-Backup nicht aktualisiert:',error);}
+      storageStatus(true);
+      return true;
+    }catch(error){console.warn('Lokaler Speicher ist blockiert oder voll:',error);storageStatus(false);return false;}
+  }
   let isSpinning=false, rotation=0, iconFontReady=false, currentIconTarget=null;
   let highlightedWinner=null;
   let activeCategory='Alle', lastFocusedElement=null, saveOk=true, audioContext=null, lastTickAt=0, lastTickSector=-1, toastTimer=0;
@@ -295,7 +398,7 @@
     return node;
   }
   function polar(r,angle){const a=angle*Math.PI/180;return [320+Math.cos(a)*r,320+Math.sin(a)*r];}
-  function wedgePath(start,end,r){const p=polar(r,start),q=polar(r,end);return `M 320 320 L ${p[0].toFixed(4)} ${p[1].toFixed(4)} A ${r} ${r} 0 ${end-start>180?1:0} 1 ${q[0].toFixed(4)} ${q[1].toFixed(4)} Z`;}
+  function wedgePath(start,end,r){if(end-start>=359.999999)return circlePath(320,320,r);const p=polar(r,start),q=polar(r,end);return `M 320 320 L ${p[0].toFixed(4)} ${p[1].toFixed(4)} A ${r} ${r} 0 ${end-start>180?1:0} 1 ${q[0].toFixed(4)} ${q[1].toFixed(4)} Z`;}
   // A real vector fallback for the key "shirt" alias (official name: apparel),
   // even if Google Fonts is blocked. Never show a raw ligature name as a glyph.
   const SHIRT_PATH='M8 3.5 10 5.2 Q12 7 14 5.2 L16 3.5 L21 6.3 L19 11 L16.5 9.7 L16.5 21 H7.5 V9.7 L5 11 L3 6.3 Z';
@@ -336,7 +439,7 @@
     wheel.querySelectorAll('.winner-item-lifted').forEach(node=>node.classList.remove('winner-item-lifted'));
     stage.hidden=true;
     stage.classList.remove('is-visible');
-    const step=360/n,center=-90+index*step;
+    const sector=segmentLayout()[index],step=sector.span,center=sector.center;
     const effect=config.winnerEffect,strength=config.winnerStrength;
     const mult={subtle:.72,refined:1,show:1.33}[strength]||1;
     const dim={subtle:.40,refined:.62,show:.76}[strength]||.62;
@@ -344,7 +447,7 @@
     group.dataset.strength=strength;
     group.style.setProperty('--winner-dim',String(dim));
     group.style.setProperty('--winner-stroke',String(2.5*mult));
-    const sectorPath=r=>n===1?circlePath(320,320,r):wedgePath(center-step/2,center+step/2,r);
+    const sectorPath=r=>step>=359.999999?circlePath(320,320,r):wedgePath(center-step/2,center+step/2,r);
     const [winnerX,winnerY]=polar(188,center);
     // Shared subtle marker is deliberately omitted: modes must look different.
     if(effect==='outline'){
@@ -406,18 +509,17 @@
   }
   function circlePath(cx,cy,r){return `M ${cx-r} ${cy} a ${r} ${r} 0 1 0 ${2*r} 0 a ${r} ${r} 0 1 0 ${-2*r} 0 Z`;}
   function shadeOtherSectors(group,index,n,step,dim){
-    if(n===1)return;
+    const layout=segmentLayout();
+    if(layout[index]?.span>=359.999999)return;
     const shade=e('g',{class:'winner-shade','clip-path':'url(#faceClip)'},group);
     shade.style.setProperty('--winner-dim',String(dim));
     if(n>100){
-      const disk=circlePath(320,320,265);
-      e('path',{d:disk+' '+wedgePath(-90+(index-.5)*step,-90+(index+.5)*step,265),'fill-rule':'evenodd',class:'winner-shade-sector'},shade);
+      const sector=layout[index],disk=circlePath(320,320,265);
+      e('path',{d:disk+' '+wedgePath(sector.center-sector.span/2,sector.center+sector.span/2,265),'fill-rule':'evenodd',class:'winner-shade-sector'},shade);
     }else{
-      for(let j=0;j<n;j++){
-        if(j===index)continue;
-        const mid=-90+j*step;
-        e('path',{d:wedgePath(mid-step/2,mid+step/2,265),class:'winner-shade-sector'},shade);
-      }
+      layout.forEach((sector,i)=>{
+        if(i!==index&&sector.span>0)e('path',{d:wedgePath(sector.center-sector.span/2,sector.center+sector.span/2,265),class:'winner-shade-sector'},shade);
+      });
     }
   }
   function makeSpotBeam(group,sectorPath,center,mult){
@@ -437,7 +539,7 @@
   function makeMarquee(group,index,n,step,mult){
     const ring=e('g',{class:'winner-marquee'},group);
     e('circle',{cx:320,cy:320,r:291,class:'winner-marquee-orbit'},ring);
-    const center=-90+index*step;
+    const center=segmentLayout()[index].center;
     const distance=(a,b)=>Math.abs((((a-b)%360)+540)%360-180);
     let closest=0,smallest=Infinity;
     for(let j=0;j<56;j++){
@@ -474,7 +576,7 @@
     e('circle',{cx,cy,r:12,class:'winner-firework-wave'},bursts);
   }
   function drawWheel(){
-    const n=config.segments.length;
+    const n=config.segments.length,layout=segmentLayout();
     wheel.replaceChildren();
     // Metallischer Rahmen und konzentrisch gefasste Ringe – vollständig skalierbares SVG.
     e('circle',{cx:320,cy:320,r:304,fill:'#271510',stroke:'#8c4e24','stroke-width':2},wheel);
@@ -488,11 +590,10 @@
       const t=e('text',{x:320,y:175,'text-anchor':'middle',fill:'#ebbf83','font-size':23,'font-family':'Georgia, serif'},wheelSurface);
       t.textContent='Segmente hinzufügen';
     } else {
-      const step=360/n;
       config.segments.forEach((s,i)=>{
-        const center=-90+i*step;
-        const path=n===1?e('circle',{cx:320,cy:320,r:267,fill:s.color},wheelSurface):e('path',{d:wedgePath(center-step/2,center+step/2,267),fill:s.color,stroke:'#c69456','stroke-width':n>72?.6:n>26?1:1.9,'stroke-linejoin':'round'},wheelSurface);
-        path.appendChild(e('title',{},null)); path.lastChild.textContent=`Segment ${i+1}: ${safeText(s.label)}${s.showIcon?' · '+s.icon:''}`;
+        const sector=layout[i];if(sector.span<=0)return;
+        const path=sector.span>=359.999999?e('circle',{cx:320,cy:320,r:267,fill:s.color},wheelSurface):e('path',{d:wedgePath(sector.center-sector.span/2,sector.center+sector.span/2,267),fill:s.color,stroke:'#c69456','stroke-width':n>72?.6:n>26?1:1.9,'stroke-linejoin':'round'},wheelSurface);
+        path.appendChild(e('title',{},null));path.lastChild.textContent=`Segment ${i+1}: ${safeText(s.label)} · ${(100*s.weight/(activeWeightTotal()||1)).toFixed(2)} %`;
       });
     }
     e('circle',{cx:320,cy:320,r:267,fill:'url(#faceShine)','pointer-events':'none'},wheel);
@@ -506,15 +607,14 @@
       e('circle',{cx:x-1.1,cy:y-1.6,r:1.25,fill:'#fff9d8',opacity:.8},wheel);
     }
     if(n){
-      const step=360/n;
       config.segments.forEach((s,i)=>{
-        const center=-90+i*step;
-        if(n>72) return;
+        const sector=layout[i],center=sector.center,step=sector.span;
+        if(n>72||step<3) return;
         if(n>20){
           const [x,y]=polar(220,center);
           // Beschriftungen folgen der Segmentachse. Sobald das Segment unter
           // dem Zeiger bei 12 Uhr steht, erscheint die Nummer aufrecht.
-          const labelGroup=e('g',{'data-wheel-item':i,transform:`translate(${x.toFixed(3)} ${y.toFixed(3)}) rotate(${(i*step).toFixed(5)})`},wheel);
+          const labelGroup=e('g',{'data-wheel-item':i,transform:`translate(${x.toFixed(3)} ${y.toFixed(3)}) rotate(${(center+90).toFixed(5)})`},wheel);
           const t=e('text',{x:0,y:0,'text-anchor':'middle','dominant-baseline':'central',class:'face-number','font-size':n>52?8:n>36?10:12},labelGroup);
           t.textContent=String(i+1);return;
         }
@@ -530,7 +630,7 @@
         // UND Icon beim Erreichen der 12-Uhr-Position immer waagerecht und
         // aufrecht. Eine 180°-Korrektur auf der unteren Radhälfte würde sie
         // nach dem Drehen kopfüber erscheinen lassen.
-        const tilt=i*step;
+        const tilt=center+90;
         const content=e('g',{'data-wheel-item':i,transform:`translate(${x.toFixed(3)} ${y.toFixed(3)}) rotate(${tilt.toFixed(5)})`},wheel);
         const title=e('title',{},content);title.textContent=safeText(s.label);
         const both=s.showLabel&&s.showIcon;
@@ -557,7 +657,7 @@
     wheel.style.transform=`rotate(${rotation}deg)`;
     $('segmentCount').textContent=n.toLocaleString('de-DE');
     $('stageCount').textContent=String(n).padStart(2,'0')+' SEGMENTE';
-    $('spinHub').disabled=isSpinning||n===0;
+    $('spinHub').disabled=isSpinning||!hasEligibleSegments();
     const notice=$('densityNotice');
     if(n>72)notice.textContent='Bei mehr als 72 Segmenten zeigt das Rad nur die Farbsegmente. Inhalte bleiben in der Liste und im Ergebnis erhalten.';
     else if(n>20)notice.textContent='Ab 21 Segmenten verwendet das Rad Nummern statt Symbolen und Text, um das Design lesbar zu halten.';
@@ -584,6 +684,8 @@
       <div class="segment-controls">
         <label class="pill-check"><input type="checkbox" data-field="showLabel" ${s.showLabel?'checked':''}><span>Text</span></label>
         <label class="pill-check"><input type="checkbox" data-field="showIcon" ${s.showIcon?'checked':''}><span>Symbol</span></label>
+        <label class="weight-control" title="Gewicht 0 bedeutet: kann nicht gewinnen"><span>Gewicht</span><input type="number" min="0" max="1000000" step="any" inputmode="decimal" data-field="weight" aria-label="Gewicht für Segment ${i+1}" value="${s.weight}"></label>
+        <output class="segment-chance${s.weight===0?' is-excluded':''}" aria-label="Gewinnchance Segment ${i+1}">${activeWeightTotal()>0?(100*s.weight/activeWeightTotal()).toLocaleString('de-DE',{maximumFractionDigits:2}):'0'} %</output>
         <span class="spacer"></span>
         <button class="icon-action" type="button" data-action="up" aria-label="Segment ${i+1} nach oben" title="Nach oben" ${i===0?'disabled':''}>↑</button>
         <button class="icon-action" type="button" data-action="down" aria-label="Segment ${i+1} nach unten" title="Nach unten" ${i===config.segments.length-1?'disabled':''}>↓</button>
@@ -592,12 +694,19 @@
     </div>`).join('');
     if(isSpinning) lockEditor(true);
   }
-  function renderSettings(){ $('spinDuration').value=config.duration; $('durationLabel').textContent=config.duration+' s'; $('coastIntensity').value=config.coast; $('coastLabel').textContent=config.coast+' %'; $('soundEnabled').checked=config.sound; $('winnerEffect').value=config.winnerEffect; $('winnerStrength').value=config.winnerStrength; $('winnerSound').value=config.winnerSound; $('paletteSelect').value=config.palette; }
-  function render(){drawWheel();renderSegments();renderSettings();}
-  function save(){
-    try {localStorage.setItem(STORAGE_KEY,JSON.stringify(config));saveOk=true;$('saveIndicator').textContent='● Lokal gespeichert';$('saveIndicator').style.color='';}
-    catch {saveOk=false;$('saveIndicator').textContent='⚠ Speicherung nicht möglich';$('saveIndicator').style.color='#ffb4a0';}
+  function renderSettings(){
+    $('spinDuration').value=config.duration;$('durationLabel').textContent=config.duration+' s';
+    $('coastIntensity').value=config.coast;$('coastLabel').textContent=config.coast+' %';
+    $('soundEnabled').checked=config.sound;$('winnerEffect').value=config.winnerEffect;
+    $('winnerStrength').value=config.winnerStrength;$('winnerSound').value=config.winnerSound;
+    $('paletteSelect').value=config.palette;$('proportionalMode').value=config.proportional?'proportional':'equal';
+    for(const key of ['pointerSpring','pointerDamping','pointerIntensity']){$(key).value=config[key];$(key+'Label').textContent=config[key]+' %';}
+    $('mechanicalSound').value=config.mechanicalSound;
+    $('importMode').value='replace';
+    renderProfiles();
   }
+  function render(){drawWheel();renderSegments();renderSettings();}
+  function save(){profile().config=config;return persist();}
   function mutate(){clearWinnerHighlight();drawWheel();save();}
   function toast(message){const n=$('toast');n.textContent=message;n.classList.add('is-visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>n.classList.remove('is-visible'),2700);}
   function lockEditor(locked){
@@ -625,14 +734,31 @@
   list.addEventListener('input',ev=>{
     if(isSpinning)return;
     const el=ev.target,field=el.dataset.field;
-    if(field!=='label'&&field!=='color')return;
+    if(field!=='label'&&field!=='color'&&field!=='weight')return;
     const s=config.segments.find(x=>x.id===el.closest('.segment-card')?.dataset.id);if(!s)return;
     if(field==='color'&&!validColor(el.value))return;
+    if(field==='weight'){
+      if(el.value.trim()===''||!Number.isFinite(el.valueAsNumber)||el.valueAsNumber<0||el.valueAsNumber>MAX_WEIGHT)return;
+      s.weight=el.valueAsNumber;
+      // Update odds without recreating the focused number input.
+      const total=activeWeightTotal();
+      list.querySelectorAll('.segment-card').forEach(card=>{
+        const item=config.segments.find(x=>x.id===card.dataset.id),out=card.querySelector('.segment-chance');
+        out.textContent=(total>0?100*item.weight/total:0).toLocaleString('de-DE',{maximumFractionDigits:2})+' %';
+        out.classList.toggle('is-excluded',item.weight===0);
+      });
+      mutate();return;
+    }
     s[field]=el.value;mutate();
   });
   list.addEventListener('change',ev=>{
     if(isSpinning)return;
     const el=ev.target,field=el.dataset.field;
+    if(field==='weight'){
+      const card=el.closest('.segment-card'),segment=config.segments.find(x=>x.id===card?.dataset.id);
+      if(segment)el.value=String(segment.weight);
+      return;
+    }
     if(field!=='showLabel'&&field!=='showIcon')return;
     const s=config.segments.find(x=>x.id===el.closest('.segment-card')?.dataset.id);if(!s)return;
     s[field]=el.checked;renderSegments();mutate();
@@ -825,7 +951,7 @@
   $('addSegment').addEventListener('click',()=>{
     if(isSpinning)return;
     const n=config.segments.length;
-    config.segments.push({id:makeId(),label:`Segment ${n+1}`,icon:'star',showLabel:true,showIcon:true,color:PALETTES[config.palette][n%2]});
+    config.segments.push({id:makeId(),label:`Segment ${n+1}`,icon:'star',showLabel:true,showIcon:true,color:PALETTES[config.palette][n%2],weight:1});
     renderSegments();mutate();list.scrollTop=list.scrollHeight;
   });
   $('spinDuration').addEventListener('input',ev=>{config.duration=Number(ev.target.value);$('durationLabel').textContent=config.duration+' s';save();});
