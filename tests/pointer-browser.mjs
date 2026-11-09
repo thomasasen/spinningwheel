@@ -12,7 +12,7 @@ async function collectFrames(page,count=80){
     for(let i=0;i<frameCount;i++){
       await new Promise(resolve=>requestAnimationFrame(resolve));
       const transform=pointer.getAttribute('transform')||'';
-      const angle=Number(/rotate\\((-?[\\d.]+)/.exec(transform)?.[1]||0);
+      const angle=Number(/rotate\((-?[\d.]+)/.exec(transform)?.[1]||0);
       samples.push({angle,transform});
     }
     return samples;
@@ -22,7 +22,7 @@ function peak(samples){return Math.max(...samples.map(x=>Math.abs(x.angle)));}
 const page=await browser.newPage({reducedMotion:'no-preference',viewport:{width:1280,height:850}});
 const errors=[];
 page.on('pageerror',e=>errors.push(e.stack||e.message));
-await page.route(/https?:\\/\\//,route=>route.abort());
+await page.route(/https?:\/\//,route=>route.abort());
 try{
   await page.goto(url,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(window.__casinoNoirDebug));
@@ -59,7 +59,7 @@ try{
     for(let i=0;i<210;i++){
       await new Promise(r=>requestAnimationFrame(r));
       const tr=ptr.getAttribute('transform')||'';
-      out.push(Number(/rotate\\((-?[\\d.]+)/.exec(tr)?.[1]||0));
+      out.push(Number(/rotate\((-?[\d.]+)/.exec(tr)?.[1]||0));
     }
     return out;
   });
@@ -79,7 +79,7 @@ try{
 const reduced=await browser.newPage({reducedMotion:'reduce'});
 const reducedErrors=[];
 reduced.on('pageerror',e=>reducedErrors.push(e.message));
-await reduced.route(/https?:\\/\\//,route=>route.abort());
+await reduced.route(/https?:\/\//,route=>route.abort());
 try{
   await reduced.goto(url,{waitUntil:'domcontentloaded'});
   await reduced.locator('#toggleEditor').click();
