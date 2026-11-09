@@ -1119,6 +1119,7 @@
       next.activeId=newActive;
       if(!commitProfileChange(next,prepared.length+' Glücksrad/-räder importiert.'))throw Error('Der Browser konnte die Sammlung nicht speichern.');
     }catch(error){toast('Import fehlgeschlagen: '+error.message);}
+    finally{ev.target.value='';} // Re-importing the same filename must trigger change again.
   });
   function openIconPicker(id){
     currentIconTarget=id;lastFocusedElement=document.activeElement;
