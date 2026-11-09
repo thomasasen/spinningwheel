@@ -438,6 +438,8 @@
     highlightedWinner=index;
     group.classList.remove('is-visible');
     group.replaceChildren();
+    // Real overlay geometry is grouped as one semantic highlight surface.
+    const surface=e('g',{class:'winner-highlight-surface'},group);
     wheel.querySelectorAll('.winner-item-lifted').forEach(node=>node.classList.remove('winner-item-lifted'));
     stage.hidden=true;
     stage.classList.remove('is-visible');
@@ -453,21 +455,21 @@
     const [winnerX,winnerY]=polar(188,center);
     // Shared subtle marker is deliberately omitted: modes must look different.
     if(effect==='outline'){
-      const under=e('path',{d:sectorPath(263),class:'winner-outline-rest'},group);
-      const trace=e('path',{d:sectorPath(263),class:'winner-outline-trace'},group);
+      const under=e('path',{d:sectorPath(263),class:'winner-outline-rest'},surface);
+      const trace=e('path',{d:sectorPath(263),class:'winner-outline-trace'},surface);
       const length=Math.ceil(trace.getTotalLength());
       trace.style.strokeDasharray=`${length} ${length}`;
       trace.style.setProperty('--trace-length',String(length));
       const [p1x,p1y]=polar(260,center-step/2),[p2x,p2y]=polar(260,center+step/2);
-      for(const [x,y] of [[p1x,p1y],[p2x,p2y]])e('circle',{cx:x,cy:y,r:4*mult,class:'winner-outline-jewel'},group);
+      for(const [x,y] of [[p1x,p1y],[p2x,p2y]])e('circle',{cx:x,cy:y,r:4*mult,class:'winner-outline-jewel'},surface);
     }else if(effect==='spotlight'){
-      shadeOtherSectors(group,index,n,step,dim);
-      makeSpotBeam(group,sectorPath,center,mult);
+      shadeOtherSectors(surface,index,n,step,dim);
+      makeSpotBeam(surface,sectorPath,center,mult);
     }else if(effect==='lift'){
       const offset=17*mult,rad=center*Math.PI/180;
       const dx=Math.cos(rad)*offset,dy=Math.sin(rad)*offset;
-      e('path',{d:sectorPath(261),class:'winner-lift-groove'},group);
-      const lift=e('g',{class:'winner-lift',transform:`translate(${dx.toFixed(2)} ${dy.toFixed(2)})`},group);
+      e('path',{d:sectorPath(261),class:'winner-lift-groove'},surface);
+      const lift=e('g',{class:'winner-lift',transform:`translate(${dx.toFixed(2)} ${dy.toFixed(2)})`},surface);
       const moving=e('g',{class:'winner-lift-motion'},lift);
       moving.style.setProperty('--lift-x',`${-dx.toFixed(2)}px`);
       moving.style.setProperty('--lift-y',`${-dy.toFixed(2)}px`);
@@ -477,25 +479,25 @@
       if(original){moving.appendChild(original.cloneNode(true));original.classList.add('winner-item-lifted');}
       e('path',{d:sectorPath(259),class:'winner-lift-shimmer'},moving);
     }else if(effect==='lights'){
-      makeMarquee(group,index,n,step,mult);
-      e('path',{d:sectorPath(260),class:'winner-lights-wedge'},group);
+      makeMarquee(surface,index,n,step,mult);
+      e('path',{d:sectorPath(260),class:'winner-lights-wedge'},surface);
     }else if(effect==='celebration'){
       // Keep the winner visually selected once the fireworks have faded.
-      e('path',{d:sectorPath(263),class:'winner-celebration-lacquer'},group);
-      makeFireworks(group,center,step,mult);
-      const halo=e('circle',{cx:winnerX,cy:winnerY,r:24,class:'winner-burst-halo'},group);
+      e('path',{d:sectorPath(263),class:'winner-celebration-lacquer'},surface);
+      makeFireworks(surface,center,step,mult);
+      const halo=e('circle',{cx:winnerX,cy:winnerY,r:24,class:'winner-burst-halo'},surface);
       halo.style.setProperty('--halo-scale',String(2.8*mult));
     }else if(effect==='cinematic'){
-      shadeOtherSectors(group,index,n,step,dim*.80);
-      makeSpotBeam(group,sectorPath,center,mult);
-      makeMarquee(group,index,n,step,mult);
-      const rings=e('g',{class:'winner-cinema-rings'},group);
+      shadeOtherSectors(surface,index,n,step,dim*.80);
+      makeSpotBeam(surface,sectorPath,center,mult);
+      makeMarquee(surface,index,n,step,mult);
+      const rings=e('g',{class:'winner-cinema-rings'},surface);
       for(let j=0;j<3;j++){
         const ring=e('circle',{cx:winnerX,cy:winnerY,r:13+j*14,class:'winner-cinema-ring'},rings);
         ring.style.animationDelay=`${j*260}ms`;
       }
-      e('path',{d:sectorPath(263),class:'winner-cinema-gold'},group);
-      e('circle',{cx:320,cy:320,r:279,class:'winner-cinema-orbit'},group);
+      e('path',{d:sectorPath(263),class:'winner-cinema-gold'},surface);
+      e('circle',{cx:320,cy:320,r:279,class:'winner-cinema-orbit'},surface);
     }
     const names={outline:'GOLDEN EDGE',spotlight:'CASINO SPOTLIGHT',lift:'GOLDEN LIFT',lights:'JACKPOT LIGHTS',celebration:'GOLDEN CELEBRATION',cinematic:'CASINO CINEMATIC'};
     stage.dataset.effect=effect;
