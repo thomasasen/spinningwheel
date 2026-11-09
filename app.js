@@ -1290,23 +1290,79 @@
     }
   }
   function normalized(angle){return ((angle%360)+360)%360;}
-  function tick(){
-    if(!config.sound)return;
+  function tick(force=false){
+    if(!force&&!config.sound)return;
+    const ctx=ensureAudioContext();if(!ctx||ctx.state==='closed')return;
+    const tones={
+      subtle:{type:'sine',high:730,low:390,length:.028,gain:.024},
+      ratchet:{type:'square',high:1080,low:390,length:.037,gain:.018},
+      metal:{type:'triangle',high:1460,low:260,length:.075,gain:.047},
+      casino:{type:'triangle',high:890,low:470,length:.043,gain:.030}
+    };
+    const p=tones[config.mechanicalSound]||tones.casino;
     try{
-      const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return;
-      if(!audioContext)audioContext=new Ctx();if(audioContext.state==='suspended')audioContext.resume();
-      const oscillator=audioContext.createOscillator(),gain=audioContext.createGain(),now=audioContext.currentTime;
-      oscillator.type='triangle';oscillator.frequency.setValueAtTime(870,now);oscillator.frequency.exponentialRampToValueAtTime(340,now+.035);
-      gain.gain.setValueAtTime(.065,now);gain.gain.exponentialRampToValueAtTime(.001,now+.04);
-      oscillator.connect(gain);gain.connect(audioContext.destination);oscillator.start(now);oscillator.stop(now+.04);
-    }catch{/* Sound ist optional und darf die Drehung nie blockieren. */}
+      const oscillator=ctx.createOscillator(),gain=ctx.createGain(),now=ctx.currentTime;
+      oscillator.type=p.type;
+      oscillator.frequency.setValueAtTime(p.high,now);
+      oscillator.frequency.exponentialRampToValueAtTime(p.low,now+p.length);
+      gain.gain.setValueAtTime(p.gain,now);
+      gain.gain.exponentialRampToValueAtTime(.0001,now+p.length);
+      oscillator.connect(gain);gain.connect(ctx.destination);
+      oscillator.start(now);oscillator.stop(now+p.length+.008);
+      if(config.mechanicalSound==='metal'){
+        const overtone=ctx.createOscillator(),volume=ctx.createGain();
+        overtone.type='sine';overtone.frequency.value=2370;
+        volume.gain.setValueAtTime(.016,now);
+        volume.gain.exponentialRampToValueAtTime(.0001,now+.09);
+        overtone.connect(volume);volume.connect(ctx.destination);
+        overtone.start(now);overtone.stop(now+.1);
+      }
+    }catch{/* Optional audio must never block a spin. */}
   }
-  function currentIndex(angle,n){return ((Math.round(-normalized(angle)/(360/n))%n)+n)%n;}
-  // The control changes when the wheel crosses its final segment boundary.
-  // A high coast value deliberately leaves more angular distance late in the spin.
-  // Values are strictly monotonic, reaching exactly the chosen segment centre.
+  function currentIndex(angle,n,layout){return selectedAtRotation(angle,layout||segmentLayout());}
+  // Kept as a documented reference for the original coast control.
   function coastExponent(coast){return 3.9-2.55*Math.max(0,Math.min(100,coast))/100;}
   function spinEase(t,coast){return 1-Math.pow(1-Math.max(0,Math.min(1,t)),coastExponent(coast));}
+  // Integrate a smooth acceleration ramp followed by monotonic, continuously
+  // decreasing velocity. All phases share the same total angular displacement.
+  function motionProgress(t,coast){
+    const x=Math.max(0,Math.min(1,t)),a=.075,p=coastExponent(coast);
+    const rampArea=2*a/Math.PI,brakeArea=(1-a)/p,total=rampArea+brakeArea;
+    if(x<=a)return (2*a/Math.PI*(1-Math.cos(Math.PI*x/(2*a))))/total;
+    return (rampArea+brakeArea*(1-Math.pow((1-x)/(1-a),p)))/total;
+  }
+  const pointer=$('fixedPointer');
+  let pointerAngle=0,pointerVelocity=0,pointerRaf=0,pointerLastTime=0;
+  function setPointerAngle(value){
+    pointerAngle=value;
+    // SVG transform never reads layout and remains independent of the rotating wheel.
+    pointer.setAttribute('transform',`rotate(${pointerAngle.toFixed(3)} 320 16)`);
+  }
+  function settlePointerStep(dt){
+    const omega=12+config.pointerSpring*.22;
+    const damping=.12+config.pointerDamping*.012;
+    const substeps=Math.max(1,Math.ceil(dt/.012)),h=dt/substeps;
+    for(let i=0;i<substeps;i++){
+      pointerVelocity+=(-omega*omega*pointerAngle-2*damping*omega*pointerVelocity)*h;
+      setPointerAngle(Math.max(-18,Math.min(18,pointerAngle+pointerVelocity*h)));
+    }
+  }
+  function pointerContact(angularVelocity){
+    const strength=.2+.8*config.pointerIntensity/100;
+    pointerVelocity=Math.max(-320,pointerVelocity-240*strength/(1+angularVelocity/800));
+  }
+  function finishPointerMovement(){
+    cancelAnimationFrame(pointerRaf);
+    let frames=0;
+    function settle(now){
+      if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){setPointerAngle(0);pointerVelocity=0;return;}
+      const dt=pointerLastTime?Math.min(.032,(now-pointerLastTime)/1000):.016;
+      pointerLastTime=now;settlePointerStep(dt);
+      if(++frames>120||(Math.abs(pointerAngle)<.03&&Math.abs(pointerVelocity)<.15)){setPointerAngle(0);pointerVelocity=0;return;}
+      pointerRaf=requestAnimationFrame(settle);
+    }
+    pointerLastTime=0;pointerRaf=requestAnimationFrame(settle);
+  }
   // 0 -> 100 -> 0 every 1.6 seconds. A timestamp-based triangle wave keeps
   // the captured power independent of animation frame rate and input latency.
   const POWER_PERIOD_MS=1600;
@@ -1330,58 +1386,76 @@
     }
   }
   function animatePower(time){
-    if(!isSpinning){displayPower(config.segments.length ? powerAt(time) : 0);}
-    powerRaf=requestAnimationFrame(animatePower);
+    if(!isSpinning)displayPower(hasEligibleSegments()?powerAt(time):0);
+    powerRaf=document.hidden?0:requestAnimationFrame(animatePower);
   }
-  powerRaf=requestAnimationFrame(animatePower);
+  if(!document.hidden)powerRaf=requestAnimationFrame(animatePower);
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden){cancelAnimationFrame(powerRaf);powerRaf=0;}
+    else if(!powerRaf)powerRaf=requestAnimationFrame(animatePower);
+  });
   let raf=0;
   function spin(){
-    const n=config.segments.length;if(isSpinning||!n)return;
+    const n=config.segments.length;
+    if(isSpinning||!hasEligibleSegments())return;
+    let winner;
+    try{winner=drawWeightedWinner();}
+    catch(error){toast(error.message);return;}
     clearWinnerHighlight();
     const power=powerAt(performance.now());
-    displayPower(power); // Capture at the actual click, not at the previous frame.
-    isSpinning=true;if(config.winnerSound!=='off'||config.sound)ensureAudioContext();powerMeter.classList.add('is-locked');
+    displayPower(power);
+    isSpinning=true;
+    if(config.winnerSound!=='off'||config.sound)ensureAudioContext();
+    powerMeter.classList.add('is-locked');
     lockEditor(true);$('spinHub').disabled=true;$('spinHub').classList.add('is-spinning');
     const percent=Math.round(power*100);
     $('statusText').textContent=`Drehkraft ${percent} % · Das Rad dreht sich …`;
     $('presentationResult').textContent='';
-    const winner=Math.floor(rand()*n),step=360/n;
-    // Sektor 0 liegt zu Beginn mittig unter dem feststehenden Zeiger bei 12 Uhr.
-    // Exakt auf die Sektormitte zielen: So steht die Gewinner-Beschriftung
-    // beim Stillstand horizontal statt zufällig schräg zum Zeiger.
-    const finalModulo=normalized(-winner*step);
+    const layout=segmentLayout();
+    // The winner is sampled before the spin, independently of power. The
+    // trajectory is strictly monotonic and lands on the actual winning centre.
+    const target=layout[winner],finalModulo=normalized(-(target.center+90));
     const forward=normalized(finalModulo-normalized(rotation));
-    // Stronger timing increases both revolutions and duration. The winner is
-    // selected independently of power, so the gauge never manipulates odds.
-    const turns=2+Math.round(power*8); // 2 to 10 full revolutions
+    const turns=2+Math.round(power*8);
     const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    // For people requesting reduced motion, avoid rapid multiple rotations.
     const visibleTurns=reduced?0:turns;
     const from=rotation,delta=visibleTurns*360+forward,finish=from+delta;
     const duration=reduced?280:config.duration*1000*(.35+.65*power);
-    const start=performance.now();lastTickAt=0;lastTickSector=currentIndex(from,n);
+    const start=performance.now();
+    let lastTime=start,lastAngle=from;
+    lastTickAt=0;lastTickSector=currentIndex(from,n,layout);
+    cancelAnimationFrame(pointerRaf);pointerRaf=0;pointerLastTime=0;
+    if(reduced){setPointerAngle(0);pointerVelocity=0;}
     function frame(now){
-      const t=Math.min(1,(now-start)/duration),ease=spinEase(t,config.coast);
-      const angle=from+delta*ease;
+      const t=Math.min(1,(now-start)/duration);
+      const angle=from+delta*motionProgress(t,config.coast);
       wheel.style.transform=`rotate(${angle}deg)`;
-      const sector=currentIndex(angle,n);
-      if(sector!==lastTickSector&&now-lastTickAt>38){lastTickSector=sector;lastTickAt=now;tick();svg.classList.remove('pointer-tick');void svg.getBoundingClientRect();svg.classList.add('pointer-tick');}
+      const dt=Math.min(.04,Math.max(0,(now-lastTime)/1000));
+      const speed=dt?Math.abs((angle-lastAngle)/dt):0;
+      const sector=currentIndex(angle,n,layout);
+      // Coalesce ultra-fast contacts so even 5,000 segments stay responsive.
+      if(!reduced&&(sector!==lastTickSector||Math.abs(angle-lastAngle)>360/n)&&now-lastTickAt>=35){
+        lastTickSector=sector;lastTickAt=now;
+        pointerContact(speed);tick();
+      }
+      if(!reduced)settlePointerStep(dt);
+      lastAngle=angle;lastTime=now;
       if(t<1){raf=requestAnimationFrame(frame);return;}
       rotation=finish;wheel.style.transform=`rotate(${rotation}deg)`;
       isSpinning=false;powerMeter.classList.remove('is-locked');powerEpoch=performance.now()-310;
-      lockEditor(false);$('spinHub').disabled=false;$('spinHub').classList.remove('is-spinning');
+      lockEditor(false);$('spinHub').disabled=!hasEligibleSegments();$('spinHub').classList.remove('is-spinning');
+      if(!reduced)finishPointerMovement();
       showWinnerHighlight(winner);playWinnerSound(config.winnerSound);
       const selected=config.segments[winner],result=safeText(selected.label);
       $('statusText').textContent=`Ergebnis: ${result} · Feld ${winner+1} von ${n}`;
       $('presentationResult').textContent=`✦ ${result} ✦`;
-      // Debugwerte erleichtern die Regressionstests und die Prüfung der Zeiger-/Ergebniszuordnung.
       Object.assign(window.__casinoNoirDebug,{lastWinner:winner,lastRotation:rotation,spinning:false,lastPower:power,lastTurns:visibleTurns,lastDurationMs:duration,lastCoast:config.coast,lastEasingExponent:coastExponent(config.coast)});
     }
     Object.assign(window.__casinoNoirDebug,{spinning:true,lastWinner:null});
     raf=requestAnimationFrame(frame);
   }
   $('spinHub').addEventListener('click',spin);
-  window.__casinoNoirDebug={get config(){return config;},get rotation(){return rotation;},get isSpinning(){return isSpinning;},get power(){return powerLevel;},get powerPeriodMs(){return POWER_PERIOD_MS;},get highlightedWinner(){return highlightedWinner;},showWinnerHighlight,playWinnerSound,get spinEase(){return spinEase;},get iconFontReady(){return iconFontReady;},get iconCatalogReady(){return fullCatalogReady;},get iconCatalogCount(){return ICONS.length;},get iconSearchMetadataReady(){return iconSearchReady;},get iconSearchMetadataCount(){return ICON_SEARCH_TAGS.size;},get iconMatches(){return iconMatchCount;},get iconMatchingNames(){return [...iconMatches];},get iconCodepointMap(){return Object.fromEntries(ICON_CODEPOINTS);},loadIconCatalog,lastWinner:null,lastRotation:0,spinning:false,stop(){cancelAnimationFrame(raf);}};
+  window.__casinoNoirDebug={get config(){return config;},get rotation(){return rotation;},get isSpinning(){return isSpinning;},get power(){return powerLevel;},get powerPeriodMs(){return POWER_PERIOD_MS;},get highlightedWinner(){return highlightedWinner;},showWinnerHighlight,playWinnerSound,get spinEase(){return spinEase;},motionProgress,segmentLayout,drawWeightedWinner,get pointerAngle(){return pointerAngle;},get iconFontReady(){return iconFontReady;},get iconCatalogReady(){return fullCatalogReady;},get iconCatalogCount(){return ICONS.length;},get iconSearchMetadataReady(){return iconSearchReady;},get iconSearchMetadataCount(){return ICON_SEARCH_TAGS.size;},get iconMatches(){return iconMatchCount;},get iconMatchingNames(){return [...iconMatches];},get iconCodepointMap(){return Object.fromEntries(ICON_CODEPOINTS);},loadIconCatalog,lastWinner:null,lastRotation:0,spinning:false,stop(){cancelAnimationFrame(raf);}};
   restoreIconCatalog();
   render();
   loadIconCatalog();
