@@ -577,7 +577,7 @@
     e('circle',{cx,cy,r:12,class:'winner-firework-wave'},bursts);
   }
   function drawWheel(){
-    const n=config.segments.length,layout=segmentLayout();
+    const n=config.segments.length,layout=segmentLayout(),weightTotal=activeWeightTotal();
     wheel.replaceChildren();
     // Metallischer Rahmen und konzentrisch gefasste Ringe – vollständig skalierbares SVG.
     e('circle',{cx:320,cy:320,r:304,fill:'#271510',stroke:'#8c4e24','stroke-width':2},wheel);
@@ -594,7 +594,7 @@
       config.segments.forEach((s,i)=>{
         const sector=layout[i];if(sector.span<1e-10||(config.proportional&&s.weight===0))return;
         const path=sector.span>=359.999999?e('circle',{cx:320,cy:320,r:267,fill:s.color},wheelSurface):e('path',{d:wedgePath(sector.center-sector.span/2,sector.center+sector.span/2,267),fill:s.color,stroke:'#c69456','stroke-width':n>72?.6:n>26?1:1.9,'stroke-linejoin':'round'},wheelSurface);
-        path.appendChild(e('title',{},null));path.lastChild.textContent=`Segment ${i+1}: ${safeText(s.label)} · ${(100*s.weight/(activeWeightTotal()||1)).toFixed(2)} %`;
+        path.appendChild(e('title',{},null));path.lastChild.textContent=`Segment ${i+1}: ${safeText(s.label)} · ${(100*s.weight/(weightTotal||1)).toFixed(2)} %`;
       });
     }
     e('circle',{cx:320,cy:320,r:267,fill:'url(#faceShine)','pointer-events':'none'},wheel);
@@ -673,7 +673,7 @@
     return `<span class="symbol-fallback" aria-hidden="true">${escapeHtml(iconFallback(icon))}</span>`;
   }
   function renderSegments(){
-    const list=$('segmentList');
+    const list=$('segmentList'),weightTotal=activeWeightTotal();
     if(!config.segments.length){list.innerHTML='<div class="stage-notice">Noch keine Segmente. Mit „Hinzufügen“ beginnt dein neues Rad.</div>';return;}
     list.innerHTML=config.segments.map((s,i)=>`<div class="segment-card" data-id="${escapeHtml(s.id)}">
       <div class="segment-top">
@@ -687,7 +687,7 @@
         <label class="pill-check"><input type="checkbox" data-field="showLabel" ${s.showLabel?'checked':''}><span>Text</span></label>
         <label class="pill-check"><input type="checkbox" data-field="showIcon" ${s.showIcon?'checked':''}><span>Symbol</span></label>
         <label class="weight-control" title="Gewicht 0 bedeutet: kann nicht gewinnen"><span>Gewicht</span><input type="number" min="0" max="1000000" step="any" inputmode="decimal" data-field="weight" aria-label="Gewicht für Segment ${i+1}" value="${s.weight}"></label>
-        <output class="segment-chance${s.weight===0?' is-excluded':''}" aria-label="Gewinnchance Segment ${i+1}">${activeWeightTotal()>0?(100*s.weight/activeWeightTotal()).toLocaleString('de-DE',{maximumFractionDigits:2}):'0'} %</output>
+        <output class="segment-chance${s.weight===0?' is-excluded':''}" aria-label="Gewinnchance Segment ${i+1}">${weightTotal>0?(100*s.weight/weightTotal).toLocaleString('de-DE',{maximumFractionDigits:2}):'0'} %</output>
         <span class="spacer"></span>
         <button class="icon-action" type="button" data-action="up" aria-label="Segment ${i+1} nach oben" title="Nach oben" ${i===0?'disabled':''}>↑</button>
         <button class="icon-action" type="button" data-action="down" aria-label="Segment ${i+1} nach unten" title="Nach unten" ${i===config.segments.length-1?'disabled':''}>↓</button>
@@ -732,6 +732,7 @@
         el.disabled=config.segments.at(-1)?.id===el.closest('.segment-card')?.dataset.id;
       } else el.disabled=locked;
     });
+    if(!locked)$('deleteProfile').disabled=workspace.items.length<=1;
   }
   const list=$('segmentList');
   list.addEventListener('input',ev=>{
