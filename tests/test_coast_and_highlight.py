@@ -91,9 +91,17 @@ async def main():
         for v,expected in [(999,30),(-20,3)]:
             config={**old,'duration':v,'coast':999}
             await page.locator('#importFile').set_input_files({'name':'test.json','mimeType':'application/json','buffer':json.dumps(config).encode()})
-            await page.wait_for_timeout(100)
-            assert await page.evaluate('window.__casinoNoirDebug.config.duration')==expected
-            assert await page.evaluate('window.__casinoNoirDebug.config.coast')==100
+            await page.wait_for_timeout(200)
+            actual=await page.evaluate('''() => ({
+                duration:window.__casinoNoirDebug.config.duration,
+                coast:window.__casinoNoirDebug.config.coast,
+                toast:document.getElementById('toast').textContent,
+                importValue:document.getElementById('importFile').value,
+                workspace:JSON.parse(localStorage.getItem('casino-noir-wheel-studio-workspace-v2')||'null')?.items?.length
+            })''')
+            print('Legacy import diagnostic',v,'expected',expected,'actual',actual,flush=True)
+            assert actual['duration']==expected,(v,expected,actual)
+            assert actual['coast']==100,actual
         print('Legacy config, import bounds: PASS')
         await context.close()
         await browser.close()
