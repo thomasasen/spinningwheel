@@ -115,7 +115,22 @@ try{
   assert.equal(await page.locator('#spinMode').inputValue(),'physical');
   const before=await page.evaluate(()=>window.__casinoNoirDebug.controlledWinnerSelections);
   await page.locator('#spinHub').click();
-  await page.waitForFunction(()=>window.__casinoNoirDebug.lastWinner!==null&&!window.__casinoNoirDebug.isSpinning,{timeout:30000});
+  await page.waitForFunction(()=>{
+    const state=window.__casinoNoirDebug.currentPhysicalState;
+    return Boolean(state&&!state.done&&Math.abs(state.velocity)>physicsRestThreshold()&&Math.abs(state.velocity)<4);
+    function physicsRestThreshold(){return window.CasinoWheelPhysics.REST_SPEED;}
+  },null,{timeout:30000});
+  const lateCoast=await page.evaluate(()=>{
+    const api=window.__casinoNoirDebug;
+    return {stillSpinning:api.isSpinning,winner:api.lastWinner,state:api.currentPhysicalState,
+      text:document.querySelector('#statusText').textContent};
+  });
+  assert.equal(lateCoast.stillSpinning,true,'a wheel moving slowly is still spinning');
+  assert.equal(lateCoast.winner,null,'never reveal winner during final coasting');
+  assert.ok(lateCoast.state.velocity!==0&&lateCoast.state.restSeconds<windowPhysicsRestHold(),
+    'wheel has not yet reached sustained rest');
+  function windowPhysicsRestHold(){return physics.REST_HOLD_SECONDS;}
+  await page.waitForFunction(()=>window.__casinoNoirDebug.lastWinner!==null&&!window.__casinoNoirDebug.isSpinning,null,{timeout:30000});
   const result=await page.evaluate(()=>{
     const d=window.__casinoNoirDebug;
     const winner=d.lastWinner,sector=d.ranges()[winner];
