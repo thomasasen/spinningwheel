@@ -274,6 +274,38 @@
   let config;
   try { const saved=localStorage.getItem(STORAGE_KEY); config=saved?saneConfig(JSON.parse(saved)):defaultConfig(); }
   catch { config=defaultConfig(); }
+  const PROFILES_KEY='casino-noir-wheel-profiles-v2';
+  const newProfileId=()=>window.crypto?.randomUUID?.()||makeId();
+  let profiles;
+  function cloneConfig(value){return saneConfig(JSON.parse(JSON.stringify(value)));}
+  try{
+    const stored=JSON.parse(localStorage.getItem(PROFILES_KEY)||'null');
+    if(stored?.version===2&&Array.isArray(stored.entries)&&stored.entries.length&&stored.entries.length<=100){
+      const seen=new Set();
+      const entries=stored.entries.map(p=>{
+        if(!p||typeof p.id!=='string'||!p.id||seen.has(p.id))throw Error('Ungültiges Profil');
+        seen.add(p.id);
+        return {id:p.id,name:String(p.name||'Glücksrad').slice(0,60),config:cloneConfig(p.config)};
+      });
+      profiles={version:2,activeId:entries.some(p=>p.id===stored.activeId)?stored.activeId:entries[0].id,entries};
+      config=cloneConfig(entries.find(p=>p.id===profiles.activeId).config);
+    }
+  }catch(error){console.warn('Profil-Speicher konnte nicht geladen werden, ursprüngliche Konfiguration bleibt erhalten.',error);}
+  if(!profiles){const id=newProfileId();profiles={version:2,activeId:id,entries:[{id,name:'Mein Glücksrad',config:cloneConfig(config)}]};}
+  function activeProfile(){return profiles.entries.find(p=>p.id===profiles.activeId);}
+  function profileStatus(){
+    const select=$('profileSelect');
+    if(!select)return;
+    select.innerHTML=profiles.entries.map(p=>`<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join('');
+    select.value=profiles.activeId;
+  }
+  function switchProfile(id){
+    if(isSpinning||id===profiles.activeId)return;
+    const target=profiles.entries.find(p=>p.id===id);
+    if(!target)return;
+    config=cloneConfig(target.config);profiles.activeId=id;rotation=0;wheel.style.transform='rotate(0deg)';
+    clearWinnerHighlight();render();save();profileStatus();
+  }
   let isSpinning=false, rotation=0, iconFontReady=false, currentIconTarget=null;
   let highlightedWinner=null;
   let activeCategory='Alle', lastFocusedElement=null, saveOk=true, audioContext=null, lastTickAt=0, lastTickSector=-1, toastTimer=0;
@@ -623,9 +655,53 @@
   function renderSettings(){ $('sizeMode').value=config.sizeMode; $('spinDuration').value=config.duration; $('durationLabel').textContent=config.duration+' s'; $('coastIntensity').value=config.coast; $('coastLabel').textContent=config.coast+' %'; $('soundEnabled').checked=config.sound; $('winnerEffect').value=config.winnerEffect; $('winnerStrength').value=config.winnerStrength; $('winnerSound').value=config.winnerSound; $('paletteSelect').value=config.palette; }
   function render(){drawWheel();renderSegments();renderSettings();}
   function save(){
-    try {localStorage.setItem(STORAGE_KEY,JSON.stringify(config));saveOk=true;$('saveIndicator').textContent='● Lokal gespeichert';$('saveIndicator').style.color='';}
+    try {
+      activeProfile().config=cloneConfig(config);
+      localStorage.setItem(PROFILES_KEY,JSON.stringify(profiles));
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(config));
+      saveOk=true;$('saveIndicator').textContent='● Lokal gespeichert';$('saveIndicator').style.color='';}
     catch {saveOk=false;$('saveIndicator').textContent='⚠ Speicherung nicht möglich';$('saveIndicator').style.color='#ffb4a0';}
   }
+  $('profileSelect').addEventListener('change',event=>switchProfile(event.target.value));
+  $('profileNew').addEventListener('click',()=>{
+    if(isSpinning)return;
+    const name=prompt('Name für das neue Glücksrad:','Neues Glücksrad');
+    if(name===null)return;
+    const clean=name.trim().slice(0,60);if(!clean){toast('Bitte einen Namen eingeben.');return;}
+    if(profiles.entries.length>=100){toast('Maximal 100 Glücksräder.');return;}
+    const id=newProfileId();profiles.entries.push({id,name:clean,config:defaultConfig()});switchProfile(id);
+  });
+  $('profileDuplicate').addEventListener('click',()=>{
+    if(isSpinning)return;
+    if(profiles.entries.length>=100){toast('Maximal 100 Glücksräder.');return;}
+    const id=newProfileId(),name=(activeProfile().name+' (Kopie)').slice(0,60);
+    profiles.entries.push({id,name,config:cloneConfig(config)});switchProfile(id);
+  });
+  $('profileRename').addEventListener('click',()=>{
+    if(isSpinning)return;
+    const name=prompt('Glücksrad umbenennen:',activeProfile().name);
+    if(name===null)return;
+    if(!name.trim()){toast('Bitte einen Namen eingeben.');return;}
+    activeProfile().name=name.trim().slice(0,60);save();profileStatus();
+  });
+  $('profileDelete').addEventListener('click',()=>{
+    if(isSpinning)return;
+    if(profiles.entries.length===1){toast('Das letzte Glücksrad kann nicht gelöscht werden.');return;}
+    if(!confirm('Glücksrad „'+activeProfile().name+'“ dauerhaft löschen?'))return;
+    const id=profiles.entries.find(p=>p.id!==profiles.activeId).id;
+    profiles.entries=profiles.entries.filter(p=>p.id!==profiles.activeId);switchProfile(id);
+  });
+  function downloadJson(data,filename){
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  $('profileExportAll').addEventListener('click',()=>{
+    const all={...profiles,entries:profiles.entries.map(p=>({...p,config:p.id===profiles.activeId?cloneConfig(config):p.config}))};
+    downloadJson(all,'casino-noir-alle-'+new Date().toISOString().slice(0,10)+'.json');
+  });
+  profileStatus();
   function mutate(){clearWinnerHighlight();drawWheel();renderSegments();save();}
   function toast(message){const n=$('toast');n.textContent=message;n.classList.add('is-visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>n.classList.remove('is-visible'),2700);}
   function lockEditor(locked){
@@ -910,17 +986,37 @@
     config=defaultConfig();rotation=0;clearWinnerHighlight();render();save();$('statusText').textContent='Auf die goldene Mitte klicken, um zu drehen';toast('Ausgangskonfiguration wiederhergestellt.');
   });
   $('exportJson').addEventListener('click',()=>{
-    const data={...config,version:2};
-    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-    const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='casino-noir-konfiguration.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
-    toast('Konfiguration als JSON exportiert.');
+    downloadJson({version:2,name:activeProfile().name,config},'casino-noir-'+activeProfile().name.toLowerCase().replace(/[^a-z0-9äöüß-]+/gi,'-')+'-'+new Date().toISOString().slice(0,10)+'.json');
+    toast('Glücksrad exportiert.');
   });
   $('importJson').addEventListener('click',()=>{if(!isSpinning){$('importFile').value='';$('importFile').click();}});
   $('importFile').addEventListener('change',async ev=>{
     const file=ev.target.files?.[0];if(!file)return;
     if(file.size>2*1024*1024){toast('Die JSON-Datei ist zu groß (maximal 2 MB).');return;}
-    try{const parsed=JSON.parse(await file.text());config=saneConfig(parsed);rotation=0;clearWinnerHighlight();render();save();toast(`${config.segments.length} Segmente importiert.`);}
-    catch(err){toast('Import fehlgeschlagen: '+err.message);}
+    try{
+      const parsed=JSON.parse(await file.text());
+      if(parsed?.version>2)throw Error('Neuere, nicht unterstützte Formatversion.');
+      let incoming;
+      if(parsed?.version===2&&Array.isArray(parsed.entries)){
+        if(!parsed.entries.length||parsed.entries.length>100)throw Error('Ungültige Anzahl von Profilen.');
+        incoming=parsed.entries.map(p=>({name:String(p?.name||'Import').slice(0,60),config:cloneConfig(p.config)}));
+      }else incoming=[{name:String(parsed.name||file.name.replace(/\.json$/i,'')).slice(0,60),config:cloneConfig(parsed.config||parsed)}];
+      const mode=$('profileImportMode').value;
+      if(mode==='replace'){
+        if(incoming.length!==1)throw Error('Zum Ersetzen bitte eine einzelne Konfiguration auswählen.');
+        if(!confirm('Aktuelles Glücksrad durch den Import ersetzen?'))return;
+        config=incoming[0].config;activeProfile().config=cloneConfig(config);
+      }else{
+        if(profiles.entries.length+incoming.length>100)throw Error('Maximal 100 Glücksräder möglich.');
+        let newest;
+        for(const item of incoming){
+          newest=newProfileId();profiles.entries.push({id:newest,name:item.name||'Import',config:item.config});
+        }
+        profiles.activeId=newest;config=cloneConfig(activeProfile().config);
+      }
+      rotation=0;wheel.style.transform='rotate(0deg)';clearWinnerHighlight();render();save();profileStatus();
+      toast(incoming.length+' Glücksrad-Konfiguration(en) importiert.');
+    }catch(err){toast('Import fehlgeschlagen: '+err.message);}
   });
   function openIconPicker(id){
     currentIconTarget=id;lastFocusedElement=document.activeElement;
