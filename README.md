@@ -15,7 +15,7 @@ Eine statische, responsive Glücksrad-Web-App im Casino-Noir-Stil. Das Rad beste
 - Vollständiger durchsuchbarer Google-Material-Symbols-Rounded-Katalog (mehr als 4.300 Namen), sortiert, vollständig durchsuchbar und per virtualisiertem Raster ohne manuelle Seitennavigation scrollbar; kuratierte Schnellkategorien und verifizierte Eingabe von Symbolnamen. Freie Suchbegriffe wie „shirt“, „T-Shirt“ und „Kleidung“ liefern das offizielle Symbol `apparel`; `shirt` selbst ist kein offizieller Google-Symbolname. Der Katalog wird von Googles offizieller Codepoints-Liste geladen und sieben Tage lokal zwischengespeichert. Beim allerersten Offline-Start stehen die Favoriten zur Verfügung.
 - Live-SVG, anpassbar an die Segmentanzahl: 1–12 volle Inhalte; 13–20 kompakte Inhalte; 21–72 Nummern; darüber reine Segmente. Vollständige Werte bleiben im Editor und beim Gewinnergebnis vorhanden.
 - Nur die goldene Radmitte löst die Drehung aus. Der Zeiger sitzt an einem festen Gelenk und federt bei Segmentkontakten sichtbar mit.
-- Gewinnerermittlung per zufälliger Auswahl, unabhängig von der Drehkraft; die Animation endet geometrisch beim ausgewählten Sektor.
+- Standardmäßig entsteht der Gewinner erst durch mechanisches Auslaufen; optional bleibt eine ausdrücklich gekennzeichnete, vorab gewichtete Ziehung verfügbar.
 - Vertikaler, schnell pendelnder Drehkraftbalken (0–100 % in 0,8 Sekunden nach oben und in 0,8 Sekunden nach unten). Nur der Klick auf die goldene Radmitte übernimmt die momentane Kraft. Je nach Kraft macht das Rad 2–10 volle Umdrehungen und läuft unterschiedlich lang aus.
 - Die einstellbare maximale Drehdauer beträgt 3–30 Sekunden; bei schwacher Kraft ist die tatsächliche Drehdauer kürzer. Optionaler synthetisierter Klicksound und vier Farbpaletten.
 - Präsentationsmodus ohne Editor.
@@ -128,17 +128,23 @@ Der gesamte aktuelle Rounded-Codepoint-Katalog bleibt durchsuchbar. Zusätzlich 
 
 Die Funktionen sind in der modularen und der eigenständigen HTML-Version enthalten. Die automatisierte Qualitätssicherung wird unter GitHub Actions dokumentiert.
 
-### Gewichtung
+### Zwei klar getrennte Drehmechaniken
 
-Jedes Segment erhält ein Gewicht zwischen 0 und 1.000.000 (Standard 1). Die Gewinnchance beträgt Gewicht / Summe aller Gewichte. Bei Gewichten 1, 3 und 0 ergeben sich 25 %, 75 % und 0 %. Das Rad kann entweder gleich große Segmente zeigen oder die Fläche proportional zur Chance aufteilen. Im gleich großen Modus gelten **nicht automatisch** gleiche Gewinnchancen. Der Editor zeigt die tatsächlichen Prozentwerte. Bei Summe 0 wird kein Spin gestartet.
+**Echter Auslauf (Physik, Standard):** Das Rad erhält einen geschwindigkeitsabhängigen Startimpuls. Ein numerisches Bewegungsmodell berücksichtigt Lagerreibung, Luftwiderstand und den Energieverlust bei Segmentkontakten. Langsame Kontakte können das Rad kurz zurückprallen lassen. Der Gewinner wird **erst nach vollständigem Stillstand** aus der tatsächlichen Winkelposition ermittelt. Es gibt kein vorab ausgewähltes Ergebnis, kein Zielsegment und keinen künstlichen Korrektursprung. Die Dauer kann von der gewählten Drehträgheit abweichen; der Zahlenwert ist in diesem Modus nur ein Richtwert.
 
-Die Auswahl erfolgt mit dem vorhandenen kryptografisch basierten Zufallswert. Drehkraft und Zeitdauer beeinflussen nicht die Gewichtung. Das Ziel des Rads wird auf den geometrischen Mittelpunkt des ausgewählten Sektors ausgerichtet. Ein Nullgewichtfeld bleibt sichtbar, kann aber nicht gewinnen.
+Das Modell ist eine **physikalisch motivierte Näherung**, kein messtechnisch kalibrierter digitaler Zwilling eines bestimmten Glücksrads. Die Resultate sind von Startimpuls, Winkel, Reibung und Zeigerkontakten abhängig. Die Trefferpositionen verteilen sich über die Sektoren und sind nicht auf die Mitte festgelegt.
 
-### Radmechanik
+- Bei **gleich großen Sektoren** sind die Chancen im mechanischen Modus näherungsweise gleich, auch wenn unterschiedliche Gewichte gespeichert sind.
+- Bei **proportionalen Sektoren** legen die Gewichte die sichtbaren Winkelgrößen fest. Ein Segmentgewicht von 0 erzeugt keine Fläche. Die tatsächlichen Trefferhäufigkeiten können wegen mechanischer Wechselwirkungen von den geometrischen Anteilen abweichen. Die im Editor angezeigten Prozentwerte sind deshalb mit „≈“ gekennzeichnet.
+- Ein Rad mit lauter Gewichten 0 kann im gleich großen mechanischen Modus trotzdem drehen. Der physikalische Auslauf hängt ausschließlich von der dargestellten Geometrie ab.
 
-Die zeitbasierte Auslaufkurve enthält eine Beschleunigungsphase und eine kontinuierliche Geschwindigkeitsabnahme bis zum Ziel. Die vorhandene Auslaufspannung bestimmt die Charakteristik der Kurve. Der Zeiger federt nach Segmentkontakten als gedämpfter Oszillator; ein hoher Kontakt-Takt wird begrenzt, damit die Animation bei vielen Segmenten nicht überlastet wird. Federung, Dämpfung und Ausschlag lassen sich einstellen. Vier originale Web-Audio-Klickcharaktere stehen zur Wahl: Casino, mechanisch, Ratsche und Metall. Der Button **Zeigerfederung vorführen** bewegt den Zeiger am echten Rad, während das Konfigurationsmenü geöffnet bleibt; die Unschärfe im Hintergrund wird dafür kurz aufgehoben. Die SVG-Rotation erfolgt um ein festes mechanisches Gelenk am oberen Radrand. Bei reduzierter Bewegung wird die Zeigeranimation unterdrückt und die Vorschau zeigt einen Hinweis. Bei Bewegungsintensität 0 % bleibt der Zeiger ebenfalls unbewegt.
+**Gezielte Gewichtung (alternativ):** Hier bleibt die bisherige exakte Ziehung erhalten. Gewicht 1, 3 und 0 bedeutet exakt 25 %, 75 % und 0 %, unabhängig von der Sektorgröße. Der kryptografische Zufallswert bestimmt den Gewinner *vorab*. Anschließend wird die Drehung zur Mitte dieses Gewinnersegments animiert. Das ist bewusst **keine freie Physiksimulation**, sondern die ausdrücklich gewählte Option für vorgegebene Gewinnchancen. Bei Gesamtgewicht 0 kann keine gewichtete Ziehung starten.
 
-Dieses Bewegungsmodell ist **zielgesteuert**, nicht das freie Auslaufen eines zufälligen starren Körpers. Nur dadurch kann ein vorher anhand expliziter Gewichte gezogenes Ergebnis exakt und ohne sichtbaren Korrektursprung dargestellt werden.
+Das Umschalten unter **Spiel & Darstellung → Drehmechanik** und der ausgewählte Modus werden im jeweiligen Profil und im JSON-Export gespeichert. Frühere Konfigurationen ohne diese Angabe werden zum Standard „Echter Auslauf (Physik)“ migriert; ihre Gewichte und übrigen Einstellungen bleiben erhalten.
+
+### Zeiger und Klickgeräusche
+
+Der sichtbare Zeiger schwingt bei Segmentkontakten um ein festes SVG-Gelenk. Federung, Dämpfung und Ausschlag sind einstellbar. Vier Web-Audio-Klickcharaktere sind verfügbar: Casino, mechanisch, Ratsche und Metall. Über **Zeigerfederung vorführen** lässt sich die Bewegung bei geöffnetem Editor ohne Hintergrundunschärfe prüfen. Bei aktivierter Systemeinstellung „Bewegung reduzieren“ wird die lange Drehbewegung übersprungen und die Zeigeranimation unterdrückt; die physikalische Simulation bestimmt das Ergebnis weiterhin.
 
 ### Mehrere Glücksräder
 
