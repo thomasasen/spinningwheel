@@ -148,6 +148,12 @@ Ein langsamer Kontakt darf das Rad weiterhin ein kleines Stück zurückdrücken.
 
 **Wichtig:** Die feinen Rastabschnitte sind mechanische Unterteilungen, **keine zusätzlichen Gewinner**. Jedes konfigurierte Hauptsegment bleibt ein einziges Gewinnfeld. Die Gewinnwahrscheinlichkeiten des gewichteten Modus ändern sich nicht, und auch die Anzahl der Gewinner im Physikmodus bleibt gleich.
 
+### Einraststärke und die Frage nach dem letzten Klick
+
+Der Regler **Einraststärke** (0–100 %, Standard 50 %) beeinflusst im Modus **Echter Auslauf (Physik)** den Widerstand der letzten Rastpunkte. **Sanft** bedeutet eine kleinere mechanische Energiebarriere; das langsam drehende Rad kann damit leichter noch den nächsten Punkt überwinden. **Kräftig** erhöht die Energiebarriere und führt bei identischer Restgeschwindigkeit eher zu einem kleinen gedämpften Rückprall statt zu einem weiteren Rastschritt. Zwischenwerte ermöglichen das typische „reicht es noch für einen Klick?“.
+
+Jeder Kontakt prüft die tatsächlich vorhandene Winkelgeschwindigkeit und reduziert die Rotationsenergie durch die modellierte Zeigermechanik. Es wird **weder ein Gewinner vorab ausgesucht noch eine zusätzliche Rastbewegung künstlich ausgelöst**. Ein Wert von 0 % garantiert ebenso wenig einen weiteren Klick wie 100 % ein bestimmtes Gewinnerfeld. Stärke und Rastpunktgeometrie wirken zusammen mit Startimpuls, Reibung und der bestehenden Zeigerfederung. Nach einem Rückprall wird die Rückwärtsbewegung weiterhin stärker und kontinuierlich gedämpft; das Ergebnis erscheint erst nach nachgewiesenem Stillstand. Die Einstellung wird mit jedem Profil im Browser und bei JSON-Export/-Import gespeichert; ältere Profile erhalten den Standardwert 50 %. Der Modus **Gezielte Gewichtung** ignoriert diesen Regler, damit seine exakten Gewinnwahrscheinlichkeiten unverändert bleiben.
+
 ### Zeiger und Klickgeräusche
 
 Der sichtbare Zeiger schwingt bei Segmentkontakten um ein festes SVG-Gelenk. Federung, Dämpfung und Ausschlag sind einstellbar. Vier Web-Audio-Klickcharaktere sind verfügbar: Casino, mechanisch, Ratsche und Metall. Über **Zeigerfederung vorführen** lässt sich die Bewegung bei geöffnetem Editor ohne Hintergrundunschärfe prüfen. Bei aktivierter Systemeinstellung „Bewegung reduzieren“ wird die lange Drehbewegung übersprungen und die Zeigeranimation unterdrückt; die physikalische Simulation bestimmt das Ergebnis weiterhin.

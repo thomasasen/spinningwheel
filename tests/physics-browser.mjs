@@ -118,7 +118,7 @@ assert.ok(physics.buildPegAngles(wedges(Array(5000).fill(1)),7).length<=336,
 
 // A near-rest collision should cause only a short, smoothly damped backward
 // excursion and not an extended reverse spin or a second strike of that tooth.
-const rebound=physics.create({geometry:geo,subdivisions:7,power:.5,random:seeded(82)});
+const rebound=physics.create({geometry:geo,subdivisions:7,ratchetStrength:90,power:.5,random:seeded(82)});
 rebound.angle=0;
 rebound.velocity=16;
 let impactAt=null,reverseDetected=false;
@@ -138,6 +138,38 @@ assert.equal(rebound.contacts,1,'a single tooth must not be struck repeatedly on
 assert.ok(rebound.restSeconds>=physics.REST_HOLD_SECONDS-1e-3);
 console.log('PASS: real subsegment teeth, bounded density and quickly damped reverse rebound.');
 
+// The same physical approach either clears a tooth or rebounds depending on
+// the configured detent resistance. No winner or target is involved.
+function approachTooth(ratchetStrength){
+  const state=physics.create({geometry:geo,subdivisions:7,ratchetStrength,random:seeded(136)});
+  const contact=state.contactAngles.find(angle=>angle>10&&angle<350);
+  assert.ok(Number.isFinite(contact));
+  state.angle=contact-.035;
+  state.velocity=17;
+  physics.advance(state,1/120);
+  assert.equal(state.contacts,1,'one tooth should be hit by the test approach');
+  return state;
+}
+const soft=approachTooth(0);
+const firm=approachTooth(100);
+assert.ok(soft.velocity>0,'soft detent must allow a low-energy tooth crossing');
+assert.ok(firm.velocity<0,'firm detent must rebound for the same energy');
+const passedTooth=soft.angle,heldAtTooth=firm.angle;
+physics.finish(soft);
+physics.finish(firm);
+assert.ok(soft.done&&firm.done,'both settings must settle naturally');
+assert.ok(soft.angle>firm.angle+.2,'soft setting should advance farther than a firm detent');
+assert.ok(soft.contacts>=firm.contacts,'soft setting can cross more teeth');
+assert.ok(firm.elapsed<3,'firm setting must settle rapidly after a last contact');
+for(const value of [0,25,50,75,100]){
+  const state=physics.create({geometry:geo,ratchetStrength:value,power:.75,random:seeded(27)});
+  physics.finish(state);
+  assert.ok(state.done&&state.restSeconds>=physics.REST_HOLD_SECONDS-1e-3,
+    'detent settings must all respect the sustained-rest rule');
+  assert.ok(Number.isFinite(state.angle));
+}
+console.log('PASS: detent energy controls next-tooth crossing without targeting a winner.');
+
 const browser=await chromium.launch({headless:true});
 const page=await browser.newPage({viewport:{width:1280,height:900},reducedMotion:'no-preference'});
 const errors=[];
@@ -148,6 +180,7 @@ try{
   await page.waitForFunction(()=>Boolean(window.__casinoNoirDebug));
   assert.equal(await page.locator('#spinMode').inputValue(),'physical');
   assert.equal(await page.locator('#subdivisions').inputValue(),'7');
+  assert.equal(await page.locator('#ratchetStrength').inputValue(),'50');
   assert.equal(await page.locator('[data-ratchet-tooth]').count(),56);
   await page.locator('#toggleEditor').click();
   await page.locator('#subdivisions').evaluate(input=>{
@@ -156,6 +189,12 @@ try{
   });
   assert.equal(await page.locator('[data-ratchet-tooth]').count(),32);
   assert.equal(await page.evaluate(()=>window.__casinoNoirDebug.config.subdivisions),4);
+  await page.locator('#ratchetStrength').evaluate(input=>{
+    input.value='25';
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+  });
+  assert.equal(await page.evaluate(()=>window.__casinoNoirDebug.config.ratchetStrength),25);
+  assert.equal(await page.locator('#ratchetStrengthLabel').textContent(),'25 %');
   await page.locator('#subdivisions').evaluate(input=>{
     input.value='7';
     input.dispatchEvent(new Event('input',{bubbles:true}));
@@ -192,9 +231,11 @@ try{
   assert.equal(result.controlledSelections,before,'physical mode must never invoke controlled winner selection');
   assert.ok(result.contacts>0);
   assert.equal(result.restingVelocity,0);
+  assert.equal(await page.evaluate(()=>window.__casinoNoirDebug.lastRatchetStrength),25);
   assert.ok(result.offset<result.size);
   await page.locator('#toggleEditor').click();
   await page.locator('#spinMode').selectOption('weighted');
+  assert.equal(await page.locator('#ratchetStrength').isDisabled(),true,'detent must be inactive for weighted results');
   assert.match(await page.locator('#spinModeHint').textContent(),/gesteuerte Darstellung/);
   await page.locator('#closeEditor').click();
   await page.locator('#spinHub').click();
@@ -210,6 +251,8 @@ try{
   await page.reload({waitUntil:'domcontentloaded'});
   assert.equal(await page.evaluate(()=>window.__casinoNoirDebug.config.spinMode),'physical',
     'returning to real physics must persist');
+  assert.equal(await page.locator('#ratchetStrength').inputValue(),'25','detent strength must persist');
+  assert.equal(await page.locator('#ratchetStrength').isDisabled(),false,'detent must reactivate in physics mode');
 
   assert.deepEqual(errors,[]);
   console.log('PASS: Chromium physical result follows wheel angle; weighted mode remains explicit.');
