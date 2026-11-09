@@ -1700,8 +1700,8 @@ body.editor-open{overflow:hidden}
     // Multiple closely spaced impacts accumulate with a bounded velocity.
     const velocity=Math.abs(speed);
     const factor=.18+.82/(1+velocity/480);
-    const kick=310*(config.pointerIntensity/100)*factor;
-    pointerVelocity=Math.max(-315,Math.min(155,pointerVelocity-kick));
+    const kick=440*(config.pointerIntensity/100)*factor;
+    pointerVelocity=Math.max(-360,Math.min(155,pointerVelocity-kick));
     pointerContactCount++;
     if(!pointerRaf){
       pointerTime=performance.now();
