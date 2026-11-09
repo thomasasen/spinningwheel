@@ -1,0 +1,33 @@
+name: Rebuild Casino Noir standalone
+on:
+  push:
+    branches: [main]
+    paths:
+      - index.html
+      - styles.css
+      - wheel-physics.js
+      - app.js
+      - icon-search-index.json
+      - scripts/build-standalone.mjs
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate standalone HTML
+        run: node scripts/build-standalone.mjs
+      - name: Commit bundle if it changed
+        run: |
+          if ! git diff --quiet -- casino-noir-standalone.html; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add casino-noir-standalone.html
+            git commit -m "build: refresh Casino Noir standalone HTML"
+            git push
+          fi
