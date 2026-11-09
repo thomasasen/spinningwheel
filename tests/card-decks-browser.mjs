@@ -69,8 +69,24 @@ try{
     'the rotating 3D container must not have flattening filters');
   assert.ok(cardFrontActuallyFacingViewer.frontInFront,
     'the drawn card front must be visibly facing the viewer, not the mirrored back: '+JSON.stringify(cardFrontActuallyFacingViewer));
-  const cardIcon=await page.locator('#cardFront .card-face-icon').innerText();
-  assert.ok(cardIcon&&cardIcon!=='favorite'&&cardIcon!=='favorite_border','card must show the symbol glyph, not its raw catalogue name');
+  const iconAppearance=await page.locator('#cardFront .card-face-icon').evaluate(el=>{
+    const style=getComputedStyle(el);
+    const text=el.textContent;
+    const rect=el.getBoundingClientRect();
+    const base={text,fontFamily:style.fontFamily,color:style.color,width:rect.width,height:rect.height};
+    // Force the webfont rendering branch even when external requests are blocked
+    // so CSS regressions are detected independently of Google Fonts availability.
+    el.classList.add('material-symbols-rounded');
+    base.materialFontFamily=getComputedStyle(el).fontFamily;
+    el.classList.remove('material-symbols-rounded');
+    return base;
+  });
+  assert.equal(iconAppearance.text,'♥','offline fallback must represent the selected favorite icon');
+  assert.ok(iconAppearance.width>0&&iconAppearance.height>0,'card icon must occupy visible space');
+  assert.match(iconAppearance.materialFontFamily,/Material Symbols Rounded/i,
+    'codepoint icons must use Material Symbols Rounded, not Georgia');
+  assert.ok(!/Georgia/i.test(iconAppearance.materialFontFamily),
+    'the card icon must not override the icon font with the fallback font');
   let remaining=await page.evaluate(()=>JSON.parse(localStorage.getItem('casino-noir-card-decks-v1')).decks[0].state.remaining);
   assert.deepEqual(Object.values(remaining),[2],'double click must consume exactly one copy');
   await page.reload();
