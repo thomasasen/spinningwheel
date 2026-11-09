@@ -44,7 +44,7 @@ async def main():
             for winner in sorted({0,n//2,n-1}):
                 await check(page,n,winner)
                 if n==8 and winner==4:
-                    await page.screenshot(path='/mnt/data/casino-noir-gewinner-oben.png',full_page=True)
+                    await page.screenshot(path=str(BASE/'casino-noir-gewinner-oben.png'),full_page=True)
             print(f'{n} segments: all selected winning labels upright at 12 o\'clock')
         assert not errors,errors
         await browser.close()
