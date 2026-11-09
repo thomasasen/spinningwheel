@@ -338,6 +338,7 @@
     saveOk=ok;
     $('saveIndicator').textContent=ok?'● Lokal gespeichert':'⚠ Speicherung nicht möglich';
     $('saveIndicator').style.color=ok?'':'#ffb4a0';
+    const inner=$('profileSaveStatus');if(inner){inner.textContent=ok?'● Alle Änderungen lokal gespeichert':'⚠ Änderungen konnten nicht gespeichert werden. Bitte JSON exportieren.';inner.classList.toggle('is-warning',!ok);}
   }
   function persist(next=workspace){
     try{
@@ -593,7 +594,7 @@
     } else {
       config.segments.forEach((s,i)=>{
         const sector=layout[i];if(sector.span<1e-10||(config.proportional&&s.weight===0))return;
-        const path=sector.span>=359.999999?e('circle',{cx:320,cy:320,r:267,fill:s.color},wheelSurface):e('path',{d:wedgePath(sector.center-sector.span/2,sector.center+sector.span/2,267),fill:s.color,stroke:'#c69456','stroke-width':n>72?.6:n>26?1:1.9,'stroke-linejoin':'round'},wheelSurface);
+        const path=sector.span>=359.999999?e('circle',{cx:320,cy:320,r:267,fill:s.color},wheelSurface):e('path',{d:wedgePath(sector.center-sector.span/2,sector.center+sector.span/2,267),fill:s.color,'fill-opacity':s.weight===0&&weightTotal>0&&!config.proportional?.25:1,stroke:'#c69456','stroke-width':n>72?.6:n>26?1:1.9,'stroke-linejoin':'round'},wheelSurface);
         path.appendChild(e('title',{},null));path.lastChild.textContent=`Segment ${i+1}: ${safeText(s.label)} · ${(100*s.weight/(weightTotal||1)).toFixed(2)} %`;
       });
     }
@@ -657,7 +658,7 @@
     e('circle',{cx:320,cy:320,r:47,fill:'#1d1013',stroke:'#6b3e20','stroke-width':1.2},wheel);
     wheel.style.transform=`rotate(${rotation}deg)`;
     $('segmentCount').textContent=n.toLocaleString('de-DE');
-    $('stageCount').textContent=String(n).padStart(2,'0')+' SEGMENTE';
+    $('stageCount').textContent=String(n).padStart(2,'0')+' SEGMENTE'+(config.proportional?' · PROPORTIONAL':config.segments.some(s=>s.weight!==config.segments[0]?.weight)?' · GEWICHTETE CHANCEN':'');
     $('spinHub').disabled=isSpinning||!hasEligibleSegments();
     const summary=$('probabilitySummary');if(summary){const count=config.segments.filter(item=>item.weight>0).length;summary.textContent=count?`${count} von ${n} Segmenten gewinnberechtigt · Summe der Gewichte: ${activeWeightTotal().toLocaleString('de-DE')}`:'Keine Ziehung möglich: Alle Gewichte sind 0.';summary.classList.toggle('is-warning',!count);}
     const notice=$('densityNotice');
@@ -1459,6 +1460,7 @@
   window.__casinoNoirDebug={get config(){return config;},get rotation(){return rotation;},get isSpinning(){return isSpinning;},get power(){return powerLevel;},get powerPeriodMs(){return POWER_PERIOD_MS;},get highlightedWinner(){return highlightedWinner;},showWinnerHighlight,playWinnerSound,get spinEase(){return spinEase;},motionProgress,segmentLayout,drawWeightedWinner,get pointerAngle(){return pointerAngle;},get iconFontReady(){return iconFontReady;},get iconCatalogReady(){return fullCatalogReady;},get iconCatalogCount(){return ICONS.length;},get iconSearchMetadataReady(){return iconSearchReady;},get iconSearchMetadataCount(){return ICON_SEARCH_TAGS.size;},get iconMatches(){return iconMatchCount;},get iconMatchingNames(){return [...iconMatches];},get iconCodepointMap(){return Object.fromEntries(ICON_CODEPOINTS);},loadIconCatalog,lastWinner:null,lastRotation:0,spinning:false,stop(){cancelAnimationFrame(raf);}};
   restoreIconCatalog();
   render();
+  persist();
   loadIconCatalog();
   // Material Symbols wird offiziell als Webfont über Google Fonts bezogen.
   // Falls Offline-/Privacy-Einstellungen das Laden verhindern, bleiben hochwertige
