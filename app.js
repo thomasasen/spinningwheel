@@ -706,7 +706,7 @@
     downloadJson(all,'casino-noir-alle-'+new Date().toISOString().slice(0,10)+'.json');
   });
   profileStatus();
-  function mutate(){clearWinnerHighlight();drawWheel();renderSegments();save();}
+  function mutate(){clearWinnerHighlight();drawWheel();save();}
   function toast(message){const n=$('toast');n.textContent=message;n.classList.add('is-visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>n.classList.remove('is-visible'),2700);}
   function lockEditor(locked){
     $('addSegment').disabled=locked;
@@ -745,7 +745,7 @@
     if(field==='weight'){
       const segment=config.segments.find(x=>x.id===el.closest('.segment-card')?.dataset.id);
       if(!segment)return;
-      try{segment.weight=validWeight(el.value);mutate();}catch(error){toast(error.message);renderSegments();}
+      try{segment.weight=validWeight(el.value);mutate();renderSegments();}catch(error){toast(error.message);renderSegments();}
       return;
     }
     if(field!=='showLabel'&&field!=='showIcon')return;
