@@ -271,7 +271,8 @@
         id:(()=>{const input=s?.id;const id=typeof input==='string'&&/^[a-z0-9-]{1,100}$/i.test(input)&&!ids.has(input)?input:makeId();ids.add(id);return id;})(), label: String(s?.label ?? '').slice(0,80),
         icon:validIcon(normalizeIconName(s?.icon)) ? normalizeIconName(s.icon) : 'star',
         showLabel:s?.showLabel !== false, showIcon:s?.showIcon !== false,
-        color:validColor(s?.color) ? s.color : PALETTES[palette][i%2], weight:validWeight(s?.weight ?? 1)
+        color:validColor(s?.color) ? s.color : PALETTES[palette][i%2], weight:validWeight(s?.weight ?? 1),
+        action:s?.action==='deck'?'deck':'result',deckId:typeof s?.deckId==='string'&&/^[a-z0-9_-]{1,100}$/i.test(s.deckId)?s.deckId:''
       }))
     };
   }
@@ -304,13 +305,14 @@
     select.value=profiles.activeId;
   }
   function switchProfile(id){
-    if(isSpinning||id===profiles.activeId)return;
+    if(isSpinning||decks?.isBlocking()||id===profiles.activeId)return;
     const target=profiles.entries.find(p=>p.id===id);
     if(!target)return;
     resetPointer();config=cloneConfig(target.config);profiles.activeId=id;rotation=0;wheel.style.transform='rotate(0deg)';
     clearWinnerHighlight();render();save();profileStatus();
   }
   let isSpinning=false, rotation=0, iconFontReady=false, currentIconTarget=null;
+  let decks=null;
   let highlightedWinner=null;
   let activeCategory='Alle', lastFocusedElement=null, saveOk=true, audioContext=null, lastTickAt=0, lastTickSector=-1, toastTimer=0;
   const svg=$('wheelSvg'), wheel=$('rotatingWheel'), modal=$('iconModal'), assembly=$('wheelAssembly');
@@ -634,7 +636,7 @@
     wheel.style.transform=`rotate(${rotation}deg)`;
     $('segmentCount').textContent=n.toLocaleString('de-DE');
     $('stageCount').textContent=String(n).padStart(2,'0')+' SEGMENTE'+(config.sizeMode==='proportional'?' · FLÄCHE = CHANCE':' · GLEICHE FLÄCHEN'+(config.segments.some(s=>s.weight!==config.segments[0]?.weight)?' · GEWICHTETE CHANCEN':''));
-    $('spinHub').disabled=isSpinning||n===0;
+    $('spinHub').disabled=isSpinning||n===0||Boolean(decks?.isBlocking());
     const notice=$('densityNotice');
     if(n>72)notice.textContent='Bei mehr als 72 Segmenten zeigt das Rad nur die Farbsegmente. Inhalte bleiben in der Liste und im Ergebnis erhalten.';
     else if(n>20)notice.textContent='Ab 21 Segmenten verwendet das Rad Nummern statt Symbolen und Text, um das Design lesbar zu halten.';
@@ -665,6 +667,10 @@
         <button class="icon-action" type="button" data-action="up" aria-label="Segment ${i+1} nach oben" title="Nach oben" ${i===0?'disabled':''}>↑</button>
         <button class="icon-action" type="button" data-action="down" aria-label="Segment ${i+1} nach unten" title="Nach unten" ${i===config.segments.length-1?'disabled':''}>↓</button>
         <button class="icon-action" type="button" data-action="duplicate" aria-label="Segment ${i+1} duplizieren" title="Duplizieren">⧉</button>
+      </div>
+      <div class="segment-action-row">
+        <label>Aktion nach Gewinn<select data-field="action" aria-label="Aktion von Segment ${i+1}"><option value="result" ${s.action!=='deck'?'selected':''}>Ergebnis anzeigen</option><option value="deck" ${s.action==='deck'?'selected':''}>Karte aus Deck ziehen</option></select></label>
+        ${s.action==='deck'?'<label>Kartendeck auswählen<select data-field="deckId" aria-label="Kartendeck für Segment '+(i+1)+'"><option value="">Bitte wählen …</option>'+((decks?.availableDecks()||[]).map(d=>'<option value="'+escapeHtml(d.id)+'" '+(d.id===s.deckId?'selected':'')+'>'+escapeHtml(d.name)+'</option>').join(''))+(s.deckId&&!decks?.hasDeck(s.deckId)?'<option selected value="'+escapeHtml(s.deckId)+'">⚠ Deck fehlt</option>':'')+'</select></label><button class="btn btn-quiet" type="button" data-action="newDeck">＋ Neues Deck</button>':''}
       </div>
     </div>`).join('');
     if(isSpinning) lockEditor(true);
@@ -811,6 +817,13 @@
   list.addEventListener('change',ev=>{
     if(isSpinning)return;
     const el=ev.target,field=el.dataset.field;
+    if(field==='action'||field==='deckId'){
+      const segment=config.segments.find(x=>x.id===el.closest('.segment-card')?.dataset.id);
+      if(!segment)return;
+      if(field==='action'){segment.action=el.value==='deck'?'deck':'result';if(segment.action==='result')segment.deckId='';}
+      else segment.deckId=el.value;
+      renderSegments();save();return;
+    }
     if(field==='weight'){
       const segment=config.segments.find(x=>x.id===el.closest('.segment-card')?.dataset.id);
       if(!segment)return;
@@ -829,6 +842,11 @@
     const action=btn.dataset.action;
     if(action==='drag')return; // Pointer/keyboard handlers own the reorder grip.
     if(action==='icon'){openIconPicker(card.dataset.id);return;}
+    if(action==='newDeck'){
+      const id=decks?.createFromSegment();
+      if(id){config.segments[idx].action='deck';config.segments[idx].deckId=id;renderSegments();save();}
+      return;
+    }
     if(action==='delete'){config.segments.splice(idx,1);}
     else if(action==='duplicate'){const clone={...config.segments[idx],id:makeId()};config.segments.splice(idx+1,0,clone);}
     else if(action==='up'&&idx>0){[config.segments[idx],config.segments[idx-1]]=[config.segments[idx-1],config.segments[idx]];}
@@ -1007,7 +1025,7 @@
     if(moveSegment(from,to,{focus:true}))toast('Segmentreihenfolge aktualisiert.');
   });
   $('addSegment').addEventListener('click',()=>{
-    if(isSpinning)return;
+    if(isSpinning||decks?.isBlocking())return;
     const n=config.segments.length;
     config.segments.push({id:makeId(),label:`Segment ${n+1}`,icon:'star',showLabel:true,showIcon:true,color:PALETTES[config.palette][n%2],weight:1});
     renderSegments();mutate();list.scrollTop=list.scrollHeight;
