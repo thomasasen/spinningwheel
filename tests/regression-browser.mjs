@@ -29,6 +29,7 @@ try{
   assert.equal(await page.locator('#segmentList input[data-field="weight"]').inputValue(),'1','negative weight must be rejected');
   const bad={version:2,segments:[{label:'Invalid',weight:-5}]};
   await page.locator('#importFile').setInputFiles({name:'invalid.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(bad))});
+  await page.waitForFunction(()=>document.querySelector('#toast')?.textContent?.includes('Import fehlgeschlagen'),null,{timeout:4000});
   assert.match(await page.locator('#toast').innerText(),/Import fehlgeschlagen/);
   assert.equal(await page.locator('#segmentList .segment-card').count(),1,'failed import cannot change current config');
   // 100 segments stress geometry and rendering. All visual contents stay in the editor.
