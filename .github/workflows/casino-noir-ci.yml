@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: '22'
       - name: JavaScript syntax
-        run: node --check app.js && node --check card-engine.js && node --check deck-ui.js && node --check wheel-physics.js && node --check tests/weighted-browser.mjs && node --check tests/regression-browser.mjs && node --check tests/pointer-browser.mjs && node --check tests/physics-browser.mjs
+        run: node --check app.js && node --check card-engine.js && node --check deck-ui.js && node --check wheel-physics.js && node --check tests/weighted-browser.mjs && node --check tests/regression-browser.mjs && node --check tests/pointer-browser.mjs && node --check tests/card-engine.mjs && node --check tests/card-decks-browser.mjs && node --check tests/physics-browser.mjs
       - name: Deterministic card probability and persistence tests
         run: node tests/card-engine.mjs
       - name: Build current standalone from modular sources
