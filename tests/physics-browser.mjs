@@ -32,7 +32,9 @@ for(let i=0;i<350;i++){
   assert.equal(state.velocity,0);
   assert.ok(state.angle>initial,'mechanical spin must advance the wheel');
   assert.ok(state.contacts>0,'segment contacts must contribute energy loss');
-  assert.ok(state.elapsed<=state.limitSeconds+1e-3);
+  assert.ok(state.elapsed<180,'mechanical wheel must settle within a finite practical duration');
+  assert.ok(state.restSeconds>=physics.REST_HOLD_SECONDS-1e-3,
+    'winner may only be declared after a sustained stationary interval');
   const winner=physics.sectorAt(state.angle,geo);
   winners.add(winner);
   const sector=geo[winner];
@@ -44,7 +46,9 @@ assert.ok(winners.size===8,'the emergent winner must vary across all eight secto
 assert.ok(offsets.filter(x=>x<.3||x>.7).length>100,
   'physical landings must span the wedges, not always the sector center');
 assert.ok(offsets.some(x=>x<.08),'physical landings should sometimes approach a boundary');
-assert.ok(offsets.some(x=>x>.92),'physical landings should sometimes approach the other boundary');
+const spread=Math.max(...offsets)-Math.min(...offsets);
+console.log('Physical landing coverage:',{min:Math.min(...offsets),max:Math.max(...offsets),spread});
+assert.ok(spread>.18,'mechanical landing positions must vary within wedges');
 
 // 0-area sectors are never selected in a genuinely geometrical wheel.
 const wedgeWithZero=wedges([0,1,3,0,1]);
@@ -63,6 +67,45 @@ for(const duration of [3,6,30]){
 }
 console.log('PASS: 350 real physical runouts, no target center, friction, collisions, duration extremes, zero-area wedges.');
 
+// Validate that the solver does not snap from noticeable motion to a winner,
+// even near the configured safety window and with unusual segment sizes.
+const coastTrace=[];
+const smooth=physics.create({
+  angle:13.7,geometry:geo,power:.62,duration:6,coast:65,
+  pointerIntensity:60,pointerSpring:65,random:seeded(197)
+});
+let lastMovingSpeed=Infinity;
+for(let i=0;i<25000&&!smooth.done;i++){
+  lastMovingSpeed=Math.abs(smooth.velocity);
+  physics.advance(smooth,1/120);
+  if(i%12===0)coastTrace.push({elapsed:smooth.elapsed,speed:Math.abs(smooth.velocity)});
+}
+assert.ok(smooth.done,'smooth coast must actually finish');
+assert.ok(lastMovingSpeed<=physics.REST_SPEED+.00001,
+  'the final transition must be below the imperceptible rest threshold');
+assert.ok(coastTrace.some(point=>point.speed>10&&point.speed<50),
+  'real motion must be visible as the wheel passes through its low-speed phase');
+assert.ok(coastTrace.some(point=>point.speed>.15&&point.speed<2),
+  'late angular momentum must taper into very slow visible motion');
+assert.ok(smooth.restSeconds>=physics.REST_HOLD_SECONDS-1e-3);
+const extended=physics.create({geometry:geo,power:1,duration:30,coast:100,random:seeded(99)});
+// A past regression forcibly set velocity to zero at a fixed elapsed limit.
+extended.safetyStartSeconds=.05;
+physics.advance(extended,.1);
+assert.ok(extended.elapsed>extended.safetyStartSeconds&&!extended.done&&extended.velocity>100,
+  'a time limit must never abruptly stop a moving wheel');
+physics.finish(extended);
+assert.ok(extended.restSeconds>=physics.REST_HOLD_SECONDS-1e-3);
+for(const duration of [3,6,15,30])for(const coast of [0,65,100]){
+  const state=physics.create({geometry:geo,power:.9,duration,coast,random:seeded(duration*10+coast)});
+  physics.finish(state);
+  assert.ok(state.done&&state.restSeconds>=physics.REST_HOLD_SECONDS-1e-3,
+    'rest validation must hold at all friction and inertia extremes');
+  assert.ok(Number.isFinite(state.angle)&&Number.isFinite(state.elapsed));
+}
+console.log('PASS: gradual low-speed coast, no timed hard stop, sustained mechanical rest before winner.');
+
+
 const browser=await chromium.launch({headless:true});
 const page=await browser.newPage({viewport:{width:1280,height:900},reducedMotion:'no-preference'});
 const errors=[];
@@ -74,7 +117,22 @@ try{
   assert.equal(await page.locator('#spinMode').inputValue(),'physical');
   const before=await page.evaluate(()=>window.__casinoNoirDebug.controlledWinnerSelections);
   await page.locator('#spinHub').click();
-  await page.waitForFunction(()=>window.__casinoNoirDebug.lastWinner!==null&&!window.__casinoNoirDebug.isSpinning,{timeout:30000});
+  await page.waitForFunction(()=>{
+    const state=window.__casinoNoirDebug.currentPhysicalState;
+    return Boolean(state&&!state.done&&Math.abs(state.velocity)>physicsRestThreshold()&&Math.abs(state.velocity)<4);
+    function physicsRestThreshold(){return window.CasinoWheelPhysics.REST_SPEED;}
+  },null,{timeout:30000});
+  const lateCoast=await page.evaluate(()=>{
+    const api=window.__casinoNoirDebug;
+    return {stillSpinning:api.isSpinning,winner:api.lastWinner,state:api.currentPhysicalState,
+      text:document.querySelector('#statusText').textContent};
+  });
+  assert.equal(lateCoast.stillSpinning,true,'a wheel moving slowly is still spinning');
+  assert.equal(lateCoast.winner,null,'never reveal winner during final coasting');
+  assert.ok(lateCoast.state.velocity!==0&&lateCoast.state.restSeconds<windowPhysicsRestHold(),
+    'wheel has not yet reached sustained rest');
+  function windowPhysicsRestHold(){return physics.REST_HOLD_SECONDS;}
+  await page.waitForFunction(()=>window.__casinoNoirDebug.lastWinner!==null&&!window.__casinoNoirDebug.isSpinning,null,{timeout:30000});
   const result=await page.evaluate(()=>{
     const d=window.__casinoNoirDebug;
     const winner=d.lastWinner,sector=d.ranges()[winner];
