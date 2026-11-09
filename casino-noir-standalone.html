@@ -1184,13 +1184,20 @@ body.editor-open{overflow:hidden}
     if(field==='color'&&!validColor(el.value))return;
     s[field]=el.value;mutate();
   });
+  function updateWeightPercentages(){
+    const total=totalWeight();
+    for(const card of list.querySelectorAll('.segment-card')){
+      const item=config.segments.find(s=>s.id===card.dataset.id),label=card.querySelector('.weight-control small');
+      if(item&&label)label.textContent=(total?(100*item.weight/total):0).toLocaleString('de-DE',{maximumFractionDigits:2})+' %';
+    }
+  }
   list.addEventListener('change',ev=>{
     if(isSpinning)return;
     const el=ev.target,field=el.dataset.field;
     if(field==='weight'){
       const segment=config.segments.find(x=>x.id===el.closest('.segment-card')?.dataset.id);
       if(!segment)return;
-      try{segment.weight=validWeight(el.value);mutate();renderSegments();}catch(error){toast(error.message);renderSegments();}
+      try{segment.weight=validWeight(el.value);mutate();updateWeightPercentages();}catch(error){toast(error.message);el.value=String(segment.weight);}
       return;
     }
     if(field!=='showLabel'&&field!=='showIcon')return;
