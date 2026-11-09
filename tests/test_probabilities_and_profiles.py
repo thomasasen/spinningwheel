@@ -151,6 +151,7 @@ async def test_motion(browser):
     assert curve[1]-curve[0]<curve[3]-curve[2],curve
     await page.locator('#toggleEditor').click()
     await page.locator('#spinDuration').fill('3')
+    await page.locator('.physics-settings summary').click()
     await page.locator('#pointerIntensity').fill('100')
     await page.locator('#closeEditor').click()
     await page.locator('#spinHub').click()
