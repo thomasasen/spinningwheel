@@ -52,7 +52,7 @@ for(const [mutation,error] of [
   [d=>{d.cards[1].copies=1.5;},/multiplikator/i],
   [d=>{d.cards[1].text='<script>'.repeat(200);},/Kartentext/],
   [d=>{d.cards.push({...d.cards[0]});},/Doppelte/],
-  [d=>{d.state.remaining.a=9;},/Vorrat/]
+  [d=>{d.state.remaining.a=9;},/vorrat/i]
 ]){
   const bad=JSON.parse(JSON.stringify(basic()));mutation(bad);
   assert.throws(()=>E.deck(bad),error);
