@@ -352,7 +352,10 @@ body.card-overlay-open{overflow:hidden}
 .card-back-pattern small{font-size:8px;letter-spacing:.21em;color:#be9e8c}
 .card-front{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:19px 22px;transform:rotateY(180deg);background:linear-gradient(160deg,#38212c,#1a1119);border-color:var(--picked-color);color:#fbe7c9}
 .card-front::before{content:"";position:absolute;inset:12px;border:1px solid var(--picked-color);pointer-events:none;opacity:.5}
-.card-face-icon{font:23px/1.2 Georgia,serif;color:var(--picked-color);margin-bottom:12px;overflow-wrap:anywhere;max-height:55px;overflow:hidden}
+/* Use the real Material Symbols font for codepoint glyphs. Never let the
+   card's fallback font override it (missing glyphs otherwise render blank). */
+.card-face-icon{font-family:Georgia,serif;font-size:44px;font-weight:400;line-height:1;color:var(--picked-color);margin-bottom:12px;max-height:55px;overflow:hidden}
+.card-face-icon.material-symbols-rounded{font-family:'Material Symbols Rounded';font-size:44px;line-height:1;font-feature-settings:'liga';font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 48}
 .card-face-title{margin:0 0 11px;font:normal 22px/1.24 Georgia,serif;color:#fbe3af;overflow-wrap:anywhere;max-height:64px;overflow-y:auto}
 .card-face-text{margin:0;max-height:55%;overflow-y:auto;overscroll-behavior:contain;font:clamp(13px,2.5vw,17px)/1.48 Georgia,serif;white-space:pre-wrap;overflow-wrap:anywhere;scrollbar-color:#af8955 #2c1b27}
 .card-front small{position:absolute;bottom:17px;color:#bc9780;font-size:8px;letter-spacing:.12em}
@@ -1144,6 +1147,15 @@ body.card-overlay-open{overflow:hidden}
       commit({...data,pending:{deckId:d.id,profileId,segmentId:segment.id,phase:'ready',card:null}},{render:false});
       setTimeout(()=>{if(data.pending?.segmentId===segment.id)renderPending();},900);
     }
+    function refreshCardIcon(){
+      // Refresh when the webfont or its codepoint catalogue becomes available,
+      // without restarting the 3D flip or changing the already drawn card.
+      const card=data.pending?.phase==='revealed'?data.pending.card:null;
+      const icon=card?.icon?options.resolveCardIcon?.(card.icon):null;
+      const emblem=$('cardFront').querySelector('.card-face-icon');
+      emblem.classList.toggle('material-symbols-rounded',Boolean(icon?.material));
+      emblem.textContent=card?(icon?.glyph||'✦'):'';
+    }
     function showOverlay(){
       const p=data.pending,overlay=$('cardOverlay');
       clearTimeout(animationTimer);
@@ -1162,10 +1174,7 @@ body.card-overlay-open{overflow:hidden}
       const face=$('cardFront'),inner=$('cardFlip');
       face.querySelector('.card-face-title').textContent=revealed?(p.card.title||'CASINO NOIR'):'';
       face.querySelector('.card-face-text').textContent=revealed?p.card.text:'';
-      const emblem=face.querySelector('.card-face-icon');
-      const emblemIcon=revealed&&p.card.icon?options.resolveCardIcon?.(p.card.icon):null;
-      emblem.classList.toggle('material-symbols-rounded',Boolean(emblemIcon?.material));
-      emblem.textContent=revealed?(emblemIcon?.glyph||'✦'):'';
+      refreshCardIcon();
       inner.style.setProperty('--picked-color',revealed?(p.card.color||'#d6b679'):'#d6b679');
       inner.classList.remove('is-revealed');
       if(revealed){
@@ -1213,7 +1222,7 @@ body.card-overlay-open{overflow:hidden}
     return {
       availableDecks,hasDeck:id=>data.decks.some(d=>d.id===id),
       isBlocking:()=>Boolean(data.pending),
-      makePending,render:renderAll,setCardIcon,
+      makePending,render:renderAll,setCardIcon,refreshCardIcon,
       createFromSegment:()=>safe(()=>{const id=addDeck();$('deckDetails').scrollIntoView({behavior:'smooth',block:'nearest'});return id;}),
       importDecks,exportData:({includeSession=false,referencedIds=null}={})=>({
         decks:clone(data.decks.filter(d=>!referencedIds||referencedIds.includes(d.id))
@@ -1387,6 +1396,7 @@ body.card-overlay-open{overflow:hidden}
     catalogUpdatedAt=updatedAt;
     iconCatalogError='';
     if(!isSpinning){drawWheel();renderSegments();}
+    decks?.refreshCardIcon();
     if(!$('iconModal').hidden)renderIconPicker();
   }
   function restoreIconCatalog() {
@@ -2844,6 +2854,7 @@ body.card-overlay-open{overflow:hidden}
       if(!faces.length)return;
       iconFontReady=true;
       if(!isSpinning){drawWheel();renderSegments();}
+      decks?.refreshCardIcon();
       if(!modal.hidden)renderIconPicker();
     }).catch(()=>{});
   }
