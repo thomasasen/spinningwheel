@@ -22,6 +22,7 @@ async def test():
    errors=[]
    page.on('pageerror',lambda ex:errors.append(str(ex)))
    await page.route('https://**/*',lambda route:route.abort())
+   await page.evaluate("""() => {window.__testStore={};Object.defineProperty(window,'localStorage',{configurable:true,value:{getItem(k){return window.__testStore[k]??null},setItem(k,v){window.__testStore[k]=String(v)},removeItem(k){delete window.__testStore[k]}}});}""")
    await page.set_content(HTML,wait_until='domcontentloaded')
    await page.locator('#toggleEditor').click()
    for mode,(selector,mincount) in MODES.items():
