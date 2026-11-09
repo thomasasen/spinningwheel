@@ -88,6 +88,7 @@ async def main():
         context = await browser.new_context(viewport={'width': 1100, 'height': 800})
         page = await context.new_page()
         await page.route('https://**/*', lambda route: route.abort())
+        await page.evaluate("""() => { window.__testStore={}; Object.defineProperty(window,'localStorage',{configurable:true,value:{ getItem(k){return window.__testStore[k]??null},setItem(k,v){window.__testStore[k]=String(v)},removeItem(k){delete window.__testStore[k]} }}); }""")
         await page.set_content(HTML)
         legacy={'segments':[{'label':'Gewinn','icon':'star','showLabel':True,'showIcon':True,'color':'#981439'}], 'duration':3,'coast':75,'sound':False,'palette':'noir'}
         await page.locator('#importFile').set_input_files({'name':'old.json','mimeType':'application/json','buffer':json.dumps(legacy).encode()})

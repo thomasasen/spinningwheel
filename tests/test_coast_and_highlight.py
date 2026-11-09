@@ -10,16 +10,16 @@ async def page_with_app(browser, viewport, reduced_motion='reduce', stored=None)
     context=await browser.new_context(viewport=viewport,reduced_motion=reduced_motion,accept_downloads=True)
     page=await context.new_page()
     await page.route('https://**/*',lambda route:route.abort())
-    if stored is not None:
-        # set_content doesn't navigate, so add_init_script alone does not run.
-        await page.evaluate('''(data) => {
-            window.__mockStorage = {'casino-noir-wheel-studio-v1': JSON.stringify(data)};
+    # About:blank denies native localStorage; supply writable origin-like storage
+    # for both normal and legacy import tests. Blocked storage is tested separately.
+    await page.evaluate('''(data) => {
+            window.__mockStorage = data===null?{}:{'casino-noir-wheel-studio-v1': JSON.stringify(data)};
             Object.defineProperty(window, 'localStorage', {configurable:true,value:{
                 getItem(k){return window.__mockStorage[k] ?? null},
                 setItem(k,v){window.__mockStorage[k]=String(v)},
                 removeItem(k){delete window.__mockStorage[k]}
             }});
-        }''',stored)
+    }''',stored)
     errors=[]
     page.on('pageerror',lambda e:errors.append(str(e)))
     await page.set_content(HTML,wait_until='domcontentloaded')
@@ -91,8 +91,7 @@ async def main():
         for v,expected in [(999,30),(-20,3)]:
             config={**old,'duration':v,'coast':999}
             await page.locator('#importFile').set_input_files({'name':'test.json','mimeType':'application/json','buffer':json.dumps(config).encode()})
-            await page.wait_for_timeout(100)
-            assert await page.evaluate('window.__casinoNoirDebug.config.duration')==expected
+            await page.wait_for_function('(expected)=>window.__casinoNoirDebug.config.duration===expected',arg=expected,timeout=3000)
             assert await page.evaluate('window.__casinoNoirDebug.config.coast')==100
         print('Legacy config, import bounds: PASS')
         await context.close()

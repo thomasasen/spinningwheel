@@ -15,7 +15,7 @@ Eine statische, responsive Glücksrad-Web-App im Casino-Noir-Stil. Das Rad beste
 - Vollständiger durchsuchbarer Google-Material-Symbols-Rounded-Katalog (mehr als 4.300 Namen), sortiert, vollständig durchsuchbar und per virtualisiertem Raster ohne manuelle Seitennavigation scrollbar; kuratierte Schnellkategorien und verifizierte Eingabe von Symbolnamen. Freie Suchbegriffe wie „shirt“, „T-Shirt“ und „Kleidung“ liefern das offizielle Symbol `apparel`; `shirt` selbst ist kein offizieller Google-Symbolname. Der Katalog wird von Googles offizieller Codepoints-Liste geladen und sieben Tage lokal zwischengespeichert. Beim allerersten Offline-Start stehen die Favoriten zur Verfügung.
 - Live-SVG, anpassbar an die Segmentanzahl: 1–12 volle Inhalte; 13–20 kompakte Inhalte; 21–72 Nummern; darüber reine Segmente. Vollständige Werte bleiben im Editor und beim Gewinnergebnis vorhanden.
 - Nur die goldene Radmitte löst die Drehung aus, der Zeiger bleibt feststehend.
-- Gewinnerermittlung per zufälliger Auswahl, unabhängig von der Drehkraft; die Animation endet geometrisch beim ausgewählten Sektor.
+- Gewinnerermittlung anhand konfigurierbarer Segmentgewichte mit kryptografischem Zufall, unabhängig von der Drehkraft; die Animation endet geometrisch in der Mitte des ausgewählten Sektors.
 - Vertikaler, schnell pendelnder Drehkraftbalken (0–100 % in 0,8 Sekunden nach oben und in 0,8 Sekunden nach unten). Nur der Klick auf die goldene Radmitte übernimmt die momentane Kraft. Je nach Kraft macht das Rad 2–10 volle Umdrehungen und läuft unterschiedlich lang aus.
 - Die einstellbare maximale Drehdauer beträgt 3–30 Sekunden; bei schwacher Kraft ist die tatsächliche Drehdauer kürzer. Optionaler synthetisierter Klicksound und vier Farbpaletten.
 - Präsentationsmodus ohne Editor.
@@ -122,3 +122,48 @@ Mit dem goldenen Ziehgriff lässt sich die **gesamte Segmentkarte aufnehmen**. S
 ## Semantische Material-Symbol-Suche
 
 Der gesamte aktuelle Rounded-Codepoint-Katalog bleibt durchsuchbar. Zusätzlich lädt die Symbolauswahl beim Öffnen den lokal mitgelieferten **icon-search-index.json** (3.946 Icons mit offiziellen englischen Tags und Beliebtheitswerten aus einem Snapshot der Google-Metadaten). Icons, die im neueren Font vorhanden sind, aber nicht im Suchindex, bleiben selbstverständlich per Symbolname auffindbar. Die Trefferrangfolge berücksichtigt Originalnamen, exakte Tags, Teiltreffer und Beliebtheit. Bei `shirt` erscheinen `apparel` und `laundry`. Die bisherige deutsche Synonymhilfe bleibt ergänzend erhalten. Der vollständige lokale Suchindex vermeidet eine Laufzeitabhängigkeit von einer undokumentierten Google-Such-API; GitHub Pages liefert ihn als statische Datei aus. Beim Standalone-Build wird er eingebettet, damit dieselbe Suche ohne externen Metadatenserver funktioniert. Google Fonts wird weiter nur für die Icon-Glyphen verwendet. Quelle: Google Material Symbols-Metadaten, Snapshot aus `timmaffett/material_symbols_icons`, Apache-2.0. Der Suchindex wird bei Bedarf durch Aktualisierung der Quelldaten erneuert; eine 1:1-Identität mit Googles interner Suche ist nicht zugesichert.
+
+
+## Mehrere Glücksräder und Gewinnchancen (Version 2)
+
+Die Konfiguration wird weiterhin über **Konfiguration** rechts oben geöffnet und bleibt beim Start geschlossen. Oben im Menü befindet sich **Gespeicherte Glücksräder**. Über **Neu** legst du ein zusätzliches Rad mit eigenen Einstellungen an. **Duplizieren**, **Umbenennen**, **Löschen** und **Speichern** verwalten die gewählte Variante. Die Auswahlliste lädt ein anderes Rad, ohne dessen Segmentreihenfolge, Darstellung, Sounds oder Effekte mit anderen Rädern zu vermischen. Bearbeitungen werden automatisch lokal gesichert. Ein Speicherfehler erscheint oben als Warnung und verhindert einen ungesicherten Profilwechsel.
+
+Jedes Segment hat jetzt ein **Gewicht** (Standard: `1`). Die individuelle Gewinnchance ist
+
+`Chance = Gewicht / Summe aller positiven Gewichte × 100 %`.
+
+Beispiel: Gewichte `1 / 3 / 2 / 4` ergeben **10 / 30 / 20 / 40 %**. Gewicht `0` schließt ein Segment von der Ziehung aus. Sind alle Gewichte `0`, wird **DREHEN** gesperrt. Nur endliche Werte von `0` bis `1.000.000` sind gültig; negative, nicht numerische und unendlich große Werte werden nicht angenommen.
+
+Unter **Gewinnwahrscheinlichkeiten** gibt es zwei Darstellungen:
+
+- **Gleich große Segmente**: Wie bisher nehmen alle Felder gleich viel Platz auf dem Rad ein. Die tatsächlichen Chancen stehen ausdrücklich in der Segmentliste und hängen trotzdem von den Gewichten ab. Gleiche Fläche bedeutet in dieser Ansicht **nicht** gleiche Gewinnchance.
+- **Proportionale Segmente**: Der Winkel eines Felds entspricht der hinterlegten Chance. Bei `40 %` nimmt das Segment `144°` ein. Felder mit Gewicht `0` haben keinen sichtbaren Winkel, bleiben jedoch in der Liste bearbeitbar. Winzige Segmente werden aus Lesbarkeitsgründen nicht innen beschriftet.
+
+**Drehkraft ist nicht Gewinnchance.** Der bewegte Kraftbalken beeinflusst ausschließlich Drehdauer und Anzahl der Umdrehungen. Der Gewinner wird vorher unabhängig davon anhand der Gewichte mit `crypto.getRandomValues` ermittelt. Der Radwinkel läuft ohne nachträgliche Korrektur kontinuierlich zur tatsächlichen Sektormitte. Der Auswahlzeiger stimmt dadurch auch bei proportionaler Darstellung mit der Gewinneranzeige überein.
+
+## Realistische Bewegung und Klang
+
+Die neue Animation verwendet `requestAnimationFrame`. Nach einer kurzen Beschleunigungsphase sinkt die Winkelgeschwindigkeit stetig. **Auslaufspannung** bleibt der einzige Regler für das Bremsprofil (0 %: frühes Abbremsen, 100 %: langes langsames Auslaufen). Die maximal einstellbare Drehdauer beträgt weiterhin **30 Sekunden**. Unter **Zeigermechanik und Klickklang** stehen folgende Einstellungen:
+
+- **Zeigerfederung** steuert die Geschwindigkeit, mit der der Zeiger in die Ruheposition zurückkehrt.
+- **Zeigerdämpfung** regelt das Nachschwingen.
+- **Zeigerausschlag** bestimmt die Stärke der mechanischen Kontaktreaktion.
+- **Mechanischer Klang** bietet *Dezent*, *Klassische Ratsche*, *Massiver Metallzeiger* und *Casino*. Mit **Klang vorhören** lässt sich der ausgewählte Sound testen. Gewinner-Sounds sind davon unabhängig.
+
+Die Zeigerbewegung folgt einem numerisch integrierten, gedämpften Feder-Masse-Modell. Kontakte werden zusammengefasst, wenn viele Segmentgrenzen in sehr kurzer Zeit vorbeilaufen; so kann die Browseranimation nicht durch Tausende gleichzeitige Audioereignisse überlastet werden. Alle Töne werden direkt mit der Web Audio API synthetisiert, es werden keine Sounddateien übertragen. Bei aktivierter Systemeinstellung `prefers-reduced-motion` werden rasche Radumdrehungen und das Zeigernachschwingen vermieden.
+
+## Speicherung, Export, Import und Datenschutz
+
+Die App speichert vollständige Profile unter `casino-noir-wheel-studio-workspace-v2` im **localStorage** des jeweiligen Browsers, ohne Benutzerkonto und ohne Upload. Ein zusätzliches Abbild des aktiven Rads bleibt unter dem bisherigen Schlüssel `casino-noir-wheel-studio-v1`. Existiert noch keine Profilsammlung, liest die App beim ersten Öffnen diese ältere Einzelradkonfiguration ein. Fehlende Gewichte werden zu `1`, neue Physikparameter erhalten Standardwerte. Ein Import älterer JSON-Dateien aus Version 1 ist möglich.
+
+Mit **Aktuelles Rad exportieren** erhältst du ein JSON mit sämtlichen Segmenten, IDs, Texten, Symbolen, Farben, Gewichten, Dreh- und Zeigereinstellungen, Gewinnerinszenierung und Sounds. **Alle Räder exportieren** schreibt eine Sammlung. Beide enthalten die Formatversion `2` und einen Datumsstempel im Dateinamen. Beim Import wählst du vorher **Aktives Glücksrad ersetzen** oder **Als neues Glücksrad anlegen**. Sammlungen importieren mehrere Profile und erkennen vorhandene IDs beziehungsweise Namen im Ersetzen-Modus. Vor der Speicherung wird die gesamte Datei geprüft; ein ungültiger Datensatz verwirft den gesamten Import, ohne vorhandene Profile zu überschreiben.
+
+**Wichtig:** Browserdaten sind geräte- und browserprofilabhängig. Bei gelöschten Websitedaten oder privatem Browsen können sie verschwinden. Sichere wichtige Räder zusätzlich per **Alle Räder exportieren**. `localStorage` reicht für typische Textkonfigurationen aus; bei extrem vielen großen Rädern kann das Browserlimit greifen. In diesem Fall erscheint eine Speicherwarnung, und ein Profilwechsel wird blockiert, bis die Änderungen gesichert werden können. Der Google-Material-Symbol-Katalog wird unabhängig davon wie bisher gecacht.
+
+## Tests und technische Entscheidungen
+
+Der Workflow `.github/workflows/casino-noir-qa.yml` erstellt zunächst die eigenständige HTML-Fassung mit `python build_standalone.py` und testet sie mit Playwright/Chromium. `tests/test_probabilities_and_profiles.py` führt mindestens **600.000 Ziehungen** aus: Gleichverteilung, Gewichtung, ausgeschlossene Felder, ein einziges Gewinnfeld, viele Felder und ein Extremverhältnis. Die Toleranz orientiert sich an sechs Standardabweichungen der jeweiligen Binomialverteilung (zusätzlich mindestens drei Ziehungen); Zufallsschwankungen werden dadurch sinnvoll berücksichtigt. Hinzu kommen Tests für Radgeometrie, korrekte Gewinnerposition, Konfigurationswechsel, Export/Import, ungültige JSON-Dateien, Speicherfehler und mobiles Layout. Bestehende Tests prüfen etwa Winner-Effekte, Material-Symbolsuche, Auslaufspannung und Drehkraft.
+
+Zum lokalen Testen: `pip install playwright`, `python -m playwright install chromium`, `python build_standalone.py`, danach `python tests/test_probabilities_and_profiles.py`. Zusätzlich die weiteren Python-Tests im Ordner `tests` ausführen. Der eigenständige Build und die GitHub-Pages-Version nutzen dieselben Quell-Dateien. Der Arbeitsstand soll nur nach erfolgreich durchlaufener Browser- und Regressions-QS veröffentlicht werden.
+
+**Bekannte Grenzen:** Sehr viele Segmente reduzieren zwangsläufig die Lesbarkeit im Rad (ab 73 Segmenten ohne Innenbeschriftungen); extrem kleine proportionale Winkel werden nicht mit Text überzeichnet. Die Genauigkeit gewichteter Ziehungen basiert auf 53 Zufallsbits und doppeltgenauer JavaScript-Arithmetik. Bei höchstens 5.000 Segmenten mit Gewichten bis 1.000.000 ist die Summe deutlich kleiner als `Number.MAX_SAFE_INTEGER`.

@@ -1,5 +1,6 @@
 """Test six truly distinct winner treatments, selected wedge and preview with menu open."""
 import asyncio
+import shutil
 import json
 from pathlib import Path
 from playwright.async_api import async_playwright
@@ -14,13 +15,14 @@ MODES={
 'cinematic':('.winner-cinema-orbit',1)}
 async def test():
  async with async_playwright() as pw:
-  browser=await pw.chromium.launch(headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox','--disable-dev-shm-usage'])
+  browser=await pw.chromium.launch(headless=True,executable_path=shutil.which('chromium'),args=['--no-sandbox','--disable-dev-shm-usage'])
   for device,viewport in [('desktop',{'width':1440,'height':900}),('mobile',{'width':390,'height':844})]:
    ctx=await browser.new_context(viewport=viewport,accept_downloads=True)
    page=await ctx.new_page()
    errors=[]
    page.on('pageerror',lambda ex:errors.append(str(ex)))
    await page.route('https://**/*',lambda route:route.abort())
+   await page.evaluate("""() => {window.__testStore={};Object.defineProperty(window,'localStorage',{configurable:true,value:{getItem(k){return window.__testStore[k]??null},setItem(k,v){window.__testStore[k]=String(v)},removeItem(k){delete window.__testStore[k]}}});}""")
    await page.set_content(HTML,wait_until='domcontentloaded')
    await page.locator('#toggleEditor').click()
    for mode,(selector,mincount) in MODES.items():

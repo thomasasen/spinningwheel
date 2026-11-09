@@ -1,5 +1,5 @@
 """Regressions: a winner's icon, label or segment number is upright at 12 o'clock."""
-import asyncio, json, math
+import asyncio, json, math, shutil
 from pathlib import Path
 from playwright.async_api import async_playwright
 
@@ -31,7 +31,7 @@ async def check(page,n,winner):
 
 async def main():
     async with async_playwright() as p:
-        browser=await p.chromium.launch(headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox','--disable-dev-shm-usage'])
+        browser=await p.chromium.launch(headless=True,executable_path=shutil.which('chromium'),args=['--no-sandbox','--disable-dev-shm-usage'])
         page=await browser.new_page(viewport={'width':1440,'height':1000},reduced_motion='reduce')
         await page.route('https://fonts.googleapis.com/**',lambda r:r.abort())
         await page.route('https://fonts.gstatic.com/**',lambda r:r.abort())
@@ -44,7 +44,7 @@ async def main():
             for winner in sorted({0,n//2,n-1}):
                 await check(page,n,winner)
                 if n==8 and winner==4:
-                    await page.screenshot(path='/mnt/data/casino-noir-gewinner-oben.png',full_page=True)
+                    await page.screenshot(path=str(BASE/'casino-noir-gewinner-oben.png'),full_page=True)
             print(f'{n} segments: all selected winning labels upright at 12 o\'clock')
         assert not errors,errors
         await browser.close()
