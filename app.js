@@ -576,7 +576,7 @@
     for(const angle of pegAngles){
       const [x,y]=polar(291,angle),radius=dense?2.6:pegAngles.length>110?3.6:4.6;
       if(!dense)e('circle',{cx:x,cy:y,r:radius+0.8,fill:'#ffca74',opacity:.34,filter:'url(#studGlow)'},wheel);
-      e('circle',{cx:x,cy:y,r:radius,fill:'url(#studGrad)',stroke:'#703719','stroke-width':.65},wheel);
+      e('circle',{cx:x,cy:y,r:radius,fill:'url(#studGrad)',stroke:'#703719','stroke-width':.65,'data-ratchet-tooth':'true'},wheel);
       if(!dense)e('circle',{cx:x-radius*.24,cy:y-radius*.35,r:radius*.27,fill:'#fff9d8',opacity:.8},wheel);
     }
     $('subdivisionDetail').textContent=n
