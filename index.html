@@ -70,6 +70,23 @@
         <div class="editor-header"><div><div class="eyebrow">✦ &nbsp; WHEEL CONFIGURATION</div><h1 id="editorTitle">Dein Glücksrad</h1><p>Jedes Segment individuell gestalten.</p></div><button class="editor-close" id="closeEditor" type="button" aria-label="Konfiguration schließen" title="Schließen">×</button></div>
         <div class="section-title"><div><h2>Segmente <span class="count-pill" id="segmentCount">8</span></h2><p>Text, Material-Symbol oder beides</p></div><button type="button" id="addSegment" class="btn btn-primary"><span aria-hidden="true">＋</span> Hinzufügen</button></div>
         <div class="segment-list" id="segmentList" aria-label="Segmentliste"></div>
+        <section class="profile-manager" aria-labelledby="profileHeading">
+          <h2 id="profileHeading">Gespeicherte Glücksräder</h2>
+          <label for="profileSelect">Aktives Glücksrad</label>
+          <select id="profileSelect" aria-label="Gespeichertes Glücksrad auswählen"></select>
+          <div class="profile-actions">
+            <button class="btn btn-quiet" type="button" id="profileNew">＋ Neu</button>
+            <button class="btn btn-quiet" type="button" id="profileDuplicate">⧉ Kopieren</button>
+            <button class="btn btn-quiet" type="button" id="profileRename">✎ Umbenennen</button>
+            <button class="btn btn-quiet btn-danger" type="button" id="profileDelete">× Löschen</button>
+          </div>
+          <div class="profile-actions">
+            <button class="btn btn-quiet" type="button" id="profileExportAll">Alle exportieren</button>
+            <label for="profileImportMode">JSON importieren als</label>
+            <select id="profileImportMode"><option value="new">Neues Glücksrad</option><option value="replace">Aktuelles ersetzen</option></select>
+          </div>
+          <p class="setting-help">Änderungen werden automatisch im Browser gespeichert. Ein JSON-Export dient als zusätzliche Sicherung.</p>
+        </section>
         <div class="editor-settings">
           <h2>Spiel & Darstellung</h2>
           <div class="setting-row"><div class="setting-descriptor"><label for="sizeMode">Gewinnchancen darstellen</label><small>Gleich große Felder zeigen nicht die tatsächlichen Gewinnchancen. Die Prozentangaben stehen an jedem Segment.</small></div><select id="sizeMode"><option value="equal">Gleich große Segmente</option><option value="proportional">Proportionale Segmente</option></select></div>
