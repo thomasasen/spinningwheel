@@ -1,5 +1,6 @@
 """Test six truly distinct winner treatments, selected wedge and preview with menu open."""
 import asyncio
+import shutil
 import json
 from pathlib import Path
 from playwright.async_api import async_playwright
@@ -14,7 +15,7 @@ MODES={
 'cinematic':('.winner-cinema-orbit',1)}
 async def test():
  async with async_playwright() as pw:
-  browser=await pw.chromium.launch(headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox','--disable-dev-shm-usage'])
+  browser=await pw.chromium.launch(headless=True,executable_path=shutil.which('chromium'),args=['--no-sandbox','--disable-dev-shm-usage'])
   for device,viewport in [('desktop',{'width':1440,'height':900}),('mobile',{'width':390,'height':844})]:
    ctx=await browser.new_context(viewport=viewport,accept_downloads=True)
    page=await ctx.new_page()
