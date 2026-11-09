@@ -26,11 +26,19 @@ jobs:
         run: python tests/test_probabilities_and_profiles.py
       - name: Existing browser regressions
         run: |
-          python tests/test_coast_and_highlight.py
-          python tests/test_winner_options.py
-          python tests/test_preview_visibility.py
-          python tests/test_power_meter.py
-          python tests/test_semantic_icon_search.py
+          failed=0
+          for script in \
+            tests/test_coast_and_highlight.py \
+            tests/test_winner_options.py \
+            tests/test_preview_visibility.py \
+            tests/test_power_meter.py \
+            tests/test_semantic_icon_search.py \
+            tests/test_creative_effects.py \
+            tests/test_winner_readability.py; do
+            echo "== RUN $script =="
+            python "$script" || failed=1
+          done
+          exit "$failed"
       - name: Upload actual test screenshots on failure
         if: failure()
         uses: actions/upload-artifact@v4
