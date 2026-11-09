@@ -46,11 +46,11 @@ Die Anwendung startet mit **eingeklapptem Konfigurationsmenü**. Das Glücksrad 
 
 ## Drehkraft, Reibung und Gewinnhervorhebung
 
-Der Kraftbalken pendelt zwischen 0 und 100 Prozent (Zyklus: 1,6 Sekunden). Der Klick auf **DREHEN** übernimmt den aktuellen Wert. Im standardmäßigen Physikmodus gibt er einen Anfangsimpuls vor; daraus folgen variable Umdrehungszahl und Stoppposition. Lagerreibung, geschwindigkeitsabhängiger Widerstand und Zeigerkontakte reduzieren die Rotationsenergie bis zum Stillstand. Bei geringem Tempo ist ein kleines Zurückprallen möglich. Es gibt **keine vorberechnete Zielposition**.
+Der Kraftbalken pendelt zwischen 0 und 100 Prozent (Zyklus: 1,6 Sekunden). Der Klick auf **DREHEN** übernimmt den aktuellen Wert. Im standardmäßigen Physikmodus gibt er einen Anfangsimpuls vor; daraus folgen variable Umdrehungszahl und Stoppposition. Lagerreibung, geschwindigkeitsabhängiger Widerstand und Zeigerkontakte reduzieren die Rotationsenergie bis zum Stillstand. Bei geringem Tempo ist ein kleines Zurückprallen möglich. Nahe am Stillstand nimmt die Lagerreibung kontinuierlich ab. Derselbe Segmentstift erzeugt durch minimale Vor-/Zurückbewegungen nicht mehrfach einen neuen Aufprall. Es gibt **keine vorberechnete Zielposition**.
 
 Die Einstellung **Drehträgheit** (3–30 Sekunden) skaliert die Reibungskoeffizienten. Die tatsächlich erlebte Auslaufzeit ist nicht exakt vorgegeben. **Auslaufspannung** steuert zusätzlich die Widerstände: Größere Werte bedeuten weniger Reibung und im Mittel längeres Auslaufen. Beim gezielt gewichteten Modus greifen dagegen weiterhin die ursprüngliche feste Zeitkurve und die Zahl der Umdrehungen (2–10), damit das vorher gezogene Ergebnis erreicht wird.
 
-Nach dem Stillstand erhält der ermittelte Sektor die gewählte Goldkontur bzw. Gewinnerinszenierung. Die Hervorhebung bleibt bis zum nächsten Spin oder einer Änderung sichtbar; bei reduzierter Bewegung ohne Pulsieren.
+Erst wenn die Winkelgeschwindigkeit 400 Millisekunden lang unter 0,05°/s liegt, gilt das Rad als stillstehend. Ein Zeitlimit erzwingt keinen abrupten Stopp. **Erst danach** wird der Gewinner aus dem zuletzt erreichten Winkel bestimmt. Nach dem Stillstand erhält der ermittelte Sektor die gewählte Goldkontur bzw. Gewinnerinszenierung. Die Hervorhebung bleibt bis zum nächsten Spin oder einer Änderung sichtbar; bei reduzierter Bewegung ohne Pulsieren.
 
 ## Radgeometrie: kleiner Zeiger und außenliegende Beschriftungen
 
