@@ -13,6 +13,8 @@ const read=name=>readFileSync(resolve(base,name),'utf8');
 let html=read('index.html');
 const css=read('styles.css');
 const physics=read('wheel-physics.js');
+const engine=read('card-engine.js');
+const decks=read('deck-ui.js');
 const app=read('app.js');
 const icons=read('icon-search-index.json');
 const data=JSON.parse(icons);
@@ -25,9 +27,9 @@ function replaceExactlyOnce(text,pattern,replacement,name){
 }
 html=replaceExactlyOnce(html,/<link\s+rel="stylesheet"\s+href="styles\.css[^"]*"\s*\/?>/g,
   ()=>'<style>\n'+css+'\n</style>','Stylesheet');
-const deferred=/<script\s+defer\s+src="(?:wheel-physics|app)\.js[^"]*"><\/script>/g;
+const deferred=/<script\s+defer\s+src="(?:wheel-physics|card-engine|deck-ui|app)\.js[^"]*"><\/script>/g;
 const tags=[...html.matchAll(deferred)];
-if(tags.length!==2||!tags[0][0].includes('wheel-physics')||!tags[1][0].includes('app.js'))
+if(tags.length!==4||!['wheel-physics','card-engine','deck-ui','app.js'].every((name,i)=>tags[i][0].includes(name)))
   throw Error('Unerwartete Script-Reihenfolge in index.html');
 html=html.replace(deferred,'');
 function inlineScript(source){
@@ -37,9 +39,9 @@ function inlineScript(source){
 const inlineIcons='<script id="iconSearchIndexData" type="application/json">\n'+
   icons.replace(/</g,'\\u003c')+'\n</script>';
 const bundle='\n<!-- Built from the current modular Casino Noir sources. -->\n'+
-  inlineIcons+'\n'+inlineScript(physics)+'\n'+inlineScript(app)+'\n';
+  inlineIcons+'\n'+inlineScript(physics)+'\n'+inlineScript(engine)+'\n'+inlineScript(decks)+'\n'+inlineScript(app)+'\n';
 html=replaceExactlyOnce(html,/<\/body>/g,()=>bundle+'</body>','Ende des Dokuments');
-if(html.includes('src="app.js')||html.includes('src="wheel-physics.js')||
+if(html.includes('src="app.js')||html.includes('src="wheel-physics.js')||html.includes('src="card-engine.js')||html.includes('src="deck-ui.js')||
    html.includes('href="styles.css'))
   throw Error('Nicht alle modularen Assets wurden eingebettet.');
 writeFileSync(resolve(base,'casino-noir-standalone.html'),html,'utf8');
