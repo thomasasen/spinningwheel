@@ -7,6 +7,8 @@ on:
       - styles.css
       - wheel-physics.js
       - app.js
+      - card-engine.js
+      - deck-ui.js
       - icon-search-index.json
       - scripts/build-standalone.mjs
   workflow_dispatch:

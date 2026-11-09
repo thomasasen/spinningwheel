@@ -5,7 +5,7 @@ Eine statische, responsive Glücksrad-Web-App im Casino-Noir-Stil. Das Rad beste
 ## Start
 
 - **Einfach:** `casino-noir-standalone.html` im Browser öffnen. Dieses Dokument enthält HTML, CSS und JavaScript vollständig eingebettet.
-- **Für GitHub Pages:** `index.html`, `styles.css`, `wheel-physics.js` und `app.js` ins Stammverzeichnis der gewünschten Branch legen und GitHub Pages dafür aktivieren. Es wird kein Build-Schritt benötigt.
+- **Für GitHub Pages:** `index.html`, `styles.css`, `wheel-physics.js`, `card-engine.js`, `deck-ui.js` und `app.js` ins Stammverzeichnis der gewünschten Branch legen und GitHub Pages dafür aktivieren. Es wird kein Build-Schritt benötigt.
 - **Lokal mit Webserver:** Im Ordner `python -m http.server 8000` starten und `http://localhost:8000` öffnen.
 
 ## Funktionen
@@ -19,8 +19,61 @@ Eine statische, responsive Glücksrad-Web-App im Casino-Noir-Stil. Das Rad beste
 - Vertikaler Drehkraftbalken: Der Klick auf die goldene Radmitte übernimmt den momentanen Kraftwert. Im Physikmodus verändert er den Anfangsimpuls, nicht eine vorher festgelegte Umdrehungszahl.
 - Einstellbarer Dauer- bzw. Trägheitsrichtwert (3–30 Sekunden): Im Physikmodus entsteht die tatsächliche Auslaufzeit dynamisch; im gewichteten Modus wird die Drehdauer gezielt gesteuert. Optionaler synthetisierter Klicksound und vier Farbpaletten.
 - Präsentationsmodus ohne Editor.
+- Kartendecks mit Kartenmultiplikator, zwei Ziehmodi, segmentabhängiger Kartenaktion und 3D-Aufdeckung.
 - Automatische Browser-Speicherung über `localStorage`, JSON-Import und JSON-Export.
 - Desktop- und Mobilansicht, Fokus-/Tastaturbedienung und reduzierte Animation bei aktiver Betriebssystemeinstellung.
+
+## Kartendecks und Segmentaktionen
+
+Casino Noir kann nach dem Stillstand des Glücksrads eine Karte aus einem dauerhaft gespeicherten Kartendeck ziehen. **Die Radphysik und die Kartenauswahl sind getrennt.** Das Rad bestimmt den Sektor, seine Aktion bestimmt das weitere Verhalten.
+
+### Deck erstellen, bearbeiten und verknüpfen
+
+1. Die **Konfiguration** öffnen und unter **Kartendecks → Neues Deck** einen Namen eingeben.
+2. **Karte hinzufügen** anklicken. Kartentext (Pflichtfeld), Titel, Farbe und optional ein Symbol aus dem vorhandenen Material-Symbol-Katalog auswählen. Karten können direkt bearbeitet, dupliziert, gelöscht und mittels Drag-and-drop oder Pfeiltasten-Buttons sortiert werden.
+3. Unter **Häufigkeit** zwischen **Nur einmal** und **Mehrfach im Deck** wählen. Bei Mehrfachkarten im Feld **Multiplikator** die gewünschte Zahl der Exemplare eingeben; für einmalige Karten ist sie fest 1.
+4. Im Abschnitt **Segmente** beim gewünschten Feld **Aktion nach Gewinn → Karte aus Deck ziehen** wählen und das Deck zuweisen. Dort kann auch unmittelbar ein neues Deck angelegt werden.
+
+Mehrere Segmente und gespeicherte Glücksräder können dasselbe Deck referenzieren. Es handelt sich um einen gemeinsamen Vorrat mit stabiler ID. Umbenennen und Segment-Sortierung verändern die Verknüpfung nicht. Das Löschen eines Decks mit aktiven Segmentzuordnungen ist gesperrt.
+
+### Wahrscheinlichkeiten und Kartenmultiplikator
+
+Die Chance eines Kartentyps ist **verbleibende Exemplare / verbleibende Gesamtzahl × 100**. Die Kartenverwaltung zeigt ursprüngliche und aktuelle Chancen und die konfigurierten sowie verbleibenden Mengen.
+
+| Kartentyp | Exemplare | Anfangswahrscheinlichkeit |
+|---|---:|---:|
+| A: Nur einmal | 1 | 12,5 % |
+| B: Mehrfach | 5 | 62,5 % |
+| C: Mehrfach | 2 | 25 % |
+| **Gesamt** | **8** | **100 %** |
+
+Wird B gezogen, bleiben sieben Kartenexemplare, davon viermal B. Die neue Chance für B lautet **4/7 ≈ 57,14 %**.
+
+**Ziehen ohne Zurücklegen** ist Standard. Ein bereits gezogenes Exemplar bleibt verbraucht; B kann damit innerhalb einer Deckrunde maximal fünfmal erscheinen. **Mit Zurücklegen** hält die Mengen der Mehrfachkarten konstant. Karten im Modus **Nur einmal** bleiben aber auch dann nach der ersten Ziehung gesperrt.
+
+Bei leerem Deck wird standardmäßig **nicht** automatisch neu gemischt. Nach dem Ergebnis kann man ohne Karte zum Rad zurückkehren und über **Neu mischen** den Vorrat nach Bestätigung zurücksetzen. Alternativ lässt sich **Automatisch nächste Deckrunde** aktivieren: Bei der nächsten Ziehung werden die Exemplare neu aufgefüllt. Die Deckrunde wird angezeigt. **Alle Decks neu mischen** setzt die gesamte Sitzung zurück.
+
+Die Ziehung arbeitet proportional zu den verbleibenden Exemplaren. Sie verwendet, sofern verfügbar, `crypto.getRandomValues` mit Rejection Sampling zur verzerrungsarmen Zufallszahlenauswahl.
+
+### Ablauf einer Runde
+
+**DREHEN → Rad läuft physikalisch aus → Gewinnersegment und Gewinnerinszenierung → verdeckter Kartenstapel → Karte ziehen → 3D-Aufdecken → Weiter zum Glücksrad.**
+
+Die Karte wird erst bei der Aktion **Karte ziehen** ausgewählt, niemals beim Start der Radumdrehung. Beim Ziehen werden **Auswahl und reduzierter Vorrat atomar in einem lokalen Speichervorgang** gesichert, ehe die Karte sichtbar wird. Ein Doppelklick verbraucht nicht zwei Exemplare. Nach einem versehentlichen Neuladen wird eine angefangene Ziehung mit verdeckter oder bereits gezogener Karte wiederhergestellt. Karten bleiben lesbar, bis man mit **Weiter** die nächste Runde freigibt.
+
+Änderungen an vorhandenen Karten während einer Sitzung stellen bereits verbrauchte Exemplare nicht unbemerkt wieder her. Ein ausdrückliches **Neu mischen** startet eine neue Deckrunde.
+
+### Speicherung, Import und Export
+
+Kartendecks und der aktive Ziehstand liegen im lokalen Browser-Speicher. Einzelne Decks können über **Deck exportieren**, alle Decks über **Alle Decks exportieren** gesichert werden. Der JSON-Export des aktuellen Glücksrads enthält seine zugeordneten Decks; der Export sämtlicher Glücksräder enthält auch alle Kartendecks.
+
+Exporte sichern standardmäßig die **Konfiguration**. Mit dem Kontrollkästchen **Laufenden Kartenvorrat einschließen** lässt sich auch der verbleibende Vorrat exportieren und importieren. Eine noch offene Kartenansicht wird dagegen nur beim Neuladen im **selben Browser** wiederhergestellt, nicht zwischen Geräten übertragen.
+
+Decks werden beim Import als neue Ressourcen mit neuen IDs angelegt, damit bestehende Decks nicht versehentlich überschrieben werden. Beim vollständigen Glücksradimport werden Segmentreferenzen entsprechend angepasst. Bestehende ältere Rad-JSON-Dateien ohne Deckdaten funktionieren weiterhin.
+
+Grenzwerte: maximal **100 Decks**, **100 Kartentypen pro Deck**, **1–1.000 Exemplare pro Kartentyp**, **50.000 Exemplare pro Deck**, **1.200 Zeichen Kartentext**, **2 MB pro Importdatei**. Die Anwendung behandelt importierte Karteninhalte stets als Text, nicht als HTML.
+
+Der Datenkern ist in `card-engine.js` und der Editor samt Kartenansicht in `deck-ui.js` untergebracht. Die Standalone-Version integriert beide Module, ohne auf ein Framework angewiesen zu sein. Kartentests: `node tests/card-engine.mjs`, Browsertests nach Installation von Playwright: `node tests/card-decks-browser.mjs`.
 
 ## Technische Hinweise
 
