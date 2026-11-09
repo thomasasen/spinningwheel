@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
 const browser=await chromium.launch({headless:true});
 const context=await browser.newContext({reducedMotion:'reduce',viewport:{width:1240,height:920}});
 const page=await context.newPage(), errors=[];
-page.on('pageerror',err=>errors.push(err.message));
+page.on('pageerror',err=>errors.push(err.stack||err.message));
 await page.route(/https?:\/\//,route=>route.abort());
 try{
   // Seed the previous v1 browser storage before the upgraded application starts.
