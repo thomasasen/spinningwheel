@@ -29,7 +29,7 @@
       if(render)renderAll();
     }
     function safe(fn){
-      try{fn();}catch(error){options.notify(error.message||'Kartendeck konnte nicht gespeichert werden.');}
+      try{return fn();}catch(error){options.notify(error.message||'Kartendeck konnte nicht gespeichert werden.');}
     }
     function links(id){
       return options.getProfiles().reduce((n,p)=>n+(p.config?.segments||[]).filter(s=>s.action==='deck'&&s.deckId===id).length,0);
@@ -95,6 +95,7 @@
       const d=E.makeDeck();
       commit({...data,decks:[...data.decks,d]});selected=d.id;renderAll();
       $('deckName').focus();
+      return d.id;
     }
     function deleteDeck(){
       const d=selectedDeck();if(!d)return;
@@ -302,11 +303,11 @@
       availableDecks,hasDeck:id=>data.decks.some(d=>d.id===id),
       isBlocking:()=>Boolean(data.pending),
       makePending,render:renderAll,setCardIcon,
-      createFromSegment:()=>safe(()=>{addDeck();$('deckDetails').scrollIntoView({behavior:'smooth',block:'nearest'});}),
+      createFromSegment:()=>safe(()=>{const id=addDeck();$('deckDetails').scrollIntoView({behavior:'smooth',block:'nearest'});return id;}),
       importDecks,exportData:({includeSession=false,referencedIds=null}={})=>({
         decks:clone(data.decks.filter(d=>!referencedIds||referencedIds.includes(d.id))
           .map(d=>includeSession?d:{...d,state:undefined})),
-        ...(includeSession?{session:{pending:data.pending}}:{})
+        sessionState:includeSession
       }),
       get pending(){return data.pending;}
     };
