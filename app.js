@@ -1098,6 +1098,7 @@
       const mode=$('profileImportMode').value;
       if(mode==='replace'&&incoming.length!==1)throw Error('Zum Ersetzen bitte eine einzelne Konfiguration auswählen.');
       if(mode!=='replace'&&profiles.entries.length+incoming.length>100)throw Error('Maximal 100 Glücksräder möglich.');
+      if(mode==='replace'&&!confirm('Aktuelles Glücksrad durch den Import ersetzen?'))return;
       const map=Array.isArray(parsed?.decks)&&parsed.decks.length
         ?decks.importDecks(parsed,{keepState:parsed.sessionState===true}):{};
       for(const item of incoming)for(const segment of item.config.segments){
@@ -1105,7 +1106,6 @@
       }
       if(mode==='replace'){
         if(incoming.length!==1)throw Error('Zum Ersetzen bitte eine einzelne Konfiguration auswählen.');
-        if(!confirm('Aktuelles Glücksrad durch den Import ersetzen?'))return;
         config=incoming[0].config;activeProfile().config=cloneConfig(config);
       }else{
         if(profiles.entries.length+incoming.length>100)throw Error('Maximal 100 Glücksräder möglich.');
