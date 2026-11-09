@@ -73,7 +73,7 @@
           <div class="profile-select-row"><label for="profilePicker">Aktives Glücksrad</label><select id="profilePicker" aria-label="Gespeichertes Glücksrad auswählen"></select></div>
           <div class="profile-name-row"><label for="profileName">Name</label><input id="profileName" type="text" maxlength="60" autocomplete="off" aria-label="Name des Glücksrads" value="Mein Glücksrad"></div>
           <div class="profile-buttons"><button class="btn btn-primary" type="button" id="newProfile">＋ Neu</button><button class="btn" type="button" id="saveProfile">Speichern</button><button class="btn" type="button" id="duplicateProfile">Duplizieren</button><button class="btn" type="button" id="renameProfile">Umbenennen</button><button class="btn btn-danger" type="button" id="deleteProfile">Löschen</button></div>
-          <p class="profile-hint">Alle Änderungen werden automatisch auf diesem Gerät gespeichert. Weitere Glücksräder bleiben getrennt.</p>
+          <p class="profile-hint">Alle Änderungen werden automatisch auf diesem Gerät gespeichert. Weitere Glücksräder bleiben getrennt.</p><p id="profileSaveStatus" class="profile-save-status" role="status" aria-live="polite">● Lokal gespeichert</p>
         </section>
         <div class="section-title"><div><h2>Segmente <span class="count-pill" id="segmentCount">8</span></h2><p>Text, Material-Symbol oder beides</p></div><button type="button" id="addSegment" class="btn btn-primary"><span aria-hidden="true">＋</span> Hinzufügen</button></div>
         <div class="segment-list" id="segmentList" aria-label="Segmentliste"></div>
