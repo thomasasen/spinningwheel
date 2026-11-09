@@ -617,7 +617,7 @@
     e('circle',{cx:320,cy:320,r:47,fill:'#1d1013',stroke:'#6b3e20','stroke-width':1.2},wheel);
     wheel.style.transform=`rotate(${rotation}deg)`;
     $('segmentCount').textContent=n.toLocaleString('de-DE');
-    $('stageCount').textContent=String(n).padStart(2,'0')+' SEGMENTE';
+    $('stageCount').textContent=String(n).padStart(2,'0')+' SEGMENTE'+(config.sizeMode==='proportional'?' · FLÄCHE = CHANCE':' · GLEICHE FLÄCHEN'+(config.segments.some(s=>s.weight!==config.segments[0]?.weight)?' · GEWICHTETE CHANCEN':''));
     $('spinHub').disabled=isSpinning||n===0;
     const notice=$('densityNotice');
     if(n>72)notice.textContent='Bei mehr als 72 Segmenten zeigt das Rad nur die Farbsegmente. Inhalte bleiben in der Liste und im Ergebnis erhalten.';
@@ -1161,7 +1161,7 @@
   }
   $('showOnlyWheel').addEventListener('click',()=>openPresentation());
   $('closePresentation').addEventListener('click',closePresentation);
-  function rand(){if(globalThis.crypto?.getRandomValues){const buf=new Uint32Array(1);crypto.getRandomValues(buf);return buf[0]/4294967296;}return Math.random();}
+  function rand(){if(globalThis.crypto?.getRandomValues){const buf=new Uint32Array(2);crypto.getRandomValues(buf);return ((buf[0]>>>5)*67108864+(buf[1]>>>6))/9007199254740992;}return Math.random();}
   function ensureAudioContext(){
     try{
       const Ctx=window.AudioContext||window.webkitAudioContext;
@@ -1224,9 +1224,9 @@
   let pointerAngle=0,pointerVelocity=0,pointerTime=0,pointerRaf=0;
   const pointer=$('fixedPointer');
   function pointerImpulse(speed){
-    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    if(config.pointerIntensity<=0||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
     const strength=Math.max(.2,Math.min(1.4,2.2/(1+Math.abs(speed)/260)));
-    pointerVelocity+=Math.min(150,28*strength*(config.pointerIntensity/100)+8);
+    pointerVelocity+=Math.min(150,36*strength*(config.pointerIntensity/100));
     if(!pointerRaf){pointerTime=performance.now();pointerRaf=requestAnimationFrame(pointerFrame);}
   }
   function pointerFrame(now){
