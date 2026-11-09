@@ -24,6 +24,10 @@ try{
   await card.locator('input[data-card-field="copies"]').fill('3');
   await card.locator('input[data-card-field="copies"]').dispatchEvent('change');
   assert.match(await page.locator('#deckStats').innerText(),/3 \/ 3/);
+  await page.locator('#deckCards button[data-card-action="icon"]').click();
+  await page.locator('#customIconName').fill('favorite');
+  await page.locator('#useCustomIcon').click();
+  assert.match(await page.locator('#deckCards button[data-card-action="icon"]').innerText(),/favorite/);
   const originalId=await page.locator('#deckSelect').inputValue();
   await page.locator('#deckDuplicate').click();
   assert.equal(await page.locator('#deckCount').innerText(),'2');
@@ -44,6 +48,8 @@ try{
   await page.locator('#nextRound').waitFor({state:'visible'});
   assert.equal(await page.locator('#cardFront .card-face-text').innerText(),'<img src=x onerror=alert(1)>');
   assert.equal(await page.locator('#cardFront img').count(),0,'untrusted text must stay text, not HTML');
+  const cardIcon=await page.locator('#cardFront .card-face-icon').innerText();
+  assert.ok(cardIcon&&cardIcon!=='favorite'&&cardIcon!=='favorite_border','card must show the symbol glyph, not its raw catalogue name');
   let remaining=await page.evaluate(()=>JSON.parse(localStorage.getItem('casino-noir-card-decks-v1')).decks[0].state.remaining);
   assert.deepEqual(Object.values(remaining),[2],'double click must consume exactly one copy');
   await page.reload();
