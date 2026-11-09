@@ -106,6 +106,38 @@ for(const duration of [3,6,15,30])for(const coast of [0,65,100]){
 console.log('PASS: gradual low-speed coast, no timed hard stop, sustained mechanical rest before winner.');
 
 
+// The visible rim studs and simulated ratchet must have identical divisions.
+const pegs=physics.buildPegAngles(geo,7);
+assert.equal(pegs.length,56,'eight segments must create 56 real teeth');
+assert.equal(physics.buildPegAngles(geo,4).length,32);
+assert.equal(physics.buildPegAngles(geo,12).length,96);
+assert.equal(physics.buildPegAngles(wedges([0,1,3,0,1]),7).length,21,
+  'zero-area sectors cannot create phantom teeth');
+assert.ok(physics.buildPegAngles(wedges(Array(5000).fill(1)),7).length<=336,
+  'extreme segment counts must not overload the rendering/simulation');
+
+// A near-rest collision should cause only a short, smoothly damped backward
+// excursion and not an extended reverse spin or a second strike of that tooth.
+const rebound=physics.create({geometry:geo,subdivisions:7,power:.5,random:seeded(82)});
+rebound.angle=0;
+rebound.velocity=16;
+let impactAt=null,reverseDetected=false;
+for(let i=0;i<1500&&!rebound.done;i++){
+  const beforeVelocity=rebound.velocity;
+  physics.advance(rebound,1/240);
+  if(beforeVelocity>0&&rebound.velocity<0){
+    impactAt=rebound.elapsed;
+    reverseDetected=true;
+  }
+}
+assert.ok(reverseDetected,'slow tooth contact must still allow a natural reversal');
+assert.ok(rebound.done,'the backward rebound must come to rest');
+assert.ok(rebound.elapsed-impactAt<1.4,
+  'a rebound should settle rapidly after its final tooth impact');
+assert.equal(rebound.contacts,1,'a single tooth must not be struck repeatedly on the reverse crossing');
+assert.ok(rebound.restSeconds>=physics.REST_HOLD_SECONDS-1e-3);
+console.log('PASS: real subsegment teeth, bounded density and quickly damped reverse rebound.');
+
 const browser=await chromium.launch({headless:true});
 const page=await browser.newPage({viewport:{width:1280,height:900},reducedMotion:'no-preference'});
 const errors=[];
@@ -115,6 +147,21 @@ try{
   await page.goto(pathToFileURL(resolve('index.html')).href,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(window.__casinoNoirDebug));
   assert.equal(await page.locator('#spinMode').inputValue(),'physical');
+  assert.equal(await page.locator('#subdivisions').inputValue(),'7');
+  assert.equal(await page.locator('[data-ratchet-tooth]').count(),56);
+  await page.locator('#toggleEditor').click();
+  await page.locator('#subdivisions').evaluate(input=>{
+    input.value='4';
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+  });
+  assert.equal(await page.locator('[data-ratchet-tooth]').count(),32);
+  assert.equal(await page.evaluate(()=>window.__casinoNoirDebug.config.subdivisions),4);
+  await page.locator('#subdivisions').evaluate(input=>{
+    input.value='7';
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+  });
+  await page.locator('#closeEditor').click();
+
   const before=await page.evaluate(()=>window.__casinoNoirDebug.controlledWinnerSelections);
   await page.locator('#spinHub').click();
   await page.waitForFunction(()=>{

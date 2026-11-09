@@ -38,7 +38,7 @@ Browsertests liegen unter `tests/`. Sie benötigen Python mit `playwright` und e
 
 ## Ausrichtung der Beschriftungen
 
-Text, Material-Symbole und Segmentnummern werden entlang der jeweiligen Segmentachse ausgerichtet. Das Rad stoppt exakt mit der Mitte des Gewinnersegments unter dem Zeiger bei **12 Uhr**. Dadurch ist der Inhalt des Gewinnersegments dort **horizontal und aufrecht lesbar**. Während der Drehung bewegen sich Beschriftungen und Symbole fest mit dem Rad, wie bei einem physischen Glücksrad. Bei mehr als 20 Segmenten wird wegen des begrenzten Platzes die Segmentnummer angezeigt; der vollständige Inhalt steht weiterhin im Editor und im Ergebnis.
+Text, Material-Symbole und Segmentnummern werden entlang der jeweiligen Segmentachse ausgerichtet. Im standardmäßigen Physikmodus ergibt sich die Endposition frei aus dem Auslauf, also auch **innerhalb** eines Segments und nicht zwingend in dessen Mitte. Die Texte und Symbole drehen sich fest mit dem Rad und sind für die Segmentmitte bei 12 Uhr ausgerichtet. Nur im ausdrücklich gewählten Modus „Gezielte Gewichtung“ wird die Mitte des vorab gezogenen Segments angefahren. Während der Drehung bewegen sich Beschriftungen und Symbole fest mit dem Rad, wie bei einem physischen Glücksrad. Bei mehr als 20 Segmenten wird wegen des begrenzten Platzes die Segmentnummer angezeigt; der vollständige Inhalt steht weiterhin im Editor und im Ergebnis.
 
 ## Platzsparende Konfiguration
 
@@ -139,6 +139,14 @@ Das Modell ist eine **physikalisch motivierte Näherung**, kein messtechnisch ka
 **Gezielte Gewichtung (alternativ):** Hier bleibt die bisherige exakte Ziehung erhalten. Gewicht 1, 3 und 0 bedeutet exakt 25 %, 75 % und 0 %, unabhängig von der Sektorgröße. Der kryptografische Zufallswert bestimmt den Gewinner *vorab*. Anschließend wird die Drehung zur Mitte dieses Gewinnersegments animiert. Das ist bewusst **keine freie Physiksimulation**, sondern die ausdrücklich gewählte Option für vorgegebene Gewinnchancen. Bei Gesamtgewicht 0 kann keine gewichtete Ziehung starten.
 
 Das Umschalten unter **Spiel & Darstellung → Drehmechanik** und der ausgewählte Modus werden im jeweiligen Profil und im JSON-Export gespeichert. Frühere Konfigurationen ohne diese Angabe werden zum Standard „Echter Auslauf (Physik)“ migriert; ihre Gewichte und übrigen Einstellungen bleiben erhalten.
+
+### Untersegmente, Rastpunkte und kürzeres Zurückpendeln
+
+Jedes sichtbare Gewinnsegment wird standardmäßig in **sieben mechanische Rastabschnitte** eingeteilt. Bei acht Segmenten entstehen so 56 regelmäßig verteilte, goldene Außenpunkte mit passenden feinen Teilungsstrichen. Die Einstellung **Unterteilungen je Segment** erlaubt Werte von 1 bis 12. Sowohl die sichtbaren Nieten als auch die tatsächlichen Zeigerkontakte verwenden dieselbe Winkelgeometrie. Bei sehr vielen Segmenten wird die Anzahl der Nieten automatisch auf maximal 336 begrenzt, damit Darstellung und Simulation performant bleiben.
+
+Ein langsamer Kontakt darf das Rad weiterhin ein kleines Stück zurückdrücken. Die rückwärts gerichtete Bewegung unterliegt jedoch einer deutlich stärkeren Ratschen- und Lagerdämpfung. Derselbe Rastpunkt erzeugt beim Zurückpendeln keinen zweiten künstlichen Schlag. Das Rad kommt dadurch nach dem letzten Kontakt schneller zur Ruhe, ohne sofort auf eine vorberechnete Position zu springen. Auch dann wird der Sieger erst nach der Stillstandsprüfung aus dem tatsächlich erreichten Winkel bestimmt.
+
+**Wichtig:** Die feinen Rastabschnitte sind mechanische Unterteilungen, **keine zusätzlichen Gewinner**. Jedes konfigurierte Hauptsegment bleibt ein einziges Gewinnfeld. Die Gewinnwahrscheinlichkeiten des gewichteten Modus ändern sich nicht, und auch die Anzahl der Gewinner im Physikmodus bleibt gleich.
 
 ### Zeiger und Klickgeräusche
 
