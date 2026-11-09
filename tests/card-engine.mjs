@@ -48,8 +48,8 @@ let rejected=0;
 assert.equal(E.uniformInt(3,{getRandomValues:a=>{a[0]=rejected++===0?4294967295:2;return a;}}),2);
 assert.equal(rejected,2,'rejection sampling must retry out-of-range 32-bit values');
 for(const [mutation,error] of [
-  [d=>{d.cards[1].copies=-1;},/Multiplikator/],
-  [d=>{d.cards[1].copies=1.5;},/Multiplikator/],
+  [d=>{d.cards[1].copies=-1;},/multiplikator/i],
+  [d=>{d.cards[1].copies=1.5;},/multiplikator/i],
   [d=>{d.cards[1].text='<script>'.repeat(200);},/Kartentext/],
   [d=>{d.cards.push({...d.cards[0]});},/Doppelte/],
   [d=>{d.state.remaining.a=9;},/Vorrat/]
