@@ -1,0 +1,27 @@
+name: Casino Noir quality checks
+on:
+  pull_request:
+    paths:
+      - 'app.js'
+      - 'index.html'
+      - 'styles.css'
+      - 'tests/**'
+      - '.github/workflows/casino-noir-ci.yml'
+  workflow_dispatch:
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript syntax
+        run: node --check app.js && node --check tests/weighted-browser.mjs
+      - name: Install Chromium and Playwright
+        run: |
+          npm install --no-save playwright@1.57.0
+          npx playwright install --with-deps chromium
+      - name: Browser regression and probability simulation
+        run: node tests/weighted-browser.mjs
