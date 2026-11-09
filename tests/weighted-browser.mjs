@@ -80,9 +80,13 @@ try{
   const standaloneFeatures=await standalone.evaluate(()=>({
     weights:window.__casinoNoirDebug.config.segments.every(segment=>segment.weight===1),
     metadata:window.__casinoNoirDebug.iconSearchMetadataReady,
+    physicsEngine:typeof window.CasinoWheelPhysics?.create==='function',
+    physicalDefault:window.__casinoNoirDebug.config.spinMode==='physical',
     overflow:document.documentElement.scrollWidth>innerWidth+2
   }));
   assert.equal(standaloneFeatures.weights,true,'standalone defaults migrate weights');
+  assert.equal(standaloneFeatures.physicsEngine,true,'standalone bundles the complete physical solver');
+  assert.equal(standaloneFeatures.physicalDefault,true,'standalone defaults to free-running physics');
   assert.equal(standaloneFeatures.overflow,false,'standalone mobile viewport has no horizontal overflow');
   await standalone.locator('#toggleEditor').click();
   await standalone.waitForSelector('#profileSelect');
