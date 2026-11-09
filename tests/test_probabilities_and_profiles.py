@@ -122,7 +122,7 @@ async def test_profiles_and_import(browser):
     assert await page.locator('#profilePicker option').count()==before
     await page.locator('#importMode').select_option('new')
     await page.locator('#importFile').set_input_files({'name':'valid.json','mimeType':'application/json','buffer':json.dumps(single).encode()})
-    assert await page.locator('#profilePicker option').count()==4
+    await page.wait_for_function("document.querySelectorAll('#profilePicker option').length === 4",timeout=3000)
     assert await page.evaluate('document.documentElement.scrollWidth<=window.innerWidth')
     saved=await page.evaluate('window.__testStorage')
     assert 'casino-noir-wheel-studio-workspace-v2' in saved
@@ -130,6 +130,7 @@ async def test_profiles_and_import(browser):
     await page.locator('#toggleEditor').click()
     assert await page.locator('#profilePicker option').count()==4
     assert await page.locator('.segment-card input[data-field="label"]').first.input_value()=='Rad B'
+    await page.locator('#importMode').select_option('replace')
     await page.locator('#importFile').set_input_files({'name':'collection.json','mimeType':'application/json','buffer':json.dumps(exported).encode()})
     assert await page.locator('#profilePicker option').count()==4
     await page.evaluate('''() => {
