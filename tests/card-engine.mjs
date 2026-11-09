@@ -21,7 +21,8 @@ for(let i=0;i<8;i++){
 }
 assert.deepEqual(counts,{a:1,b:5,c:2});
 assert.equal(E.draw(deck).card,null);
-assert.deepEqual(E.stats(E.store(JSON.parse(JSON.stringify({version:1,decks:[deck],pending:null})).decks[0]).rows.map(r=>r.available),[0,0,0]);
+const saved=E.store(JSON.parse(JSON.stringify({version:1,decks:[deck],pending:null})));
+assert.deepEqual(E.stats(saved.decks[0]).rows.map(r=>r.available),[0,0,0]);
 let d=basic();d.mode='with';
 d=E.deck(d);
 for(let i=0;i<200;i++) {
