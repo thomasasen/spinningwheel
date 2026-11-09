@@ -29,6 +29,7 @@
       if(render)renderAll();
     }
     function safe(fn){
+      if(options.isSpinning?.())return;
       try{return fn();}catch(error){options.notify(error.message||'Kartendeck konnte nicht gespeichert werden.');}
     }
     function links(id){
@@ -248,8 +249,10 @@
       const s=d?E.stats(d):null;
       $('cardRemaining').textContent=s?number(s.available)+' Karten verfügbar · Runde '+d.state.round:'Deck nicht verfügbar';
       const revealed=p.phase==='revealed';
-      $('drawCard').hidden=revealed;
-      $('nextRound').hidden=!revealed;
+      const canDraw=Boolean(s&&(s.available>0||(d.exhaustion==='auto'&&s.configured>0)));
+      $('drawCard').hidden=revealed||!canDraw;
+      $('nextRound').hidden=!revealed&&canDraw;
+      $('nextRound').textContent=revealed?'Weiter zum Glücksrad':'Weiter ohne Karte';
       const face=$('cardFront'),inner=$('cardFlip');
       face.querySelector('.card-face-title').textContent=revealed?(p.card.title||'CASINO NOIR'):'';
       face.querySelector('.card-face-text').textContent=revealed?p.card.text:'';
@@ -262,7 +265,7 @@
         requestAnimationFrame(()=>inner.classList.add('is-revealed'));
       }
       if(!returnFocus)returnFocus=document.activeElement;
-      (revealed?$('nextRound'):$('drawCard')).focus({preventScroll:true});
+      (revealed||!canDraw?$('nextRound'):$('drawCard')).focus({preventScroll:true});
     }
     function renderPending(){
       if(data.pending)showOverlay();
@@ -285,7 +288,7 @@
       }finally{drawing=false;}
     }));
     $('nextRound').addEventListener('click',()=>safe(()=>{
-      if(data.pending?.phase!=='revealed')return;
+      if(!data.pending||data.pending.phase==='ready'&&$('nextRound').hidden)return;
       commit({...data,pending:null},{render:false});
       showOverlay();renderSelector();renderCards();options.refreshSegments();
       $('spinHub').focus({preventScroll:true});returnFocus=null;
