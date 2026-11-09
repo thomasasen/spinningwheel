@@ -17,6 +17,7 @@ try{
     await page.waitForSelector('#profileSelect');
     await page.waitForSelector('#pointerSpring');
   });
+  await page.locator('#spinMode').selectOption('weighted');
   await page.locator('#sizeMode').selectOption('proportional');
   const sampled=await page.evaluate(()=>{
     const api=window.__casinoNoirDebug;
